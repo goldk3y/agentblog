@@ -5,7 +5,7 @@ group: Getting started
 order: 2
 ---
 
-**Before you start: `https://agentblog.dev/r/{name}.json` is not serving yet.** Every registry URL and every `@agentblog/*` namespace command on this page describes the shape of the install, not a host you can fetch from today. Until the host is live, the only way to install is [from a local checkout](#installing-from-a-local-checkout), and that path is for evaluating AgentBlog, not for using it in a project you ship. The GitHub shorthand below (`npx shadcn@latest add goldk3y/agentblog/blog`) becomes the recommended path the moment the repository is public, because it needs no `components.json` change at all. This banner comes down when the host is live.
+**Before you start: `https://agentblog.dev/r/{name}.json` is not serving yet.** Every registry URL and every `@agentblog/*` command on this page describes the shape of the install, not a host you can fetch from today. Until the host is live, the only way to install is [from a local checkout](#installing-from-a-local-checkout), and that path is for evaluating AgentBlog rather than for a project you ship. The GitHub shorthand (`npx shadcn@latest add goldk3y/agentblog/blog`) resolves the catalog but not the install: `@agentblog/blog` pulls in nine sibling items by namespace, and a namespace only resolves through a `registries` entry pointing at a served host. This banner comes down when the host is live.
 
 ## Quickstart
 
@@ -122,7 +122,7 @@ Two things that genuinely reduce your exposure:
 Pinning a GitHub ref (`goldk3y/agentblog/blog#v1.2.0`) pins the GitHub path.
 It does not pin the `agentblog.dev` URL, which always serves current.
 
-You can also install straight from GitHub with no namespace configuration, including a pinned ref:
+You can also address the repository directly on GitHub, with a pinned ref:
 
 ```bash
 npx shadcn@latest add goldk3y/agentblog/blog
