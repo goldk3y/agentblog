@@ -184,17 +184,24 @@ regressions before the bundler does, so the message is comprehensible.
 There are thirteen of them. You will meet the ones you break in CI, so it is
 cheaper to meet them here.
 
-### The four you can run on a clean checkout
+### The ones you can run on a clean checkout
 
 These need no build and no fixture. Run them before you push.
 
 ```bash
-pnpm check:static          # runs all four
+pnpm check:static          # runs all of the below
+pnpm check:lockfile        # pnpm install --frozen-lockfile
 pnpm check:copy-style      # node scripts/assert-copy-style.mjs
 pnpm check:theme           # node scripts/assert-theme-conformance.mjs
 pnpm check:client-imports  # node scripts/assert-no-server-only-in-client.mjs
 pnpm check:html-bots       # node scripts/assert-html-bots-current.mjs
+node scripts/assert-file-count.mjs
 ```
+
+`check:lockfile` is the one that is easy to skip and the one CI fails on first.
+A plain `pnpm install` updates the lockfile silently, so a dependency added or
+removed during local testing looks fine on your machine and stops every CI job
+at the install step. `--frozen-lockfile` is what CI runs, so run it too.
 
 ### The ones that need the registry built
 

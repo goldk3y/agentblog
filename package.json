@@ -31,13 +31,14 @@
     "check:theme": "node scripts/assert-theme-conformance.mjs",
     "check:client-imports": "node scripts/assert-no-server-only-in-client.mjs",
     "check:html-bots": "node scripts/assert-html-bots-current.mjs",
-    "check:static": "pnpm check:copy-style && pnpm check:theme && pnpm check:client-imports && pnpm check:html-bots && node scripts/assert-file-count.mjs",
+    "check:static": "pnpm check:lockfile && pnpm check:copy-style && pnpm check:theme && pnpm check:client-imports && pnpm check:html-bots && node scripts/assert-file-count.mjs",
     "check:registry": "node scripts/assert-catalog-shape.mjs && node scripts/assert-schema-valid.mjs",
     "check:patcher": "node scripts/assert-patcher-parity.mjs",
     "check:init-refuses": "node scripts/assert-init-refuses.mjs",
     "changeset": "changeset",
     "release": "turbo run build --filter=agentblog && changeset publish",
-    "check:file-count": "node scripts/assert-file-count.mjs"
+    "check:file-count": "node scripts/assert-file-count.mjs",
+    "check:lockfile": "pnpm install --frozen-lockfile"
   },
   "devDependencies": {
     "@changesets/changelog-github": "^0.7.0",
