@@ -24,12 +24,12 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/agentblog/agentblog.git",
+    "url": "git+https://github.com/goldk3y/agentblog.git",
     "directory": "packages/cli"
   },
   "homepage": "https://agentblog.dev",
   "bugs": {
-    "url": "https://github.com/agentblog/agentblog/issues"
+    "url": "https://github.com/goldk3y/agentblog/issues"
   },
   "scripts": {
     "build": "tsup",

@@ -7,8 +7,12 @@
       "cache": false,
       "outputs": []
     },
+    // `registry:build` runs before `build` so that `apps/web/public/r` exists
+    // before `next build` copies it into the deployment. That directory is
+    // gitignored and produced by `shadcn build`, so a deploy that skips it
+    // serves a site where every documented install command returns 404.
     "build": {
-      "dependsOn": ["^build", "codegen"],
+      "dependsOn": ["^build", "codegen", "registry:build"],
       "outputs": ["dist/**", ".next/**", "!.next/cache/**"]
     },
     "registry:build": {

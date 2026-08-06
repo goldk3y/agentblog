@@ -5,7 +5,7 @@ group: Getting started
 order: 2
 ---
 
-**Before you start: `https://agentblog.dev/r/{name}.json` is not serving yet.** Every registry URL and every `@agentblog/*` namespace command on this page describes the shape of the install, not a host you can fetch from today. Until the host is live, the only way to install is [from a local checkout](#installing-from-a-local-checkout), and that path is for evaluating AgentBlog, not for using it in a project you ship. The GitHub shorthand below (`npx shadcn@latest add agentblog/agentblog/blog`) becomes the recommended path the moment the repository is public, because it needs no `components.json` change at all. This banner comes down when the host is live.
+**Before you start: `https://agentblog.dev/r/{name}.json` is not serving yet.** Every registry URL and every `@agentblog/*` namespace command on this page describes the shape of the install, not a host you can fetch from today. Until the host is live, the only way to install is [from a local checkout](#installing-from-a-local-checkout), and that path is for evaluating AgentBlog, not for using it in a project you ship. The GitHub shorthand below (`npx shadcn@latest add goldk3y/agentblog/blog`) becomes the recommended path the moment the repository is public, because it needs no `components.json` change at all. This banner comes down when the host is live.
 
 ## Quickstart
 
@@ -119,14 +119,14 @@ Two things that genuinely reduce your exposure:
   accept an update, which is the mechanism described in
   [Taking an update](/docs/upgrading).
 
-Pinning a GitHub ref (`agentblog/agentblog/blog#v1.2.0`) pins the GitHub path.
+Pinning a GitHub ref (`goldk3y/agentblog/blog#v1.2.0`) pins the GitHub path.
 It does not pin the `agentblog.dev` URL, which always serves current.
 
 You can also install straight from GitHub with no namespace configuration, including a pinned ref:
 
 ```bash
-npx shadcn@latest add agentblog/agentblog/blog
-npx shadcn@latest add agentblog/agentblog/blog#v1.2.0
+npx shadcn@latest add goldk3y/agentblog/blog
+npx shadcn@latest add goldk3y/agentblog/blog#v1.2.0
 ```
 
 ## Installing from a local checkout
@@ -135,7 +135,7 @@ This is how to evaluate AgentBlog while the host is not serving. It is not a nor
 
 The `registries` map in `components.json` takes a URL and only a URL. A relative path is joined onto the default registry origin and 404s, and a `file://` URL is rejected with "not implemented yet". So the checkout has to serve HTTP, which is what `scripts/serve-registry.mjs` in this repository is for.
 
-From a clone of `agentblog/agentblog`:
+From a clone of `goldk3y/agentblog`:
 
 ```bash
 cd apps/web && npx shadcn build --output public/r

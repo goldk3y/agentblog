@@ -199,7 +199,7 @@ See the [CLI reference](/docs/cli-reference) for how this coexists with the bloc
 ## Also a Claude Code plugin
 
 ```
-/plugin marketplace add agentblog/agentblog
+/plugin marketplace add goldk3y/agentblog
 /plugin install agentblog@agentblog
 ```
 

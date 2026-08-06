@@ -4,7 +4,7 @@ The plugin distribution of the AgentBlog agent layer. Same skills as the registr
 install, different delivery: this one does not touch the consumer's Next.js app.
 
 ```
-/plugin marketplace add agentblog/agentblog
+/plugin marketplace add goldk3y/agentblog
 /plugin install agentblog@agentblog
 ```
 

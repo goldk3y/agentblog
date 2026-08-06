@@ -12,7 +12,7 @@ name: Release
 #                            was needed. The `registry` job below builds the same
 #                            output and attaches it to the GitHub Release, which
 #                            is what makes tag pinning work for the GitHub
-#                            install path (`agentblog/agentblog/blog#v1.2.0`).
+#                            install path (`goldk3y/agentblog/blog#v1.2.0`).
 #
 # @see https://agentblog.dev/docs/installation
 

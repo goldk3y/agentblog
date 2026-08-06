@@ -75,7 +75,7 @@ The third one runs against your deployment, so run it after you ship rather than
 You can pin the GitHub install path to a ref:
 
 ```bash
-npx shadcn@latest add agentblog/agentblog/blog#v1.2.0
+npx shadcn@latest add goldk3y/agentblog/blog#v1.2.0
 ```
 
 That gives you a reproducible fetch, which is useful in a script. It does not give you an upgrade path, because nothing tracks which ref you installed. If you want to know what you have, record the ref in a comment in `agentblog.config.ts` when you install. `.agentblog/manifest.json` records which files AgentBlog wrote, so `doctor` can tell our files from yours, but it is written by the CLI and not by `shadcn add`.

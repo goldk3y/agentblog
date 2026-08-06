@@ -387,7 +387,7 @@ export default function LandingPage() {
 
         <p className="text-muted-foreground mt-10 max-w-2xl text-sm leading-relaxed">
           The same four skills ship as a Claude Code plugin, so you can install them without
-          touching your Next.js app: <C>/plugin marketplace add agentblog/agentblog</C> then{' '}
+          touching your Next.js app: <C>/plugin marketplace add goldk3y/agentblog</C> then{' '}
           <C>/plugin install agentblog@agentblog</C>.
         </p>
       </Section>
@@ -573,7 +573,7 @@ export default function LandingPage() {
               The GEO playbook
             </Link>
             <a
-              href="https://github.com/agentblog/agentblog"
+              href="https://github.com/goldk3y/agentblog"
               className="text-muted-foreground hover:text-foreground"
             >
               Source on GitHub

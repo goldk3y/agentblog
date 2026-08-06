@@ -209,7 +209,7 @@ can genuinely maintain.
 npx shadcn@latest add @agentblog/agent-kit
 
 # or as a Claude Code plugin
-/plugin marketplace add agentblog/agentblog
+/plugin marketplace add goldk3y/agentblog
 /plugin install agentblog@agentblog
 ```
 

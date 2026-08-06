@@ -3,7 +3,7 @@
 ## Reporting a vulnerability
 
 Report security issues privately through
-[GitHub Security Advisories](https://github.com/agentblog/agentblog/security/advisories/new).
+[GitHub Security Advisories](https://github.com/goldk3y/agentblog/security/advisories/new).
 Do not open a public issue.
 
 We aim to acknowledge a report within three working days and to ship a fix or a

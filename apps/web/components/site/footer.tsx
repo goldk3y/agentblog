@@ -84,10 +84,10 @@ export function SiteFooter() {
           </p>
           <p>
             <a
-              href="https://github.com/agentblog/agentblog"
+              href="https://github.com/goldk3y/agentblog"
               className="hover:text-foreground underline underline-offset-2"
             >
-              github.com/agentblog/agentblog
+              github.com/goldk3y/agentblog
             </a>
           </p>
         </div>

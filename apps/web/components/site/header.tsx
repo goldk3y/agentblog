@@ -46,7 +46,7 @@ export function SiteHeader() {
 
         <div className="ml-auto flex items-center gap-1 md:ml-0">
           <a
-            href="https://github.com/agentblog/agentblog"
+            href="https://github.com/goldk3y/agentblog"
             className="text-muted-foreground hover:bg-accent hover:text-foreground rounded-md p-2 transition-colors"
             aria-label="AgentBlog on GitHub"
           >

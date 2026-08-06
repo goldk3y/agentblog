@@ -5,10 +5,10 @@
   "description": "Write, refresh, and audit blog posts that generative search engines cite. Carries the GEO writing playbook, the JSON-LD graph shapes, and the install-wiring checks for an AgentBlog install on Next.js.",
   "author": {
     "name": "AgentBlog contributors",
-    "url": "https://github.com/agentblog/agentblog"
+    "url": "https://github.com/goldk3y/agentblog"
   },
   "homepage": "https://agentblog.dev",
-  "repository": "https://github.com/agentblog/agentblog",
+  "repository": "https://github.com/goldk3y/agentblog",
   "license": "MIT",
   "keywords": ["blog", "seo", "geo", "nextjs", "schema.org", "json-ld", "content"]
 }

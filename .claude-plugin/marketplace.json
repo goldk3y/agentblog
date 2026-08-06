@@ -3,7 +3,7 @@
   "name": "agentblog",
   "owner": {
     "name": "AgentBlog contributors",
-    "url": "https://github.com/agentblog/agentblog"
+    "url": "https://github.com/goldk3y/agentblog"
   },
   "description": "The agent layer for AgentBlog: skills that write, refresh, and audit blog posts for AI search citation on Next.js.",
   "plugins": [
@@ -15,7 +15,7 @@
       "category": "content",
       "tags": ["blog", "seo", "geo", "nextjs", "schema.org", "content"],
       "homepage": "https://agentblog.dev",
-      "repository": "https://github.com/agentblog/agentblog",
+      "repository": "https://github.com/goldk3y/agentblog",
       "license": "MIT"
     }
   ]
