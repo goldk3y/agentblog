@@ -158,8 +158,13 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
 
+      # Through turbo, not `pnpm --filter`, because the CLI bundles
+      # `@agentblog/checks` and `@agentblog/schema` and both resolve through
+      # their `dist`. A direct filter runs tsup with nothing built, and esbuild
+      # fails with "Could not resolve @agentblog/checks". Turbo's `^build`
+      # dependency builds them first.
       - name: Build the CLI
-        run: pnpm --filter agentblog build
+        run: pnpm turbo run build --filter=agentblog
 
       - name: Build the registry
         run: pnpm --filter @agentblog/web registry:build
@@ -382,8 +387,13 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
 
+      # Through turbo, not `pnpm --filter`, because the CLI bundles
+      # `@agentblog/checks` and `@agentblog/schema` and both resolve through
+      # their `dist`. A direct filter runs tsup with nothing built, and esbuild
+      # fails with "Could not resolve @agentblog/checks". Turbo's `^build`
+      # dependency builds them first.
       - name: Build the CLI
-        run: pnpm --filter agentblog build
+        run: pnpm turbo run build --filter=agentblog
 
       # Asserts the exit code, the message, and that nothing was written. The
       # third one is the one that gets skipped, and a command that fails after
@@ -404,8 +414,13 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
 
+      # Through turbo, not `pnpm --filter`, because the CLI bundles
+      # `@agentblog/checks` and `@agentblog/schema` and both resolve through
+      # their `dist`. A direct filter runs tsup with nothing built, and esbuild
+      # fails with "Could not resolve @agentblog/checks". Turbo's `^build`
+      # dependency builds them first.
       - name: Build the CLI
-        run: pnpm --filter agentblog build
+        run: pnpm turbo run build --filter=agentblog
 
       # Runs `doctor --fix` twice, in two scratch copies of the fixture whose
       # bundled TypeScript differs, then diffs the resulting next.config.ts. It
