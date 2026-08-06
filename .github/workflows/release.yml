@@ -31,9 +31,60 @@ env:
   NODE_VERSION: '22'
 
 jobs:
+  # Publishing needs a credential this repository cannot create for itself, and
+  # a fork does not have one at all. Without this gate every push to main ran
+  # `changeset publish` against an unauthenticated registry, got `E404 PUT
+  # https://registry.npmjs.org/agentblog`, and painted main red for a condition
+  # that is not a defect. A red main that is always red is a signal nobody reads.
+  #
+  # `secrets` is not one of the contexts GitHub exposes to a job-level `if`
+  # (`github`, `needs`, `vars`, and `inputs` are), so the decision is made in a
+  # job that can read secrets and published as an output, which `needs` then
+  # makes available to the `if` below.
+  #
+  # @see https://docs.github.com/en/actions/reference/workflows-and-actions/contexts
+  preflight:
+    name: Check that publishing is set up
+    runs-on: ubuntu-latest
+    outputs:
+      can-publish: ${{ steps.check.outputs.can-publish }}
+    steps:
+      - id: check
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          if [ -n "$NPM_TOKEN" ]; then
+            echo 'can-publish=true' >> "$GITHUB_OUTPUT"
+            echo '### Publishing is configured' >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo 'can-publish=false' >> "$GITHUB_OUTPUT"
+            {
+              echo '### Publishing is not set up yet, so nothing was published'
+              echo
+              echo 'The `NPM_TOKEN` secret is not set on this repository. Everything'
+              echo 'else in this workflow ran; only the publish was skipped. To turn'
+              echo 'publishing on:'
+              echo
+              echo '1. Claim `agentblog` and the `@agentblog` scope on npm.'
+              echo '2. Create a granular access token with write access to both.'
+              echo '3. Add it as the `NPM_TOKEN` repository secret.'
+              echo
+              echo 'After the first successful publish, replace the token with'
+              echo 'trusted publishing (`npm trust github agentblog --file release.yml`),'
+              echo 'which needs no long-lived secret at all.'
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+
   npm:
     name: Publish agentblog to npm
+    needs: [preflight]
+    if: needs.preflight.outputs.can-publish == 'true'
     runs-on: ubuntu-latest
+    outputs:
+      # `true` only when changesets actually pushed a version to npm. A run that
+      # merely opened the version PR succeeds too, so job success does not mean
+      # a release happened.
+      published: ${{ steps.changesets.outputs.published }}
     permissions:
       contents: write # changesets commits the version bump and tags the release
       pull-requests: write # and opens the "Version Packages" PR
@@ -75,9 +126,12 @@ jobs:
     name: Build and attach the registry
     runs-on: ubuntu-latest
     needs: [npm]
-    # Only when changesets actually published. On a run that merely opened the
-    # version PR there is no tag to attach anything to.
-    if: needs.npm.result == 'success'
+    # Only when changesets actually published. `needs.npm.result == 'success'`
+    # was the wrong test: the job succeeds just as cleanly on a run that only
+    # opened the "Version Packages" PR, so the artifact was being built and
+    # named after a release that had not happened. The action's `published`
+    # output is the one thing that distinguishes the two.
+    if: needs.npm.outputs.published == 'true'
     permissions:
       contents: write
     steps:

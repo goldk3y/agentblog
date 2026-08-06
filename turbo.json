@@ -11,8 +11,24 @@
     // before `next build` copies it into the deployment. That directory is
     // gitignored and produced by `shadcn build`, so a deploy that skips it
     // serves a site where every documented install command returns 404.
+    //
+    // `env` lists the variables that change what a build produces. Turborepo
+    // infers the framework ones (NODE_ENV, NEXT_PUBLIC_*) on its own but knows
+    // nothing about ours, and an undeclared variable is not part of the cache
+    // key: a preview build and a production build would hash identically and
+    // the second one would be served the first one's output. That is how a
+    // staging canonical URL ends up in production sitemaps.
     "build": {
       "dependsOn": ["^build", "codegen", "registry:build"],
+      "env": [
+        "AGENTBLOG_PUBLIC_SITE",
+        "AGENTBLOG_REVALIDATE_SECRET",
+        "AGENTBLOG_DEPLOY_WAIT_MS",
+        "INDEXNOW_KEY",
+        "VERCEL_ENV",
+        "VERCEL_URL",
+        "VERCEL_PROJECT_PRODUCTION_URL"
+      ],
       "outputs": ["dist/**", ".next/**", "!.next/cache/**"]
     },
     "registry:build": {

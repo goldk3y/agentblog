@@ -294,6 +294,11 @@ pnpm changeset
 
 Add a changeset in the same PR as a user-visible change.
 
+Merging to `main` publishes nothing on its own. The release workflow opens a
+"Version Packages" PR, and merging that PR is what publishes. Maintainers
+setting up or debugging the publish and the Vercel deploy should read
+[DEPLOYMENT.md](./DEPLOYMENT.md).
+
 ## Filing issues
 
 The most useful bug report for this project includes the output of:
