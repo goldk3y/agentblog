@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "display": "AgentBlog base",
+  "_comment": [
+    "TypeScript 7 baseline. See https://agentblog.dev/docs/cli-reference",
+    "TS 7 removed `baseUrl`, `moduleResolution: node`, and `target: es5` as hard",
+    "errors, and stopped auto-discovering @types. Every option below is either a",
+    "TS 7 requirement or a deliberate strictness choice we rely on elsewhere."
+  ],
+  "compilerOptions": {
+    "strict": true,
+    "target": "ES2022",
+    "lib": ["ES2023"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "moduleDetection": "force",
+    "types": ["node"],
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "noImplicitOverride": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "skipLibCheck": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true
+  }
+}

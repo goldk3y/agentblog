@@ -1,0 +1,160 @@
+---
+title: How AI Search Engines Read Your Blog
+description: GPTBot, ClaudeBot, and PerplexityBot read the raw HTML your server returns and never run JavaScript. Here is what they get, and how to check it yourself.
+answerCapsule: >-
+  AI search engines fetch your page once, read the raw HTML your server returns,
+  and never execute JavaScript. Anything your blog renders in the browser is
+  invisible to them. Prerendered HTML with the article body and the metadata
+  already in place is the only format every AI crawler can read.
+datePublished: 2026-07-14T09:00:00Z
+dateModified: 2026-08-04T16:20:00Z
+author: editorial
+category: ai-search
+tags:
+  - AI crawlers
+  - GPTBot
+  - server-side rendering
+  - Next.js
+relatedPosts:
+  - what-makes-an-ai-engine-cite-your-post
+citations:
+  - name: The rise of the AI crawler
+    url: https://vercel.com/blog/the-rise-of-the-ai-crawler
+    author: Vercel and MERJ
+    datePublished: 2024-12-17
+    kind: industry
+  - name: 'Next.js documentation: generateMetadata'
+    url: https://nextjs.org/docs/app/api-reference/functions/generate-metadata
+    author: Vercel
+    kind: official-docs
+  - name: AI features and your website
+    url: https://developers.google.com/search/docs/appearance/ai-features
+    author: Google Search Central
+    kind: official-docs
+faq:
+  - question: Do AI crawlers execute JavaScript?
+    answer: >-
+      No. Vercel and MERJ analysed roughly 1.3 billion AI crawler fetches across
+      their network and reported that none of the major AI crawlers render
+      JavaScript. GPTBot and ClaudeBot download .js files but do not run them,
+      so client-rendered content never reaches them.
+  - question: Does my blog need a separate version for AI crawlers?
+    answer: >-
+      No. Google Search Central states that you do not need to create new machine
+      readable files, AI text files, or markup to appear in AI features. Serve one
+      well-formed HTML document to every visitor and every crawler.
+  - question: How do I check what an AI crawler sees on my page?
+    answer: >-
+      Run curl with the crawler's user agent and search the raw response for a
+      sentence from your article. If the sentence is missing from the response
+      body, the crawler cannot see it either. Use view-source, never the DevTools
+      Elements panel, which shows the DOM after JavaScript has run.
+  - question: Is a page that ranks first on Google always visible to ChatGPT?
+    answer: >-
+      No. Googlebot executes JavaScript and the major AI crawlers do not, so a
+      client-rendered page can rank in Google Search and still arrive at ChatGPT,
+      Claude, and Perplexity as an empty shell.
+---
+
+## What does an AI crawler actually receive?
+
+An AI crawler receives one HTTP response and nothing else. It sends a GET request, reads the bytes your server returns, and moves on. No browser starts, no scripts run, no second request fires for data. Whatever text sits in that first response body is the entire article as far as the crawler is concerned.
+
+That single fact reorganises what matters on a blog. Bundle size, hydration cost, and route transitions are human concerns, and they are real ones, but an AI crawler never experiences any of them. It experiences your HTML document exactly once.
+
+The practical test is simple. Open the page, view source rather than the DevTools Elements panel, and look for the opening sentence of your article. The Elements panel shows the DOM after JavaScript has run, which is a different document from the one your server sent. View source shows the response body, which is what GPTBot and ClaudeBot parse.
+
+Most blogs pass this test without knowing it, because static site generators and server-rendered frameworks produce complete documents by default. Blogs fail it when the article body is fetched client side, when content mounts on interaction, or when the page is a single-page application shell that fills itself in after load.
+
+## Do AI crawlers execute JavaScript?
+
+No. Vercel and MERJ instrumented AI crawler traffic across Vercel's network over a month and reported plainly that none of the major AI crawlers render JavaScript. The crawlers do request script files, which is easy to mistake for execution, but requesting a file and running it are different operations.
+
+<Stat
+  value="23.84%"
+  label="of Claude crawler requests targeted .js files, which the crawler downloaded but never executed"
+  source="Vercel and MERJ, The rise of the AI crawler, December 2024"
+/>
+
+The same study put the equivalent figure for OpenAI's ChatGPT crawler at 11.50% of requests. Both numbers describe fetching, not rendering. As the authors put it, ChatGPT and Claude crawlers do fetch JavaScript files but they do not execute them, so they cannot read client-side rendered content.
+
+Googlebot is the exception worth naming, because it does execute JavaScript, and Google AI Overviews and AI Mode are grounded in the Google Search index that Googlebot builds. That asymmetry produces the failure mode that surprises people most: a page can rank in Google Search on the strength of JavaScript-rendered content and simultaneously be blank to ChatGPT search, Claude, and Perplexity. Ranking well is not evidence that AI crawlers can read you.
+
+<Callout type="warning">
+  Fetching a script is not running it. Server logs showing `.js` requests from GPTBot tell you
+  nothing about whether GPTBot saw your article.
+</Callout>
+
+## Which AI crawlers visit a blog, and what does each one do?
+
+Six user agents account for most AI crawler traffic to a typical blog, and they do three different jobs: collecting training data, building a citation index, and fetching a page live because a user asked about it. Only the second and third can ever produce a citation, and neither of them runs JavaScript.
+
+| Crawler          | Operator   | What it does                                            | Runs JavaScript |
+| ---------------- | ---------- | ------------------------------------------------------- | --------------- |
+| GPTBot           | OpenAI     | Collects pages for model training                       | No              |
+| OAI-SearchBot    | OpenAI     | Builds the index ChatGPT search cites from              | No              |
+| ClaudeBot        | Anthropic  | Collects pages for model training                       | No              |
+| Claude-SearchBot | Anthropic  | Builds Claude's search index                            | No              |
+| PerplexityBot    | Perplexity | Builds Perplexity's citation index                      | No              |
+| Googlebot        | Google     | Builds the Search index behind AI Overviews and AI Mode | Yes             |
+
+Two consequences follow from the table. First, blocking training crawlers in `robots.txt` does not block the search crawlers that generate citations, so the two decisions are separable. Second, since every AI crawler in the list except Googlebot reads raw HTML only, one correctly prerendered document satisfies all of them at once. There is no per-crawler variant to maintain.
+
+Verify crawler identity by IP range rather than by user agent string. OpenAI, Anthropic, and Perplexity each publish their ranges as JSON, and a user agent header is trivially spoofed. Any measurement of AI crawler traffic that trusts the header is partly counting impostors.
+
+## Why does client-side rendering lose in AI search?
+
+Client-side rendering loses because the article does not exist yet when the crawler stops reading. The server sends a shell, the browser runs a script, the script requests the content, and the content arrives in a second round trip that an AI crawler never makes. The crawler sees the shell.
+
+| Rendering approach                         | What the first response body contains | What a non-JavaScript crawler gets |
+| ------------------------------------------ | ------------------------------------- | ---------------------------------- |
+| Prerendered at build time                  | The complete article                  | The complete article               |
+| Server rendered per request                | The complete article                  | The complete article               |
+| Fetched client side after load             | An empty container                    | Nothing                            |
+| Mounted on click, as in a tab or accordion | Markup absent until interaction       | Nothing                            |
+
+The fourth row catches people who did everything else right. Content hidden with CSS is present in the HTML and is read normally. Content that a JavaScript handler mounts on click is genuinely absent from the response, so an FAQ inside an interactive accordion can be invisible while an FAQ inside a `details` element is fully readable. The distinction is whether the markup exists before interaction, not whether it is visible.
+
+Infinite scroll fails for the same reason, and so does any pagination built on click handlers instead of real anchor elements. If a crawler cannot reach a URL by following an `href`, that URL is not in its crawl frontier.
+
+Google Search Central is direct about the remedy, and the remedy is not a new file format. Its AI features guidance states that "you don't need to create new machine readable files, AI text files, or markup to appear in these features." One well-formed HTML document, served to everyone, is the whole requirement. What you put inside that document is a separate question, covered in [what makes an AI engine cite your post](/blog/what-makes-an-ai-engine-cite-your-post).
+
+## Where does Next.js put your title tag?
+
+Next.js streams metadata for pages that render dynamically, which moves the title and canonical tags out of `<head>` and into `<body>` for any crawler the framework does not recognise as HTML-limited. The Next.js documentation describes the behaviour without ambiguity:
+
+> When `generateMetadata` resolves, the resulting metadata tags are appended to the `<body>` tag.
+>
+> Next.js documentation, generateMetadata
+
+Next.js exempts a list of HTML-limited bots from streaming and blocks rendering for them so their metadata lands in `<head>` instead. That default list is built around social preview crawlers and traditional search engines. AI crawlers such as GPTBot, ClaudeBot, and PerplexityBot are not on it, which means a dynamically rendered post can serve them a canonical link inside the document body.
+
+There are two fixes and they are not alternatives. The structural fix is to prerender posts, because the same documentation notes that when a page can be prerendered and `generateMetadata` introduces no dynamic behaviour, the resulting metadata is included in the page's initial HTML. The belt-and-braces fix is to set `htmlLimitedBots` in `next.config.ts` to a regular expression that includes the AI crawlers. Note that this config value replaces the default list rather than extending it, so the replacement has to repeat every default entry or you will quietly remove Googlebot and Bingbot from HTML-limited treatment.
+
+## How do you verify what a crawler sees?
+
+Verify with `curl`, one command per crawler, checking for a distinctive sentence from your article in the raw response. This takes under a minute and is the only check that proves anything, because every other tool in the chain shows you a rendered DOM rather than the response body.
+
+```bash
+# Does the article body reach a crawler that cannot run JavaScript?
+curl -s -A "GPTBot" https://yourdomain.com/blog/your-post \
+  | grep -c "a distinctive sentence from your article"
+
+# Does the title tag land in <head> rather than in <body>?
+curl -s -A "ClaudeBot" https://yourdomain.com/blog/your-post \
+  | sed -n '/<\/head>/q;p' | grep -i "<title>"
+```
+
+A count of zero from the first command means the crawler receives a page without your article in it. A missing title from the second means metadata is streaming into the body for that user agent.
+
+Run both against production rather than against a local dev server, because the failure this catches most often is not in your code at all. A CDN or WAF sitting in front of the site can rate-limit or block AI crawlers while your `robots.txt` cheerfully allows them, and the result looks identical to having no content: a crawler that never gets a readable response. Testing from outside your own network with each user agent in turn is what separates the two causes.
+
+<KeyTakeaways
+  items={[
+    'AI crawlers read one HTTP response and never execute JavaScript, so the first response body is the entire article to them.',
+    'Prerendered or server-rendered HTML satisfies every AI crawler at once. There is no per-crawler variant to maintain.',
+    'Content mounted on click is absent from the response. Content hidden with CSS is present and readable.',
+    'In Next.js, streamed metadata can append the title and canonical tags to the body for AI crawlers. Prerender posts and set htmlLimitedBots.',
+    'Verify with curl against production using each crawler user agent. A rendered DOM in DevTools proves nothing.',
+  ]}
+/>

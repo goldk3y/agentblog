@@ -1,0 +1,80 @@
+# Everything an install writes into this fixture is ignored, on purpose.
+#
+# ---------------------------------------------------------------------------
+# WHY
+# ---------------------------------------------------------------------------
+# The committed state of this directory is a clean Next.js 16 app: a layout, a
+# home page, a stylesheet, and configs. Nothing else. CI takes it from there,
+# runs `shadcn add` and the CLI against it, and asserts what those two produced.
+#
+# If any of the generated output were committed, the pipeline would still be
+# green and would still prove nothing:
+#
+#   * `shadcn add --overwrite` would be rewriting files that already exist, so
+#     "the registry installs into a clean project" would never actually be
+#     tested. The first real consumer would be the first clean install.
+#   * The idempotency gate stages the tree (`git add -A apps/fixture-next16`),
+#     runs `agentblog init` a second time, then reads `git diff --exit-code`.
+#     What that has to catch is a patcher rewriting a file it already patched, so
+#     the diff should cover exactly the files the CLI edits: next.config.ts,
+#     app/layout.tsx, components.json, package.json. Install output is copied
+#     verbatim from the registry and is idempotent by construction, so leaving it
+#     tracked adds a few hundred lines of noise a reviewer has to read past to
+#     find the one line that matters.
+#   * Anyone who ran the install locally to debug something would be one `git
+#     add -A` away from committing a half-patched fixture, and it would look
+#     like ordinary work in review.
+#
+# Keep this list in step with the `target` fields in
+# apps/web/registry/blog/registry.json and apps/web/registry/agent/registry.json.
+# A new registry file with an untracked target lands here as an untracked file
+# and turns the idempotency diff red for no real reason.
+
+# Build output and dependencies. node_modules is restated rather than left to the
+# root .gitignore because `pnpm clean-install` in this package excludes it by
+# name, and the two lists should be readable side by side.
+.next/
+node_modules/
+next-env.d.ts
+*.tsbuildinfo
+
+# Written by `shadcn add @agentblog/blog`. `app/` and `lib/` are listed file by
+# file rather than wholesale, because this fixture owns app/layout.tsx,
+# app/page.tsx, app/globals.css and lib/utils.ts and those must stay tracked.
+agentblog.config.ts
+app/api/
+app/authors/
+app/blog/
+app/editorial-policy/
+app/feed.xml/
+app/not-found.tsx
+app/opengraph-image.tsx
+app/robots.ts
+app/sitemap.ts
+components/
+content/
+hooks/
+lib/*
+!lib/utils.ts
+styles/
+
+# Written by `shadcn add @agentblog/agent-kit`.
+.claude/
+AGENTS.agentblog.md
+
+# Written by `agentblog init` and `agentblog doctor --fix`. AGENTS.md is the
+# file scripts/assert-agents-md.mjs inspects, and CLAUDE.md is the file it
+# asserts we never wrote. Both are generated per run, so neither is committed.
+AGENTS.md
+CLAUDE.md
+.agentblog/
+
+# INDEXNOW_KEY and AGENTBLOG_REVALIDATE_SECRET. Secrets, and CI generates them.
+.env
+.env.local
+.env*.local
+
+# The IndexNow key file that `agentblog doctor --fix` generates. Its name is
+# random per install, so committing one would make the idempotency diff in CI
+# depend on which run produced it.
+public/*.txt

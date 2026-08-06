@@ -1,0 +1,32 @@
+{
+  "name": "@agentblog/checks",
+  "version": "0.1.0",
+  "description": "Dependency-free configuration predicates shared by the AgentBlog CLI and the build-time preflight module. Internal: the CLI bundles it and the shipped block receives it by codegen, so it is never published on its own.",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "files": [
+    "dist",
+    "src"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint .",
+    "test": "node --test src/*.test.ts"
+  },
+  "devDependencies": {
+    "@agentblog/eslint-config": "workspace:*",
+    "@agentblog/typescript-config": "workspace:*",
+    "@types/node": "^26.1.2",
+    "eslint": "^10.8.0",
+    "typescript": "^7.0.2"
+  },
+  "private": true
+}

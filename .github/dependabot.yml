@@ -1,0 +1,69 @@
+version: 2
+
+# The fixture in CI tracks latest stable Next.js on purpose, so upstream breakage
+# surfaces in this repository before it surfaces in a user's. Dependabot is what
+# keeps that true. It only works if someone is expected to look at the red build.
+#
+# @see https://agentblog.dev/docs/roadmap
+
+updates:
+  # One ecosystem entry covers the whole pnpm workspace: `directories: ['/']`
+  # plus the workspace globs, so a bump lands in the app and the packages
+  # together rather than as five PRs that only pass when all five are merged.
+  - package-ecosystem: npm
+    directories:
+      - '/'
+      - '/apps/*'
+      - '/packages/*'
+    schedule:
+      interval: weekly
+      day: monday
+      time: '07:00'
+    open-pull-requests-limit: 8
+    labels:
+      - dependencies
+    groups:
+      # Next.js, React, and their types move together. Splitting them produces
+      # PRs that each fail on their own and pass only when merged as a set.
+      next:
+        patterns:
+          - 'next'
+          - 'react'
+          - 'react-dom'
+          - '@types/react'
+          - '@types/react-dom'
+          - 'eslint-config-next'
+          - '@next/*'
+      tailwind:
+        patterns:
+          - 'tailwindcss'
+          - '@tailwindcss/*'
+          - 'prettier-plugin-tailwindcss'
+      typescript-and-lint:
+        patterns:
+          - 'typescript'
+          - 'typescript-eslint'
+          - 'eslint'
+          - '@eslint/*'
+          - 'prettier'
+      dev-minor-and-patch:
+        dependency-type: development
+        update-types:
+          - minor
+          - patch
+    ignore:
+      # shadcn is pinned exactly, and a registry built by a different CLI version
+      # can differ in ways no schema check sees. Upgrade it deliberately, with the
+      # measured facts in BUILD-SPEC section 12 re-verified against the new CLI.
+      - dependency-name: shadcn
+
+  - package-ecosystem: github-actions
+    directory: '/'
+    schedule:
+      interval: monthly
+    labels:
+      - dependencies
+    groups:
+      actions:
+        patterns:
+          - '*'

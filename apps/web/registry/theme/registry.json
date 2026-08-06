@@ -1,0 +1,40 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "name": "agentblog-theme",
+  "homepage": "https://agentblog.dev",
+  "items": [
+    {
+      "name": "theme",
+      "type": "registry:base",
+      "title": "AgentBlog reading theme",
+      "description": "A reading-optimised base for a standalone blog site: neutral base colour, a comfortable measure, and generous line height. Intended for a fresh scaffold. `agentblog create` does not apply it yet, so add it by hand on a new project. Never install it into an app that already has a design system: a base carries style, icon library, and base colour, and applying one replaces what is already there.",
+      "categories": ["blog", "theme"],
+      "config": {
+        "style": "new-york",
+        "iconLibrary": "lucide",
+        "rsc": true,
+        "tsx": true,
+        "tailwind": {
+          "baseColor": "neutral"
+        },
+        "aliases": {
+          "components": "@/components",
+          "utils": "@/lib/utils",
+          "ui": "@/components/ui",
+          "lib": "@/lib",
+          "hooks": "@/hooks"
+        },
+        "registries": {
+          "@agentblog": "https://agentblog.dev/r/{name}.json"
+        }
+      },
+      "cssVars": {
+        "theme": {
+          "--agentblog-measure": "68ch"
+        }
+      },
+      "files": [],
+      "docs": "`agentblog create` does not apply this yet. On a new project run `npx shadcn@latest add @agentblog/theme` yourself. A registry base cannot pin the component primitive library; pass `--base base|radix|aria` to `shadcn init` if you need a specific one. The AgentBlog block works with all three, because it composes on your own primitives rather than shipping its own."
+    }
+  ]
+}

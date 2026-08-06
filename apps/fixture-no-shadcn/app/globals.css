@@ -1,0 +1,7 @@
+/*
+ * Tailwind v4 and nothing else.
+ *
+ * No shadcn tokens, because this project has never run `shadcn init`. That is
+ * the condition `agentblog init` has to detect and refuse on.
+ */
+@import 'tailwindcss';

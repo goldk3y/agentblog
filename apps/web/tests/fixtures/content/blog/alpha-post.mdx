@@ -1,0 +1,25 @@
+---
+title: Alpha Post
+description: The newest published fixture post. It omits slug on purpose so the adapter has to derive one from the filename.
+datePublished: 2026-03-01
+dateModified: 2026-03-02
+author: test-author
+category: alpha
+tags:
+  - shared
+  - alpha-only
+relatedPosts:
+  - gamma-post
+  - beta-post
+citations:
+  - name: Example source
+    url: https://example.com/source
+    datePublished: 2026-01-05
+faq:
+  - question: Is this a fixture?
+    answer: Yes.
+---
+
+Alpha body. This post exercises three conveniences at once: the slug defaults to
+the filename, the dates are bare `YYYY-MM-DD` values, and the author and category
+are slug strings that the adapter hydrates.

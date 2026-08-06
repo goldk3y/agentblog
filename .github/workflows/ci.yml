@@ -1,0 +1,433 @@
+name: CI
+
+# The pipeline from the AgentBlog docs, ordered so the cheap checks
+# fail first. `quality` and `unit` run in parallel on every push and take about a
+# minute between them. `registry` builds and validates the published JSON.
+# `e2e-install` is the expensive one and the only one that proves the product
+# works: it installs the built registry into a clean Next.js app and builds it. A
+# registry can pass every schema check, every lint, and every unit test and still
+# produce a project that does not compile.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# One run per branch. A superseded run tells you about code nobody has any more.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+# Third-party actions are pinned to a commit SHA with the tag in a comment.
+# A tag is mutable: whoever controls the action's repository can move `v4` to
+# any commit, and the release workflow hands one of these actions an npm token
+# with publish rights to `agentblog`. Dependabot's `github-actions` ecosystem
+# updates a pinned SHA and rewrites the comment, so pinning costs nothing
+# ongoing. `actions/*` are first-party and left on their major tag.
+
+env:
+  # Node 22 LTS. The fixture tracks latest stable Next.js on purpose, so upstream
+  # breakage surfaces in this repository before it surfaces in a user's.
+  NODE_VERSION: '22'
+
+jobs:
+  quality:
+    name: Quality
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # No `version` input: pnpm/action-setup reads the `packageManager` field in
+      # package.json, so the version lives in exactly one place.
+      - uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4.2.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # Generated files first. Everything after this reads them, so stale codegen
+      # would produce failures that point at the wrong file.
+      - name: Codegen is current
+        run: pnpm codegen:check
+
+      - name: Formatting
+        run: pnpm format:check
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Types
+        run: pnpm typecheck
+
+      # The four static assertions. Each one catches something the compiler, the
+      # linter, and the test suite are all blind to.
+      - name: Copy style (no em dashes, no stock phrasing)
+        run: node scripts/assert-copy-style.mjs
+
+      - name: Theme conformance (semantic tokens only)
+        run: node scripts/assert-theme-conformance.mjs
+
+      - name: No server-only code reachable from a client component
+        run: node scripts/assert-no-server-only-in-client.mjs
+
+      - name: Vendored Next.js bot list matches the installed Next.js
+        run: node scripts/assert-html-bots-current.mjs
+
+  unit:
+    name: Unit and contract tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4.2.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      # Includes the adapter contract suite in @agentblog/schema. Every adapter
+      # runs the same suite, which is what keeps `ContentSource` a contract rather
+      # than a shape three implementations happen to share.
+      - name: Test
+        run: pnpm test
+
+  registry:
+    name: Registry
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4.2.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      # `registry validate` before `build`, because it checks include rules and
+      # file existence, which no JSON Schema can express. It is the stricter gate
+      # of the two and it is cheaper than a build.
+      - name: shadcn registry validate
+        working-directory: apps/web
+        run: pnpm exec shadcn registry validate
+
+      - name: shadcn build
+        run: pnpm --filter @agentblog/web registry:build
+
+      - name: Catalog meets the registry-directory rules
+        run: node scripts/assert-catalog-shape.mjs
+
+      # Necessary and not sufficient: neither published schema sets
+      # additionalProperties: false, so a misspelled key validates while doing
+      # nothing. That is why `registry validate` above is not optional.
+      - name: Emitted JSON validates against the published schemas
+        run: node scripts/assert-schema-valid.mjs
+
+      # The documented file count is a promise about how much code a reader is
+      # accepting into their repository, and it is prose, so nothing else notices
+      # when it drifts. It has already been wrong once by thirty files.
+      - name: The documented file count matches the registry
+        run: node scripts/assert-file-count.mjs
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: registry
+          path: apps/web/public/r
+          retention-days: 7
+
+  e2e-install:
+    name: Install into a clean Next.js app
+    runs-on: ubuntu-latest
+    needs: [quality, registry]
+    env:
+      # A fixed slug from the seed content, so the crawler assertions have a real
+      # post to read rather than an index page.
+      SEED_SLUG: how-ai-search-engines-read-your-blog
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4.2.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      - name: Build the CLI
+        run: pnpm --filter agentblog build
+
+      - name: Build the registry
+        run: pnpm --filter @agentblog/web registry:build
+
+      # The registry has to be reachable over HTTP, not as a path on disk.
+      # `@agentblog/blog` declares its parts as cross-item registryDependencies
+      # (`@agentblog/blog-core` and the rest), and those only resolve through the
+      # `registries` entry in components.json, which shadcn treats as a URL. A
+      # relative path there is appended to the default registry origin and 404s,
+      # and a file:// URL is rejected outright. Installing a single item by path
+      # works and proves nothing, because it skips dependency resolution entirely.
+      - name: Serve the built registry
+        run: |
+          node scripts/serve-registry.mjs &
+          for i in $(seq 1 30); do
+            if curl -sf http://127.0.0.1:4477/r/blog.json > /dev/null; then
+              echo 'Registry is being served.'
+              exit 0
+            fi
+            sleep 1
+          done
+          echo 'The registry server never came up on port 4477.'
+          exit 1
+
+      # `--overwrite` and not just `--yes`: `--yes` still blocks on the
+      # interactive overwrite prompt for an existing file, which in CI means the
+      # job hangs until the timeout rather than failing.
+      - name: Install the whole block through the namespace
+        working-directory: apps/fixture-next16
+        run: pnpm exec shadcn add @agentblog/blog --yes --overwrite
+
+      # The registry-only path. No CLI has run yet, so the block's own preflight
+      # is the only thing that can warn about the missing config.
+      - name: Build the fixture (registry-only install)
+        run: |
+          set -o pipefail
+          pnpm --filter fixture-next16 build 2>&1 | tee /tmp/fixture-build-1.log
+
+      # Inline rather than a script because it is a grep over a build log, and a
+      # 40 line module to wrap `grep -q` would be worse. the AgentBlog docs section
+      # 11 calls this assert-preflight-warns.mjs. Promote it to a script if it
+      # ever needs to assert more than one thing.
+      - name: Assert the preflight warning fired
+        run: |
+          if ! grep -qi 'htmlLimitedBots' /tmp/fixture-build-1.log; then
+            echo 'The build did not warn about the missing htmlLimitedBots config.'
+            echo
+            echo 'The fixture next.config.ts deliberately omits it, so lib/preflight.ts'
+            echo 'must warn here. Preflight going quiet is the regression that would ship'
+            echo 'broken installs to everyone who takes the registry-only path, and it is'
+            echo 'invisible to every other check in this pipeline.'
+            exit 1
+          fi
+          echo 'Preflight warned, as it must.'
+
+      # The fixture sets `agentRules: false`, so Next.js never writes AGENTS.md
+      # here and the tool under test is the only author of that file. That also
+      # means the ordering assertion would have nothing to order against, so seed
+      # the Next.js managed region by hand first. Our block has to land strictly
+      # after the END marker, and this is the only way to find out whether it does.
+      - name: Seed the Next.js managed region in AGENTS.md
+        run: |
+          cat > apps/fixture-next16/AGENTS.md <<'MARKERS'
+          # Agent rules
+
+          <!-- BEGIN:nextjs-agent-rules -->
+
+          Managed by Next.js. Anything written between these markers is replaced
+          on the next `next dev`.
+
+          <!-- END:nextjs-agent-rules -->
+          MARKERS
+
+      # The root layout patch needs a real `siteUrl` and declines while the value
+      # is still the template placeholder, because `metadataBase` composed from
+      # `https://yourdomain.com` would be worse than none. So set it first. That
+      # ordering is part of what is under test: a `doctor --fix` that patched the
+      # layout with a placeholder origin would pass every later assertion here and
+      # ship a site whose every canonical URL points at a domain nobody owns.
+      - name: Set a real siteUrl
+        working-directory: apps/fixture-next16
+        run: |
+          node -e "
+            const fs = require('node:fs')
+            const file = 'agentblog.config.ts'
+            const source = fs.readFileSync(file, 'utf8')
+              .replace('https://yourdomain.com', 'https://fixture.agentblog.dev')
+              .replace(\"name: 'Your Brand'\", \"name: 'Fixture Blog'\")
+            fs.writeFileSync(file, source)
+          "
+          grep -q 'fixture.agentblog.dev' agentblog.config.ts
+
+      - name: agentblog doctor --fix
+        working-directory: apps/fixture-next16
+        run: node "$GITHUB_WORKSPACE/packages/cli/dist/index.js" doctor --fix
+
+      # The most important assertion in the repository. A patcher that writes only
+      # the AI crawlers passes a snapshot test on the AI crawlers while dropping
+      # Googlebot and every social preview bot from HTML-limited treatment.
+      - name: Patched config is a superset of the Next defaults union the AI list
+        run: node scripts/assert-htmlbots-superset.mjs apps/fixture-next16/next.config.ts
+
+      # Stage the current state, then run init again. `git diff --exit-code` then
+      # reports exactly what the second run changed, which is the definition of
+      # idempotent for a tool that edits someone else's files.
+      - name: agentblog init is idempotent
+        run: |
+          git add -A apps/fixture-next16
+          cd apps/fixture-next16
+          node "$GITHUB_WORKSPACE/packages/cli/dist/index.js" init
+          cd "$GITHUB_WORKSPACE"
+          if ! git diff --exit-code -- apps/fixture-next16; then
+            echo
+            echo 'A second `agentblog init` changed the project.'
+            echo 'A user who reruns the command must get no diff. An unexplained diff in a'
+            echo 'config file we asked to edit is a trust failure, and trust failures do not'
+            echo 'get filed as bugs, people just stop running the command.'
+            exit 1
+          fi
+
+      - name: Rebuild after the fix
+        run: |
+          set -o pipefail
+          pnpm --filter fixture-next16 build 2>&1 | tee /tmp/fixture-build-2.log
+
+      - name: Assert the preflight warning is gone
+        run: |
+          if grep -qi 'htmlLimitedBots' /tmp/fixture-build-2.log; then
+            echo 'The build still warns about htmlLimitedBots after doctor --fix.'
+            echo 'Either the fix did not write the config, or preflight cannot read what'
+            echo 'the CLI writes. Those two disagreeing in front of a user is exactly what'
+            echo 'the shared packages/checks module exists to prevent.'
+            exit 1
+          fi
+          echo 'Warning cleared.'
+
+      # `next build` no longer runs ESLint in Next.js 16, so linting the installed
+      # files has to be explicit. They have to pass a consumer's lint, not ours.
+      - name: Lint the installed files
+        run: pnpm --filter fixture-next16 lint
+
+      - name: Start the built app
+        run: |
+          pnpm --filter fixture-next16 start &
+          for i in $(seq 1 60); do
+            if curl -sf http://localhost:3000/blog > /dev/null; then
+              echo 'Server is up.'
+              exit 0
+            fi
+            sleep 2
+          done
+          echo 'Server never came up on port 3000.'
+          exit 1
+
+      # The only check that tests what a crawler literally receives. No browser,
+      # no DOM library, no hydration: a DOM library would run the JavaScript the
+      # crawler will not, which is the whole failure mode.
+      - name: A crawler can read the post
+        run: |
+          node scripts/assert-crawler-visible.mjs \
+            --base-url http://localhost:3000 \
+            --path "/blog/$SEED_SLUG" \
+            --sentence-from "apps/fixture-next16/content/blog/$SEED_SLUG.mdx"
+
+      - name: Shared metadata defaults survived the shallow merge
+        run: |
+          node scripts/assert-og-defaults.mjs \
+            --base-url http://localhost:3000 \
+            --path "/blog/$SEED_SLUG"
+
+      # Publish a post without rebuilding, then assert the sitemap and the feed
+      # both list it BEFORE asserting the IndexNow ping fired. Both are cached
+      # route handlers that a naive publish webhook never invalidates.
+      - name: A cold slug reaches the sitemap and the feed before IndexNow
+        run: |
+          secret=$(grep '^AGENTBLOG_REVALIDATE_SECRET=' apps/fixture-next16/.env.local | cut -d= -f2)
+          if [ -z "$secret" ]; then
+            echo 'doctor --fix did not generate AGENTBLOG_REVALIDATE_SECRET.'
+            echo 'Without it the publish route rejects every request, so the whole publish'
+            echo 'path is dead on arrival for anyone who installs from the registry.'
+            exit 1
+          fi
+          node scripts/assert-cold-slug.mjs \
+            --base-url http://localhost:3000 \
+            --content-dir apps/fixture-next16/content/blog \
+            --secret "$secret"
+
+      - name: Agent instructions sit outside the Next.js managed region
+        run: node scripts/assert-agents-md.mjs apps/fixture-next16
+
+      # Reversibility is a promise the CLI makes when it asks to edit a file it
+      # did not create. Proving it means reverting and building again, not
+      # checking that a backup file exists.
+      - name: agentblog revert, then build again
+        run: |
+          cd apps/fixture-next16
+          node "$GITHUB_WORKSPACE/packages/cli/dist/index.js" revert
+          cd "$GITHUB_WORKSPACE"
+          pnpm --filter fixture-next16 build
+
+      - name: Upload build logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fixture-build-logs
+          path: /tmp/fixture-build-*.log
+          retention-days: 7
+          if-no-files-found: ignore
+
+  init-refuses:
+    name: init refuses a project without shadcn
+    runs-on: ubuntu-latest
+    needs: [quality]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4.2.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      - name: Build the CLI
+        run: pnpm --filter agentblog build
+
+      # Asserts the exit code, the message, and that nothing was written. The
+      # third one is the one that gets skipped, and a command that fails after
+      # writing half its output is worse than one that succeeds.
+      - name: init refuses and writes nothing
+        run: node scripts/assert-init-refuses.mjs apps/fixture-no-shadcn --ci
+
+  patcher-parity:
+    name: Patcher parity across TypeScript majors
+    runs-on: ubuntu-latest
+    needs: [quality]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4.2.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      - name: Build the CLI
+        run: pnpm --filter agentblog build
+
+      # Runs `doctor --fix` twice, in two scratch copies of the fixture whose
+      # bundled TypeScript differs, then diffs the resulting next.config.ts. It
+      # also asserts the file actually changed, because two copies of an
+      # unpatched file are identical too.
+      #
+      # TODO: this is the black box mode. Add `src/patchers/next-config.ts` to the
+      # tsup entry list and the script switches to calling the patcher directly,
+      # which isolates the TypeScript printer from everything else the command
+      # does. Both modes are real; the pure one localizes a failure better.
+      - name: ts-morph output is identical under TypeScript 6 and 7
+        run: node scripts/assert-patcher-parity.mjs --ci
+
+  # ---------------------------------------------------------------------------
+  # Not yet wired, deliberately listed rather than silently missing.
+  #
+  #  * assert-theme-inheritance.mjs  Build the fixture under two themes and assert
+  #                                  the snapshots differ. Needs a second fixture
+  #                                  with a custom baseColor, radius, and font.
+  #                                  the AgentBlog docs
+  #  * lighthouse-ci                 LCP under 2.5s, INP under 200ms, CLS under
+  #                                  0.1 against the built fixture.
+  #  * claude plugin validate        Once .claude-plugin/marketplace.json and the
+  #                                  copied skills are both in place.
+  # ---------------------------------------------------------------------------

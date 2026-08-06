@@ -1,0 +1,89 @@
+---
+title: When your CDN blocks crawlers
+description: A perfectly installed blog can be invisible because the layer above it is blocking the crawlers, and blocking Training can also block Googlebot.
+group: Operations
+order: 2
+---
+
+This is the one failure AgentBlog can neither cause nor fix in code, and it lands squarely on the people most likely to install it.
+
+## The symptom
+
+Your install is correct. `agentblog doctor` passes. The preflight warning is silent. `curl` from your own machine returns the full article. Search Console looks fine. And you get no citations, ever.
+
+## What is happening
+
+Since **September 15, 2026**, Cloudflare blocks Training and Agent crawlers by default on ad-displaying pages for new domains, new sites on existing accounts, and any Free-tier account that has not changed the setting. Search crawlers stay allowed.
+
+That alone would be a GEO problem. The part that makes it an SEO emergency is in Cloudflare's own announcement:
+
+> multi-purpose crawlers such as Googlebot, Applebot, and BingBot will be blocked by customers who have selected to block Training
+
+So a developer who registers a new domain, puts it behind Cloudflare's free tier, and installs a blog gets a perfectly prerendered, perfectly schema'd site that a whole category of crawlers cannot reach. And if they later tick "block AI training" because it sounds prudent, they lose Googlebot with it.
+
+This is the single most common cause of "my robots.txt is open but I get no citations". A `robots.txt` allowlist is a lock on a door that has been bricked over.
+
+## Diagnosing it
+
+The check has to run from outside your deployment's network, because a request originating inside it often bypasses the edge rules entirely.
+
+```bash
+npx agentblog@latest doctor --url https://yoursite.com/blog/your-post
+```
+
+It fetches the URL as GPTBot, ClaudeBot, PerplexityBot, OAI-SearchBot, and Googlebot, and asserts a 200 with body text present. A 403, a challenge page, or an interstitial is reported as a blocking failure, and when the response headers name a CDN (`server: cloudflare`, `cf-ray`) it prints the specific setting rather than a generic "you appear to be blocked".
+
+By hand, from a machine that is not your deploy environment:
+
+```bash
+for ua in GPTBot ClaudeBot PerplexityBot OAI-SearchBot Googlebot; do
+  printf '%-18s %s\n' "$ua" \
+    "$(curl -s -o /dev/null -w '%{http_code}' -A "$ua" https://yoursite.com/blog/your-post)"
+done
+```
+
+Five 200s is what you want. Anything else is the answer.
+
+Note what a challenge page looks like from a script: status 200, HTML body, no article text. Check for a distinctive sentence, not just the status code.
+
+## Fixing it on Cloudflare
+
+Zone **Settings**, then the AI crawler controls. Allow the crawlers you want to be cited by. The Training and Search categories are separate, and the important thing to understand before choosing is that they are not cleanly separated on the crawler side: several bots serve both purposes, so blocking Training removes them from Search too.
+
+If your dashboard offers a per-bot list rather than categories, allow at least:
+
+`GPTBot`, `OAI-SearchBot`, `ChatGPT-User`, `ClaudeBot`, `Claude-SearchBot`, `Claude-User`, `PerplexityBot`, `Perplexity-User`, `Googlebot`, `Bingbot`, `Applebot`.
+
+`CCBot` and `Bytespider` are training-only. Blocking those two is a defensible choice with no search cost.
+
+## Other layers with the same shape
+
+Cloudflare is the common case, not the only one.
+
+- **Vercel Firewall or WAF rules** that rate-limit by user agent. Crawlers arrive in bursts and look like bursts.
+- **A bot management product** in front of the origin, added by someone else on the team.
+- **A `robots.txt` you did not write.** Check what is actually served, not what is in your repository. A CDN can synthesize one.
+- **Geographic blocking.** Crawler traffic originates from a small number of ranges, and some of them are in regions people block by default.
+- **HTTP challenges for unusual user agents.** A 200 with a JavaScript challenge in the body is indistinguishable from success in a status-code check.
+
+## Verifying that a hit is real
+
+If you are counting crawler traffic in your logs, verify by IP range rather than by user agent. Vendor user agent strings are trivially spoofed, and our own audit skill spoofs GPTBot deliberately.
+
+| Operator   | Published ranges                                                                  |
+| ---------- | --------------------------------------------------------------------------------- |
+| OpenAI     | `openai.com/gptbot.json`, `/searchbot.json`, `/chatgpt-user.json`, `/adsbot.json` |
+| Anthropic  | `claude.com/crawling/bots.json`                                                   |
+| Perplexity | `perplexity.com/perplexitybot.json`, `/perplexity-user.json`                      |
+
+```bash
+npx agentblog@latest audit --crawlers /path/to/access.log
+```
+
+Parses the log, verifies against those endpoints, and reports hits per bot per week. Any count that trusts the user agent string is reporting noise.
+
+## Two crawler facts worth knowing
+
+`OAI-AdsBot` validates ad landing pages and **does not respect robots.txt**. It is frequently missing from crawler tables.
+
+Anthropic honours the non-standard `Crawl-delay` directive. `app/robots.ts` in the block uses the per-rule `other` field, new in Next.js 16.3, to emit it for Anthropic's bots specifically.

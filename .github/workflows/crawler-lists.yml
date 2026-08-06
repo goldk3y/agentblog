@@ -1,0 +1,115 @@
+name: Crawler lists
+
+# The AI crawler landscape moves faster than this repository does. Operators add
+# user agents, retire them, and change their published IP ranges without any
+# announcement we would see.
+#
+# So: fetch the three published JSON files once a month, commit them, and open a
+# PR when the diff is non-empty. The PR is the notification. Nobody has to
+# remember to check, and the diff is the whole story.
+#
+# This job deliberately does NOT edit packages/checks/src/core.ts. Adding a user
+# agent to `AI_CRAWLERS` is an editorial decision (is this a crawler or a
+# training opt-out token, does it fetch HTML, does it respect robots.txt) and a
+# bot with a purpose field filled in by a cron job is worse than no entry at all.
+# The PR gives a human the diff and the question.
+#
+# @see https://agentblog.dev/docs/troubleshooting-cdn
+
+on:
+  schedule:
+    # 07:00 UTC on the first of the month.
+    - cron: '0 7 1 * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  refresh:
+    name: Re-fetch the published crawler JSON
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch
+        id: fetch
+        run: |
+          mkdir -p scripts/data/crawler-ips
+          set -u
+          failed=0
+
+          fetch() {
+            name="$1"
+            url="$2"
+            echo "Fetching $name from $url"
+            if curl -fsSL --retry 3 --retry-delay 5 -o "/tmp/$name" "$url"; then
+              # Reformat so a whitespace change upstream does not read as a
+              # content change in the diff.
+              if node -e "
+                const { readFileSync, writeFileSync } = require('node:fs')
+                const data = JSON.parse(readFileSync('/tmp/$name', 'utf8'))
+                writeFileSync('scripts/data/crawler-ips/$name', JSON.stringify(data, null, 2) + '\n')
+              "; then
+                echo "  ok"
+              else
+                echo "  fetched but not valid JSON, leaving the committed copy alone"
+                failed=1
+              fi
+            else
+              echo "  fetch failed, leaving the committed copy alone"
+              failed=1
+            fi
+          }
+
+          fetch gptbot.json https://openai.com/gptbot.json
+          fetch claude-bots.json https://claude.com/crawling/bots.json
+          fetch perplexitybot.json https://www.perplexity.com/perplexitybot.json
+
+          echo "failed=$failed" >> "$GITHUB_OUTPUT"
+
+      # A failed fetch is worth knowing about too. An endpoint that moved is the
+      # same signal as a list that changed: somebody republished something.
+      - name: Report fetch failures
+        if: steps.fetch.outputs.failed == '1'
+        run: |
+          echo '::warning::At least one crawler JSON could not be fetched or parsed.'
+          echo 'Check whether the endpoint moved. The committed copies were left alone.'
+
+      - name: Open a PR when the lists changed
+        uses: peter-evans/create-pull-request@271a8d0340265f705b14b6d32b9829c1cb33d45e # v7.0.8
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: chore/crawler-lists
+          commit-message: 'chore: refresh published crawler IP lists'
+          title: 'chore: refresh published crawler IP lists'
+          add-paths: scripts/data/crawler-ips
+          delete-branch: true
+          body: |
+            Monthly re-fetch of the published crawler JSON files.
+
+            Sources:
+
+            - https://openai.com/gptbot.json
+            - https://claude.com/crawling/bots.json
+            - https://www.perplexity.com/perplexitybot.json
+
+            A non-empty diff means an operator changed something. Read it and decide:
+
+            1. **New IP ranges only.** Nothing to do beyond merging. The ranges are
+               reference data for anyone verifying a crawler by reverse DNS.
+            2. **A new user agent.** Decide whether it belongs in `AI_CRAWLERS` in
+               `packages/checks/src/core.ts`, and with which `purpose`. A bot that
+               fetches HTML belongs there. A training opt-out token that never
+               issues a request does not, and adding one would be noise in every
+               `htmlLimitedBots` pattern we write from then on.
+            3. **A user agent disappeared.** Leave it in `AI_CRAWLERS`. An extra
+               alternation branch costs a consumer nothing, and removing it would
+               narrow every pattern our own doctor calls correct.
+
+            This job does not edit `AI_CRAWLERS`, on purpose. Which bots we name
+            and what we say they do is an editorial decision, and a `purpose`
+            field filled in by a cron job is worse than no entry at all.

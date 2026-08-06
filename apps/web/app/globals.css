@@ -1,0 +1,407 @@
+/*
+ * agentblog.dev stylesheet.
+ *
+ * ---------------------------------------------------------------------------
+ * WHAT IS IN HERE AND WHY IT IS ORDERED THIS WAY
+ * ---------------------------------------------------------------------------
+ * 1. `@import "tailwindcss"` first, because Tailwind v4 requires the import to
+ *    precede everything that uses its at-rules.
+ * 2. The blog block's own stylesheet, which carries the prose bridge and the
+ *    `--agentblog-*` tokens. It lives in the registry source so that the demo
+ *    blog on this site and the copy shipped to a consumer are the same file.
+ * 3. `@custom-variant dark`, because shadcn v4 drives dark mode from a `.dark`
+ *    class rather than the `prefers-color-scheme` media query. `next-themes`
+ *    puts that class on `<html>`.
+ * 4. The token block, in `oklch()`. Tailwind v3 era shadcn stored bare HSL
+ *    channel triplets and the idiom was `hsl(var(--foreground))`. v4 stores
+ *    complete colours, so the correct reference is `var(--foreground)` with no
+ *    wrapper. The v3 form fails silently by producing an invalid colour that
+ *    inherits, which is why this comment exists.
+ * 5. `@theme inline`, which is what turns a variable into a utility class.
+ *
+ * The token values below are shadcn's `neutral` base. This site keeps them
+ * because a monochrome palette is the honest demonstration of the product's
+ * theming claim: the blog inherits whatever the host app defines. The only
+ * colour on the site is `--brand` for links and the two signal colours used by
+ * the crawler comparison panels, where red and green carry actual meaning.
+ */
+
+@import 'tailwindcss';
+
+/*
+ * The blog block's stylesheet, imported from the registry source rather than
+ * copied. A consumer gets this same file at `styles/agentblog.css`.
+ */
+@import '../registry/blog/styles/agentblog.css';
+
+/*
+ * The docs are prose, not markup, so Tailwind must not read them as a source.
+ *
+ * Tailwind v4 auto-detects sources by walking the project, which pulls in
+ * `content/docs/*.md`. Those files are long-form documentation *about* this
+ * stylesheet, so they quote class names in backticks, and Tailwind's extractor
+ * does not know a backtick from an attribute. `theming.md` and `blog-block.md`
+ * both explain why `dark:prose-invert` must not be used, and that mention alone
+ * generated `.dark\:prose-invert:is(.dark *)`, 1534 bytes of rules that rebind
+ * every `--tw-prose-*` variable to the plugin's inverted greys. That selector
+ * has specificity (0,2,0) and is emitted after the bridge in `agentblog.css`,
+ * so if it ever reached an element it would silently undo the whole point of
+ * that file. Measured: 78259 bytes of compiled CSS before, 76725 after.
+ *
+ * Nothing is lost by excluding them: the docs render inside `.docs-prose`,
+ * defined at the bottom of this file, and carry no `class` attributes of their
+ * own. Every class the docs pages actually use is written in the `.tsx` that
+ * renders them.
+ *
+ * A bare `.prose-invert` at (0,1,0) survives this, from the same phrase quoted
+ * in a code comment in `components/blog/prose.tsx`. It is a tie with `.prose`
+ * rather than a win over it, and it still reaches nothing, so it is left alone:
+ * excluding `.tsx` files from Tailwind's sources is not a trade worth making to
+ * delete one unreachable rule.
+ */
+@source not '../content/docs';
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --radius: 0.5rem;
+
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.985 0 0);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+
+  /* Site-only tokens. The blog block ships none of these. */
+  --brand: oklch(0.48 0.17 264);
+  --brand-foreground: oklch(0.985 0 0);
+  --signal-ok: oklch(0.5 0.13 155);
+  --signal-bad: oklch(0.53 0.2 27);
+  --grid-line: oklch(0.922 0 0);
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.185 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.185 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.985 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.245 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.245 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.245 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --destructive-foreground: oklch(0.145 0 0);
+  --border: oklch(1 0 0 / 12%);
+  --input: oklch(1 0 0 / 16%);
+  --ring: oklch(0.556 0 0);
+
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 12%);
+  --sidebar-ring: oklch(0.556 0 0);
+
+  --brand: oklch(0.78 0.13 264);
+  --brand-foreground: oklch(0.145 0 0);
+  --signal-ok: oklch(0.75 0.15 155);
+  --signal-bad: oklch(0.72 0.17 25);
+  --grid-line: oklch(1 0 0 / 10%);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --color-brand: var(--brand);
+  --color-brand-foreground: var(--brand-foreground);
+  --color-signal-ok: var(--signal-ok);
+  --color-signal-bad: var(--signal-bad);
+  --color-grid-line: var(--grid-line);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-source-serif), ui-serif, Georgia, serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, monospace;
+
+  /* Reading measure for long-form site copy. The block has its own. */
+  --spacing-measure: 68ch;
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+
+  html {
+    scroll-behavior: smooth;
+    /* Sticky header height plus breathing room, so anchors do not land under it. */
+    scroll-padding-top: 6rem;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    font-feature-settings: 'cv11', 'ss01';
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background-color: color-mix(in oklch, var(--brand) 24%, transparent);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 2px;
+  }
+}
+
+/*
+ * Long-form styling for the docs pages.
+ *
+ * These rules are deliberately self contained rather than delegating to
+ * `@tailwindcss/typography`. The typography plugin belongs to the blog block,
+ * where it is bridged to the shadcn tokens; duplicating that bridge here would
+ * mean two places to keep in sync for no gain. Docs prose is a narrower problem
+ * than article prose and about thirty lines of CSS solves it outright.
+ */
+@layer components {
+  .docs-prose {
+    max-width: var(--spacing-measure);
+    color: var(--foreground);
+    font-size: 1rem;
+    line-height: 1.75;
+  }
+
+  .docs-prose > * + * {
+    margin-top: 1.25em;
+  }
+
+  .docs-prose h2 {
+    margin-top: 2.75em;
+    margin-bottom: 0.75em;
+    font-family: var(--font-serif);
+    font-size: 1.6rem;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    line-height: 1.25;
+    scroll-margin-top: 6rem;
+  }
+
+  .docs-prose h3 {
+    margin-top: 2em;
+    margin-bottom: 0.5em;
+    font-size: 1.125rem;
+    font-weight: 650;
+    letter-spacing: -0.01em;
+    scroll-margin-top: 6rem;
+  }
+
+  .docs-prose h4 {
+    margin-top: 1.75em;
+    margin-bottom: 0.35em;
+    font-size: 1rem;
+    font-weight: 650;
+  }
+
+  .docs-prose a {
+    color: var(--brand);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-thickness: 1px;
+  }
+
+  .docs-prose strong {
+    font-weight: 650;
+    color: var(--foreground);
+  }
+
+  .docs-prose ul,
+  .docs-prose ol {
+    padding-left: 1.35em;
+  }
+
+  .docs-prose ul {
+    list-style: disc;
+  }
+
+  .docs-prose ol {
+    list-style: decimal;
+  }
+
+  .docs-prose li::marker {
+    color: var(--muted-foreground);
+  }
+
+  .docs-prose li + li {
+    margin-top: 0.4em;
+  }
+
+  .docs-prose blockquote {
+    border-left: 2px solid var(--border);
+    padding-left: 1.25em;
+    color: var(--muted-foreground);
+  }
+
+  .docs-prose hr {
+    margin-top: 3em;
+    margin-bottom: 3em;
+    border-color: var(--border);
+  }
+
+  .docs-prose code {
+    font-family: var(--font-mono);
+    font-size: 0.85em;
+    background-color: var(--muted);
+    border-radius: var(--radius-sm);
+    padding: 0.15em 0.4em;
+  }
+
+  .docs-prose pre {
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background-color: var(--muted);
+    padding: 1rem 1.15rem;
+    font-size: 0.8125rem;
+    line-height: 1.65;
+  }
+
+  .docs-prose pre code {
+    background-color: transparent;
+    padding: 0;
+    font-size: inherit;
+  }
+
+  /* rehype-pretty-code emits its own palette; let it win inside a highlighted block. */
+  .docs-prose pre[data-theme] {
+    background-color: var(--muted);
+  }
+
+  .docs-prose pre[data-theme] span {
+    color: var(--shiki-light);
+  }
+
+  .dark .docs-prose pre[data-theme] span {
+    color: var(--shiki-dark);
+  }
+
+  .docs-prose table {
+    display: block;
+    overflow-x: auto;
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+  }
+
+  .docs-prose th,
+  .docs-prose td {
+    border-bottom: 1px solid var(--border);
+    padding: 0.6rem 0.9rem 0.6rem 0;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  .docs-prose th {
+    font-weight: 650;
+    white-space: nowrap;
+    color: var(--foreground);
+  }
+
+  .docs-prose td {
+    color: var(--muted-foreground);
+  }
+
+  .docs-prose img {
+    max-width: 100%;
+    height: auto;
+    border-radius: var(--radius-lg);
+  }
+}

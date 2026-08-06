@@ -1,0 +1,10 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "name": "agentblog",
+  "homepage": "https://agentblog.dev",
+  "include": [
+    "registry/blog/registry.json",
+    "registry/agent/registry.json",
+    "registry/theme/registry.json"
+  ]
+}

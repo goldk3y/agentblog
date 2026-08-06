@@ -1,0 +1,26 @@
+[
+  {
+    "//": "KEEP THE SLUG WHILE THE SEED POST IS HERE. content/blog/how-ai-search-engines-read-your-blog.mdx carries `category: ai-search`. Renaming or deleting this record before you edit or delete that post fails the next build with: unknown category slug \"ai-search\". Keys starting with // are ignored by the schema.",
+    "slug": "ai-search",
+    "name": "AI Search",
+    "description": "How generative engines such as ChatGPT search, Perplexity, Claude, and Google AI Mode find, read, and cite web pages, and what that means for a blog that wants to be one of the cited sources."
+  },
+  {
+    "//": "SAFE TO DELETE. No seed post names this slug.",
+    "slug": "technical-seo",
+    "name": "Technical SEO",
+    "description": "Rendering, crawlability, structured data, sitemaps, and the parts of a site that decide whether a crawler can read your content at all before anyone argues about the writing."
+  },
+  {
+    "//": "KEEP THE SLUG WHILE THE SEED POST IS HERE. content/blog/what-makes-an-ai-engine-cite-your-post.mdx carries `category: content-strategy`.",
+    "slug": "content-strategy",
+    "name": "Content Strategy",
+    "description": "What to write, how to structure it, and how to keep it accurate over time. Covers answer capsules, question headings, internal linking, and the refresh cadence that keeps a post citable."
+  },
+  {
+    "//": "SAFE TO DELETE. No seed post names this slug. This taxonomy is a starting point, not a recommendation: these four are AgentBlog's own topics, and yours will be different. Five to ten fixed categories is the working range, because each one is an indexable hub page and a hub with two posts on it is a crawl liability. Every category needs a real description for the same reason.",
+    "slug": "engineering",
+    "name": "Engineering",
+    "description": "How the blog itself is built and operated: the rendering path, the publish pipeline, the schema graph, and the checks that catch a regression before a crawler does."
+  }
+]

@@ -1,0 +1,482 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "name": "agentblog-blog",
+  "homepage": "https://agentblog.dev",
+  "items": [
+    {
+      "name": "blog-core",
+      "type": "registry:lib",
+      "title": "AgentBlog core",
+      "description": "The library layer every other AgentBlog item builds on: the typed config, the content source facade, shared metadata defaults that survive Next.js's shallow metadata merge, the AI referrer classifier, and the build-time preflight that warns when next.config is missing the wiring a registry cannot write.",
+      "categories": ["blog", "seo", "library"],
+      "dependencies": ["zod", "server-only", "@tailwindcss/typography"],
+      "files": [
+        {
+          "path": "agentblog.config.ts",
+          "type": "registry:file",
+          "target": "~/agentblog.config.ts"
+        },
+        {
+          "path": "lib/config.ts",
+          "type": "registry:lib",
+          "target": "lib/config.ts"
+        },
+        {
+          "path": "lib/define-config.ts",
+          "type": "registry:lib",
+          "target": "lib/define-config.ts"
+        },
+        {
+          "path": "lib/schemas.ts",
+          "type": "registry:lib",
+          "target": "lib/schemas.ts"
+        },
+        {
+          "path": "lib/types.ts",
+          "type": "registry:lib",
+          "target": "lib/types.ts"
+        },
+        {
+          "path": "lib/posts.ts",
+          "type": "registry:lib",
+          "target": "lib/posts.ts"
+        },
+        {
+          "path": "lib/metadata.ts",
+          "type": "registry:lib",
+          "target": "lib/metadata.ts"
+        },
+        {
+          "path": "lib/preflight.ts",
+          "type": "registry:lib",
+          "target": "lib/preflight.ts"
+        },
+        {
+          "path": "lib/preflight-checks.ts",
+          "type": "registry:lib",
+          "target": "lib/preflight-checks.ts"
+        },
+        {
+          "path": "lib/ai-referrers.ts",
+          "type": "registry:lib",
+          "target": "lib/ai-referrers.ts"
+        },
+        {
+          "path": "lib/reading-time.ts",
+          "type": "registry:lib",
+          "target": "lib/reading-time.ts"
+        },
+        {
+          "path": "lib/toc.ts",
+          "type": "registry:lib",
+          "target": "lib/toc.ts"
+        },
+        {
+          "path": "styles/agentblog.css",
+          "type": "registry:file",
+          "target": "~/styles/agentblog.css"
+        }
+      ],
+      "docs": "REQUIRED, and nothing will warn you if you skip it: import the installed styles/agentblog.css from your global stylesheet, after the Tailwind import. From app/globals.css that is `@import '../styles/agentblog.css';`, and from src/app/globals.css it is `@import '../../styles/agentblog.css';`, because the file lands at your project root. Nothing else loads that file, and without it article prose renders with no typography, no error, and no failing check. It also loads @tailwindcss/typography, which was installed for you as a dependency. Then edit agentblog.config.ts and run `npx agentblog@latest doctor --fix` to finish wiring next.config.ts. Skip that last step and AI crawlers receive <title> inside <body> on any page with streamed metadata."
+    },
+    {
+      "name": "blog-schema",
+      "type": "registry:lib",
+      "title": "AgentBlog JSON-LD builders",
+      "description": "Typed schema.org @graph builders for BlogPosting, WebPage, BreadcrumbList, Person, Organization, WebSite, ImageObject, and FAQPage. Cross-references are @id stubs from one helper so the graph cannot drift apart, and there is a single serialization point that escapes the output.",
+      "categories": ["blog", "seo", "structured-data"],
+      "devDependencies": ["schema-dts"],
+      "registryDependencies": ["@agentblog/blog-core"],
+      "files": [
+        {
+          "path": "lib/schema.ts",
+          "type": "registry:lib",
+          "target": "lib/schema.ts"
+        },
+        {
+          "path": "components/blog/json-ld.tsx",
+          "type": "registry:component",
+          "target": "components/blog/json-ld.tsx"
+        }
+      ]
+    },
+    {
+      "name": "blog-ui",
+      "type": "registry:block",
+      "title": "AgentBlog reading experience",
+      "description": "The components a blog post is made of: post cards, byline with rel=author and machine-readable dates, answer capsule, server-rendered table of contents, author bio, related posts, breadcrumbs, category pills, and real anchor-based pagination. Styled entirely with your shadcn theme tokens, so it inherits your design system rather than replacing it.",
+      "categories": ["blog", "ui"],
+      "dependencies": ["class-variance-authority", "clsx", "lucide-react", "tailwind-merge"],
+      "registryDependencies": [
+        "card",
+        "badge",
+        "separator",
+        "avatar",
+        "button",
+        "@agentblog/blog-core"
+      ],
+      "files": [
+        {
+          "path": "components/blog/icons.tsx",
+          "type": "registry:component",
+          "target": "components/blog/icons.tsx"
+        },
+        {
+          "path": "components/blog/prose.tsx",
+          "type": "registry:component",
+          "target": "components/blog/prose.tsx"
+        },
+        {
+          "path": "components/blog/post-card.tsx",
+          "type": "registry:component",
+          "target": "components/blog/post-card.tsx"
+        },
+        {
+          "path": "components/blog/post-list.tsx",
+          "type": "registry:component",
+          "target": "components/blog/post-list.tsx"
+        },
+        {
+          "path": "components/blog/byline.tsx",
+          "type": "registry:component",
+          "target": "components/blog/byline.tsx"
+        },
+        {
+          "path": "components/blog/author-bio.tsx",
+          "type": "registry:component",
+          "target": "components/blog/author-bio.tsx"
+        },
+        {
+          "path": "components/blog/answer-capsule.tsx",
+          "type": "registry:component",
+          "target": "components/blog/answer-capsule.tsx"
+        },
+        {
+          "path": "components/blog/table-of-contents.tsx",
+          "type": "registry:component",
+          "target": "components/blog/table-of-contents.tsx"
+        },
+        {
+          "path": "components/blog/related-posts.tsx",
+          "type": "registry:component",
+          "target": "components/blog/related-posts.tsx"
+        },
+        {
+          "path": "components/blog/breadcrumbs.tsx",
+          "type": "registry:component",
+          "target": "components/blog/breadcrumbs.tsx"
+        },
+        {
+          "path": "components/blog/category-pills.tsx",
+          "type": "registry:component",
+          "target": "components/blog/category-pills.tsx"
+        },
+        {
+          "path": "components/blog/pagination.tsx",
+          "type": "registry:component",
+          "target": "components/blog/pagination.tsx"
+        },
+        {
+          "path": "components/blog/share-buttons.tsx",
+          "type": "registry:component",
+          "target": "components/blog/share-buttons.tsx"
+        },
+        {
+          "path": "hooks/use-toc-active-heading.ts",
+          "type": "registry:hook",
+          "target": "hooks/use-toc-active-heading.ts"
+        }
+      ]
+    },
+    {
+      "name": "mdx-components",
+      "type": "registry:component",
+      "title": "AgentBlog MDX components",
+      "description": "The component map an AgentBlog post renders through: headings with stable anchors, real tables, server-highlighted code blocks, callouts, statistics with a required source, pull quotes, key takeaways, and an FAQ built from details elements so the answers are in the raw HTML rather than mounted by JavaScript.",
+      "categories": ["blog", "mdx"],
+      "registryDependencies": ["@agentblog/blog-ui"],
+      "files": [
+        {
+          "path": "components/mdx/index.tsx",
+          "type": "registry:component",
+          "target": "components/mdx/index.tsx"
+        },
+        {
+          "path": "components/mdx/callout.tsx",
+          "type": "registry:component",
+          "target": "components/mdx/callout.tsx"
+        },
+        {
+          "path": "components/mdx/code-block.tsx",
+          "type": "registry:component",
+          "target": "components/mdx/code-block.tsx"
+        },
+        {
+          "path": "components/mdx/faq.tsx",
+          "type": "registry:component",
+          "target": "components/mdx/faq.tsx"
+        },
+        {
+          "path": "components/mdx/figure.tsx",
+          "type": "registry:component",
+          "target": "components/mdx/figure.tsx"
+        },
+        {
+          "path": "components/mdx/key-takeaways.tsx",
+          "type": "registry:component",
+          "target": "components/mdx/key-takeaways.tsx"
+        },
+        {
+          "path": "components/mdx/quote.tsx",
+          "type": "registry:component",
+          "target": "components/mdx/quote.tsx"
+        },
+        {
+          "path": "components/mdx/stat.tsx",
+          "type": "registry:component",
+          "target": "components/mdx/stat.tsx"
+        },
+        {
+          "path": "components/mdx/table.tsx",
+          "type": "registry:component",
+          "target": "components/mdx/table.tsx"
+        }
+      ]
+    },
+    {
+      "name": "blog-routes",
+      "type": "registry:block",
+      "title": "AgentBlog routes",
+      "description": "Fully prerendered /blog index, post, category, tag, and author routes. generateStaticParams returns every slug, there is no client component in the article render path, and every segment spreads shared metadata defaults so og:site_name and max-snippet survive Next.js's shallow merge.",
+      "categories": ["blog", "seo", "routes"],
+      "registryDependencies": [
+        "@agentblog/blog-core",
+        "@agentblog/blog-schema",
+        "@agentblog/blog-ui",
+        "@agentblog/mdx-components",
+        "@agentblog/source-mdx",
+        "@agentblog/seo-routes",
+        "@agentblog/eeat-pages"
+      ],
+      "files": [
+        {
+          "path": "app/blog/layout.tsx",
+          "type": "registry:page",
+          "target": "app/blog/layout.tsx"
+        },
+        {
+          "path": "app/blog/page.tsx",
+          "type": "registry:page",
+          "target": "app/blog/page.tsx"
+        },
+        {
+          "path": "app/blog/[slug]/page.tsx",
+          "type": "registry:page",
+          "target": "app/blog/[slug]/page.tsx"
+        },
+        {
+          "path": "app/blog/[slug]/opengraph-image.tsx",
+          "type": "registry:page",
+          "target": "app/blog/[slug]/opengraph-image.tsx"
+        },
+        {
+          "path": "app/blog/category/[slug]/page.tsx",
+          "type": "registry:page",
+          "target": "app/blog/category/[slug]/page.tsx"
+        },
+        {
+          "path": "app/blog/tag/[slug]/page.tsx",
+          "type": "registry:page",
+          "target": "app/blog/tag/[slug]/page.tsx"
+        },
+        {
+          "path": "app/authors/layout.tsx",
+          "type": "registry:page",
+          "target": "app/authors/layout.tsx"
+        },
+        {
+          "path": "app/authors/[slug]/page.tsx",
+          "type": "registry:page",
+          "target": "app/authors/[slug]/page.tsx"
+        }
+      ],
+      "docs": "Routes installed. If app/blog/page.tsx is not on disk, shadcn did not detect your framework and silently installed nothing. Run `npx agentblog@latest doctor` to confirm. This item also installs @agentblog/seo-routes and @agentblog/eeat-pages, because the blog layout links /feed.xml and /editorial-policy and every list page points og:image at /opengraph-image. Without them the routes render links and cards that 404."
+    },
+    {
+      "name": "seo-routes",
+      "type": "registry:block",
+      "title": "AgentBlog SEO routes",
+      "description": "sitemap.xml built from real content dates rather than the build clock, an environment-guarded robots.txt that declares your AI access preferences, an RSS 2.0 feed, a site-level Open Graph image, and a 404 that returns a real 404.",
+      "categories": ["blog", "seo"],
+      "registryDependencies": ["@agentblog/blog-core"],
+      "files": [
+        {
+          "path": "app/sitemap.ts",
+          "type": "registry:page",
+          "target": "app/sitemap.ts"
+        },
+        {
+          "path": "app/robots.ts",
+          "type": "registry:page",
+          "target": "app/robots.ts"
+        },
+        {
+          "path": "app/feed.xml/route.ts",
+          "type": "registry:page",
+          "target": "app/feed.xml/route.ts"
+        },
+        {
+          "path": "app/opengraph-image.tsx",
+          "type": "registry:page",
+          "target": "app/opengraph-image.tsx"
+        },
+        {
+          "path": "app/not-found.tsx",
+          "type": "registry:page",
+          "target": "app/not-found.tsx"
+        }
+      ]
+    },
+    {
+      "name": "publish-webhook",
+      "type": "registry:block",
+      "title": "AgentBlog publish webhook",
+      "description": "A publish endpoint that revalidates the metadata routes as well as the page routes, because sitemap.xml and feed.xml are cached route handlers that a naive webhook leaves stale, and then submits the URL to IndexNow with the response codes surfaced rather than swallowed.",
+      "categories": ["blog", "seo", "api"],
+      "registryDependencies": ["@agentblog/blog-core"],
+      "envVars": {
+        "AGENTBLOG_REVALIDATE_SECRET": "",
+        "INDEXNOW_KEY": ""
+      },
+      "files": [
+        {
+          "path": "app/api/publish/route.ts",
+          "type": "registry:page",
+          "target": "app/api/publish/route.ts"
+        },
+        {
+          "path": "lib/indexnow.ts",
+          "type": "registry:lib",
+          "target": "lib/indexnow.ts"
+        }
+      ],
+      "docs": "Two empty entries were added to .env.local: AGENTBLOG_REVALIDATE_SECRET and INDEXNOW_KEY. They are placeholders, not keys. Run `npx agentblog@latest doctor --fix` to generate real values and write the matching public/<key>.txt file that IndexNow needs. If you keep secrets in a different env file, doctor check 13 runs `git check-ignore` on it and offers to move them somewhere untracked."
+    },
+    {
+      "name": "source-mdx",
+      "type": "registry:block",
+      "title": "AgentBlog MDX content source",
+      "description": "Posts as MDX files in your repository, which is the storage option a coding agent can genuinely maintain. Includes the content source adapter, the single MDX compilation point, two local remark plugins, and two seed posts written to the GEO playbook so they double as the format specification.",
+      "categories": ["blog", "content", "mdx"],
+      "dependencies": [
+        "github-slugger",
+        "gray-matter",
+        "next-mdx-remote-client",
+        "rehype-autolink-headings",
+        "rehype-pretty-code",
+        "rehype-slug",
+        "remark-gfm",
+        "shiki"
+      ],
+      "registryDependencies": ["@agentblog/blog-core", "@agentblog/mdx-components"],
+      "files": [
+        {
+          "path": "lib/sources/mdx.ts",
+          "type": "registry:lib",
+          "target": "lib/sources/mdx.ts"
+        },
+        {
+          "path": "lib/render-mdx.tsx",
+          "type": "registry:lib",
+          "target": "lib/render-mdx.tsx"
+        },
+        {
+          "path": "lib/mdx-plugins/remark-extract-toc.ts",
+          "type": "registry:lib",
+          "target": "lib/mdx-plugins/remark-extract-toc.ts"
+        },
+        {
+          "path": "lib/mdx-plugins/remark-answer-capsule.ts",
+          "type": "registry:lib",
+          "target": "lib/mdx-plugins/remark-answer-capsule.ts"
+        },
+        {
+          "path": "content/authors.json",
+          "type": "registry:file",
+          "target": "~/content/authors.json"
+        },
+        {
+          "path": "content/categories.json",
+          "type": "registry:file",
+          "target": "~/content/categories.json"
+        },
+        {
+          "path": "content/blog/how-ai-search-engines-read-your-blog.mdx",
+          "type": "registry:file",
+          "target": "~/content/blog/how-ai-search-engines-read-your-blog.mdx"
+        },
+        {
+          "path": "content/blog/what-makes-an-ai-engine-cite-your-post.mdx",
+          "type": "registry:file",
+          "target": "~/content/blog/what-makes-an-ai-engine-cite-your-post.mdx"
+        }
+      ],
+      "docs": "Edit content/authors.json and content/categories.json, then read the two seed posts before writing your own. They are the format specification, not filler.",
+      "devDependencies": ["@types/mdast", "vfile"]
+    },
+    {
+      "name": "eeat-pages",
+      "type": "registry:block",
+      "title": "AgentBlog trust pages",
+      "description": "An editorial policy page with a real review and corrections process. This is the Trust surface a search quality rater looks for and almost no blog has one, which makes it unusually cheap to differentiate on.",
+      "categories": ["blog", "seo", "eeat"],
+      "registryDependencies": ["@agentblog/blog-core"],
+      "files": [
+        {
+          "path": "app/editorial-policy/page.tsx",
+          "type": "registry:page",
+          "target": "app/editorial-policy/page.tsx"
+        }
+      ],
+      "docs": "Edit app/editorial-policy/page.tsx before publishing. A placeholder policy is worse than none."
+    },
+    {
+      "name": "blog-minimal",
+      "type": "registry:block",
+      "title": "AgentBlog without the webhook or the agent kit",
+      "description": "The full blog, minus the two items a reader never sees: no /api/publish route and no secrets in .env, and nothing written into .claude/. Everything else matches @agentblog/blog. It cannot be smaller than that: the routes share one sitemap and one layout, app/sitemap.ts emits category, author, tag, and /editorial-policy URLs, and the blog layout links /editorial-policy and /feed.xml, so dropping those routes would publish a sitemap of 404s rather than a smaller blog. Install this when you want the blog without a publish endpoint to secure.",
+      "categories": ["blog", "seo"],
+      "registryDependencies": [
+        "@agentblog/blog-core",
+        "@agentblog/blog-schema",
+        "@agentblog/blog-ui",
+        "@agentblog/mdx-components",
+        "@agentblog/blog-routes",
+        "@agentblog/source-mdx"
+      ],
+      "files": [],
+      "docs": "Installed without the publish webhook and without the agent skills. Run `npx agentblog@latest doctor --fix` to finish wiring next.config.ts. To publish, redeploy or add @agentblog/publish-webhook later."
+    },
+    {
+      "name": "blog",
+      "type": "registry:block",
+      "title": "AgentBlog",
+      "description": "A complete, production-ready blog for Next.js 16 that AI search engines can actually read. Fully prerendered routes, a typed schema.org graph, sitemap and RSS and IndexNow, Open Graph images, answer capsules and question headings for retrieval, and an editorial policy page. Inherits your shadcn theme rather than imposing one.",
+      "categories": ["blog", "seo", "geo", "content"],
+      "registryDependencies": [
+        "@agentblog/blog-core",
+        "@agentblog/blog-schema",
+        "@agentblog/blog-ui",
+        "@agentblog/mdx-components",
+        "@agentblog/blog-routes",
+        "@agentblog/seo-routes",
+        "@agentblog/publish-webhook",
+        "@agentblog/source-mdx",
+        "@agentblog/eeat-pages",
+        "@agentblog/agent-kit"
+      ],
+      "files": [],
+      "docs": "Installed. Now run `npx agentblog@latest doctor --fix`. It patches next.config.ts and app/layout.tsx, which a registry cannot do. Skip it and your next.config.ts has no htmlLimitedBots, which means GPTBot, ClaudeBot, and PerplexityBot receive <title> inside <body> instead of <head>."
+    }
+  ]
+}

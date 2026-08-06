@@ -1,0 +1,45 @@
+{
+  "name": "@agentblog/schema",
+  "version": "0.1.0",
+  "description": "AgentBlog domain schemas, inferred types, the ContentSource contract, and the adapter contract test suite.",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "files": [
+    "dist",
+    "src"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./contract": {
+      "types": "./dist/contract.d.ts",
+      "default": "./dist/contract.js"
+    },
+    "./config": {
+      "types": "./dist/define-config.d.ts",
+      "default": "./dist/define-config.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint .",
+    "test": "node --test --experimental-strip-types \"src/**/*.test.ts\""
+  },
+  "dependencies": {
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@agentblog/eslint-config": "workspace:*",
+    "@agentblog/typescript-config": "workspace:*",
+    "@types/node": "^26.1.2",
+    "eslint": "^10.8.0",
+    "typescript": "^7.0.2"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

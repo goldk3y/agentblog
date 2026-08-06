@@ -1,0 +1,12 @@
+[
+  {
+    "slug": "alpha",
+    "name": "Alpha",
+    "description": "Fixture category used by the mdxSource contract test. Two published posts live here."
+  },
+  {
+    "slug": "beta",
+    "name": "Beta",
+    "description": "Second fixture category, so category filtering and hydration are both exercised."
+  }
+]

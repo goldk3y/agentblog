@@ -1,0 +1,35 @@
+{
+  "$schema": "https://turborepo.dev/schema.json",
+  "ui": "stream",
+  "globalDependencies": ["**/.env.*local"],
+  "tasks": {
+    "codegen": {
+      "cache": false,
+      "outputs": []
+    },
+    "build": {
+      "dependsOn": ["^build", "codegen"],
+      "outputs": ["dist/**", ".next/**", "!.next/cache/**"]
+    },
+    "registry:build": {
+      "dependsOn": ["codegen"],
+      "outputs": ["public/r/**"]
+    },
+    "typecheck": {
+      "dependsOn": ["^build", "codegen"],
+      "outputs": []
+    },
+    "lint": {
+      "dependsOn": ["^build"],
+      "outputs": []
+    },
+    "test": {
+      "dependsOn": ["^build", "codegen"],
+      "outputs": []
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    }
+  }
+}

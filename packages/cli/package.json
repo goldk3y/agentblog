@@ -1,0 +1,61 @@
+{
+  "name": "agentblog",
+  "version": "0.1.0",
+  "description": "The AgentBlog CLI. Installs the blog block, patches the config a shadcn registry cannot reach, and verifies that AI crawlers can actually read the result.",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "agentblog": "./dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=20.9.0"
+  },
+  "keywords": [
+    "nextjs",
+    "blog",
+    "seo",
+    "geo",
+    "shadcn",
+    "structured-data",
+    "ai-crawlers"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/agentblog/agentblog.git",
+    "directory": "packages/cli"
+  },
+  "homepage": "https://agentblog.dev",
+  "bugs": {
+    "url": "https://github.com/agentblog/agentblog/issues"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "node --test src/**/*.test.ts",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "commander": "^15.0.0",
+    "picocolors": "^1.1.1",
+    "prompts": "^2.4.2",
+    "ts-morph": "^28.0.0",
+    "yaml": "^2.9.0"
+  },
+  "devDependencies": {
+    "@agentblog/checks": "workspace:*",
+    "@agentblog/eslint-config": "workspace:*",
+    "@agentblog/schema": "workspace:*",
+    "@agentblog/typescript-config": "workspace:*",
+    "@types/node": "^26.1.2",
+    "@types/prompts": "^2.4.9",
+    "eslint": "^10.8.0",
+    "tsup": "^8.5.1"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

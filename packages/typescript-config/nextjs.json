@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "display": "AgentBlog Next.js app",
+  "extends": "./base.json",
+  "compilerOptions": {
+    "lib": ["DOM", "DOM.Iterable", "ES2023"],
+    "jsx": "preserve",
+    "noEmit": true,
+    "allowJs": true,
+    "incremental": true,
+    "plugins": [{ "name": "next" }]
+  }
+}

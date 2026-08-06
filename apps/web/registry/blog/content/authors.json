@@ -1,0 +1,22 @@
+[
+  {
+    "//": "KEEP THE SLUG, REPLACE THE VALUES. Both seed posts carry `author: editorial` in their frontmatter, and `defaultAuthor` in agentblog.config.ts points here too. Deleting this record, or renaming its slug, fails the next build with: unknown author slug \"editorial\". Edit name, bio, jobTitle, knowsAbout, and sameAs freely. If you want a different slug, change it here, in `defaultAuthor`, and in the `author:` line of every post in content/blog, in one commit. Keys starting with // are ignored by the schema.",
+    "slug": "editorial",
+    "name": "The Editorial Team",
+    "bio": "Replace this with two or three sentences about who writes here and why they are credible on these topics. This bio is a real ranking surface, not filler: the Search Quality Rater Guidelines direct raters to look authors up, and an answer engine resolving \"who wrote this\" reads this field together with the sameAs links below.",
+    "jobTitle": "Editorial",
+    "knowsAbout": ["Replace with a topic this author is genuinely credible on", "And another"],
+    "sameAs": [
+      "https://example.com/replace-with-a-real-linkedin-profile",
+      "https://example.com/replace-with-a-real-github-profile"
+    ]
+  },
+  {
+    "//": "SAFE TO DELETE. No seed post names this slug, so removing this record breaks nothing. It exists only to show the shape of a roster with more than one person in it.",
+    "slug": "guest-author",
+    "name": "Guest Author",
+    "bio": "Replace this or delete the record. Posts reference an author by slug, so deleting a record is safe exactly when no post and no config field names that slug.",
+    "knowsAbout": [],
+    "sameAs": []
+  }
+]

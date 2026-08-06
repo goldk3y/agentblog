@@ -1,0 +1,11 @@
+{
+  "extends": "@agentblog/typescript-config/library.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "src",
+    "allowImportingTsExtensions": true,
+    "rewriteRelativeImportExtensions": true
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "src/**/*.test.ts"]
+}

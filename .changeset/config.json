@@ -1,0 +1,23 @@
+{
+  "$schema": "https://unpkg.com/@changesets/config@3.1.1/schema.json",
+  "changelog": [
+    "@changesets/changelog-github",
+    {
+      "repo": "agentblog/agentblog"
+    }
+  ],
+  "commit": false,
+  "fixed": [],
+  "linked": [],
+  "access": "public",
+  "baseBranch": "main",
+  "updateInternalDependencies": "patch",
+  "ignore": [
+    "@agentblog/web",
+    "fixture-next16",
+    "fixture-no-shadcn",
+    "@agentblog/checks",
+    "@agentblog/eslint-config",
+    "@agentblog/typescript-config"
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "extends": "@agentblog/typescript-config/nextjs.json",
+  "compilerOptions": {
+    // A single wildcard, exactly what `create-next-app` writes. The fixture has
+    // to resolve `@/lib/...` and `@/components/...` the way a consumer's project
+    // does, because the files the registry installs import through that alias
+    // and nothing else rewrites them on the way in.
+    "paths": {
+      "@/*": ["./*"]
+    }
+  },
+  // `.next/dev/types` is separate from `.next/types` in Next.js 16: `next dev`
+  // writes the route types under `dev`, `next build` writes them under `types`.
+  // Including only one of the two makes `pnpm typecheck` pass or fail depending
+  // on which command last ran, which is not a signal anyone can act on.
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts"
+  ],
+  "exclude": ["node_modules", ".next"]
+}

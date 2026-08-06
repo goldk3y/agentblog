@@ -1,0 +1,28 @@
+name: Documentation problem
+description: Something in the docs is wrong, missing, or misleading.
+labels: [documentation]
+body:
+  - type: input
+    id: where
+    attributes:
+      label: Which page
+      description: A URL or a file path.
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What is wrong
+      description: |
+        Quote the line if you can. A claim that turned out not to be true is the
+        most valuable kind of report here: the docs make a lot of specific
+        promises about mechanisms, and any of them being wrong is a real bug.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What it should say
+      description: A suggested wording, if you have one.

@@ -1,0 +1,166 @@
+/**
+ * Root layout for agentblog.dev.
+ *
+ * ===========================================================================
+ * THIS FILE IS ALSO A SPECIFICATION
+ * ===========================================================================
+ * `agentblog init` patches a consumer's `app/layout.tsx` to reach the same end
+ * state as the blocks marked `CLI-PATCHED` below. Everything else here is site
+ * chrome that belongs to agentblog.dev and that the CLI never writes.
+ *
+ * If you change a `CLI-PATCHED` block, change
+ * `packages/cli/src/patchers/root-layout.ts` in the same commit. The patcher's
+ * merge semantics are stated in the AgentBlog docs: it only writes
+ * `metadataBase` and `title.template` when they are absent, and it reports
+ * rather than overwriting a value the user already set.
+ *
+ * ---------------------------------------------------------------------------
+ * WHY EACH PATCHED PIECE MATTERS
+ * ---------------------------------------------------------------------------
+ * `metadataBase`      Next.js resolves every relative metadata URL against it.
+ *                     Without it, a relative `openGraph.images` entry is a build
+ *                     error, and an "absolute" path like `/og.png` silently
+ *                     becomes a relative URL.
+ * `title.template`    Applies to child segments only, and `title.default` is
+ *                     required alongside it. A template declared in
+ *                     `app/blog/layout.tsx` does not apply to `app/blog/page.tsx`,
+ *                     which is why it lives here and not there.
+ * `alternates.types`  Where RSS goes. Not `alternates.canonical`, not a hand
+ *                     written `<link>` in `<head>`.
+ * `verification`      Search Console and Bing ownership tokens, read from
+ *                     `agentblog.config.ts` so verification is one config line.
+ * Organization/WebSite JSON-LD
+ *                     The two sitewide nodes every per-page `@graph` references
+ *                     by `@id`. Emitting them once here means an article graph
+ *                     can point at `#organization` instead of restating the
+ *                     publisher on every post.
+ *
+ * @see https://agentblog.dev/docs/blog-block
+ */
+import type { Metadata, Viewport } from 'next'
+import { Inter, JetBrains_Mono, Source_Serif_4 } from 'next/font/google'
+
+import { SiteFooter } from '@/components/site/footer'
+import { SiteHeader } from '@/components/site/header'
+import { ThemeProvider } from '@/components/site/theme-provider'
+import { absoluteUrl, config } from '@/lib/config'
+
+import './globals.css'
+
+/*
+ * Fonts are loaded through `next/font`, which self hosts the files, emits the
+ * `@font-face` rules at build time, and sets `size-adjust` fallback metrics.
+ * No network request to a font CDN at runtime, so no render-blocking third
+ * party and no layout shift when the webfont arrives.
+ */
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
+  display: 'swap',
+})
+
+const sourceSerif = Source_Serif_4({
+  subsets: ['latin'],
+  variable: '--font-source-serif',
+  display: 'swap',
+})
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ['latin'],
+  variable: '--font-jetbrains-mono',
+  display: 'swap',
+})
+
+/* -------------------------------------------------------------------------- */
+/*  CLI-PATCHED: metadata                                                     */
+/* -------------------------------------------------------------------------- */
+
+export const metadata: Metadata = {
+  metadataBase: new URL(config.siteUrl),
+  title: {
+    default: 'AgentBlog: an SEO and GEO complete blog for Next.js 16',
+    template: `%s | ${config.brand.name}`,
+  },
+  description:
+    'A Next.js 16 blog you install into your own app. Prerendered HTML for AI crawlers, a complete JSON-LD graph, sitemap, RSS, IndexNow, and agent skills that write and audit posts.',
+  applicationName: config.brand.name,
+  authors: [{ name: config.brand.name, url: config.siteUrl }],
+  creator: config.brand.name,
+  publisher: config.brand.name,
+  alternates: {
+    canonical: '/',
+    types: {
+      'application/rss+xml': [
+        { url: absoluteUrl('/feed.xml'), title: `${config.brand.name} blog` },
+      ],
+    },
+  },
+  openGraph: {
+    type: 'website',
+    siteName: config.brand.name,
+    locale: config.locale,
+    url: config.siteUrl,
+  },
+  /*
+   * Explicit spreads rather than `google: config.verification.google`, because
+   * `exactOptionalPropertyTypes` rejects passing `undefined` to an optional
+   * property. Writing the key only when a value exists also keeps the rendered
+   * `<head>` free of empty verification tags.
+   */
+  verification: {
+    ...(config.verification.google !== undefined ? { google: config.verification.google } : {}),
+    ...(config.verification.yandex !== undefined ? { yandex: config.verification.yandex } : {}),
+    ...(config.verification.yahoo !== undefined ? { yahoo: config.verification.yahoo } : {}),
+    ...(config.verification.other !== undefined ? { other: config.verification.other } : {}),
+  },
+}
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: 'white' },
+    { media: '(prefers-color-scheme: dark)', color: 'black' },
+  ],
+}
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    /*
+     * `suppressHydrationWarning` is required by `next-themes`: the inline script
+     * it injects sets the `class` and `style` attributes on `<html>` before
+     * React hydrates, so server and client markup differ by design on this one
+     * element. Scoped here, it does not suppress warnings anywhere else.
+     */
+    <html
+      lang={config.locale.split('_')[0] ?? 'en'}
+      suppressHydrationWarning
+      className={`${inter.variable} ${sourceSerif.variable} ${jetbrainsMono.variable}`}
+    >
+      <body className="flex min-h-dvh flex-col antialiased">
+        {/*
+         * The Organization and WebSite nodes are NOT emitted here.
+         *
+         * `app/blog/layout.tsx`, which the registry installs, emits them for
+         * every blog page, because the article graph references them by `@id`
+         * and a registry cannot patch a root layout. Emitting them here as well
+         * would put the same two nodes on every blog page twice.
+         *
+         * Marketing pages get them from `app/(marketing)/layout.tsx` instead.
+         */}
+
+        <ThemeProvider>
+          <a
+            href="#main"
+            className="bg-primary text-primary-foreground sr-only rounded-md px-4 py-2 focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50"
+          >
+            Skip to content
+          </a>
+          <SiteHeader />
+          <main id="main" className="flex-1">
+            {children}
+          </main>
+          <SiteFooter />
+        </ThemeProvider>
+      </body>
+    </html>
+  )
+}

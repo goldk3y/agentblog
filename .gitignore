@@ -1,0 +1,40 @@
+# dependencies
+node_modules/
+.pnpm-store/
+
+# build output
+dist/
+.next/
+out/
+.turbo/
+*.tsbuildinfo
+
+# generated registry artifacts (built in CI by `shadcn build`)
+apps/web/public/r/
+
+# environment
+.env
+.env.local
+.env*.local
+
+# agentblog CLI working directories
+.agentblog/
+
+# editors and OS
+.DS_Store
+*.log
+.vscode/
+!.vscode/extensions.json
+.idea/
+
+# test output
+coverage/
+playwright-report/
+test-results/
+
+# Planning documents, kept local and out of the public repository.
+# IMPLEMENTATION.md is the plan of record and states the commercial roadmap.
+# blog-architecture-guide.md is the SEO and GEO research behind the block.
+# Their conclusions live in apps/web/content/docs, which is what ships.
+IMPLEMENTATION.md
+blog-architecture-guide.md

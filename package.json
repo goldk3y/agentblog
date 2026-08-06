@@ -1,0 +1,51 @@
+{
+  "name": "agentblog-monorepo",
+  "version": "0.0.0",
+  "private": true,
+  "description": "AgentBlog monorepo: the SEO and GEO optimized Next.js blog, its CLI, and its agent layer.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/agentblog/agentblog.git"
+  },
+  "homepage": "https://agentblog.dev",
+  "bugs": {
+    "url": "https://github.com/agentblog/agentblog/issues"
+  },
+  "packageManager": "pnpm@11.20.0",
+  "engines": {
+    "node": ">=20.9.0"
+  },
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "codegen": "node scripts/codegen.mjs",
+    "codegen:check": "node scripts/codegen.mjs --check",
+    "registry:build": "turbo run registry:build",
+    "format": "prettier --write \"**/*.{ts,tsx,js,mjs,json,md,mdx,css}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,mjs,json,md,mdx,css}\"",
+    "check:copy-style": "node scripts/assert-copy-style.mjs",
+    "check:theme": "node scripts/assert-theme-conformance.mjs",
+    "check:client-imports": "node scripts/assert-no-server-only-in-client.mjs",
+    "check:html-bots": "node scripts/assert-html-bots-current.mjs",
+    "check:static": "pnpm check:copy-style && pnpm check:theme && pnpm check:client-imports && pnpm check:html-bots && node scripts/assert-file-count.mjs",
+    "check:registry": "node scripts/assert-catalog-shape.mjs && node scripts/assert-schema-valid.mjs",
+    "check:patcher": "node scripts/assert-patcher-parity.mjs",
+    "check:init-refuses": "node scripts/assert-init-refuses.mjs",
+    "changeset": "changeset",
+    "release": "turbo run build --filter=agentblog && changeset publish",
+    "check:file-count": "node scripts/assert-file-count.mjs"
+  },
+  "devDependencies": {
+    "@changesets/changelog-github": "^0.7.0",
+    "@changesets/cli": "^2.31.1",
+    "ajv": "^8.17.1",
+    "prettier": "^3.9.6",
+    "prettier-plugin-tailwindcss": "^0.8.1",
+    "turbo": "^2.10.8",
+    "typescript": "^7.0.2"
+  }
+}

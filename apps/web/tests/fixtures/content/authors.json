@@ -1,0 +1,15 @@
+[
+  {
+    "slug": "test-author",
+    "name": "Test Author",
+    "bio": "Fixture author used by the mdxSource contract test. Not shipped to consumers.",
+    "jobTitle": "Fixture",
+    "knowsAbout": ["fixtures"],
+    "sameAs": ["https://example.com/test-author"]
+  },
+  {
+    "slug": "second-author",
+    "name": "Second Author",
+    "bio": "A second fixture author, so getAllAuthors returns more than one record."
+  }
+]

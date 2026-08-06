@@ -1,0 +1,65 @@
+name: Bug report
+description: Something in AgentBlog does not do what it says it does.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Two commands answer most of what we would otherwise have to ask you.
+        Please run them and paste the output below.
+
+        ```bash
+        npx agentblog doctor --url https://your-live-site.example/blog/some-post
+        curl -s -A "GPTBot" https://your-live-site.example/blog/some-post | head -c 2000
+        ```
+
+        If your site is not deployed yet, run `npx agentblog doctor` on its own
+        and say so.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you did, what you expected, and what you got instead.
+    validations:
+      required: true
+
+  - type: textarea
+    id: doctor
+    attributes:
+      label: Output of `npx agentblog doctor`
+      render: text
+    validations:
+      required: false
+
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Which part
+      options:
+        - The blog block (routes, components, structured data)
+        - The CLI (init, doctor, audit, new, ping, revert, uninstall)
+        - The agent skills
+        - The registry or the install itself
+        - The documentation
+    validations:
+      required: true
+
+  - type: input
+    id: versions
+    attributes:
+      label: Versions
+      description: Output of `npx agentblog --version`, plus your Next.js and Node versions.
+      placeholder: agentblog 0.1.0, next 16.3.0, node 22.11.0
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before you file
+      options:
+        - label: I ran `npx agentblog doctor` and read what it said.
+          required: true
+        - label: My project is on Next.js 16.3 or newer, React 19, and Tailwind v4.
+          required: true

@@ -1,0 +1,163 @@
+---
+title: What Makes an AI Engine Cite Your Post
+description: Answer capsules, question headings, real tables, statistics with sources, and repeated entity names. The formatting that measurably increases AI citations.
+answerCapsule: >-
+  An AI engine cites a post when a single chunk of it answers the question
+  completely on its own. Open with a 40 to 60 word direct answer, use
+  question-format headings, put comparative data in a real table, cite named
+  sources, and repeat entity names instead of pronouns.
+datePublished: 2026-07-28T11:30:00Z
+dateModified: 2026-08-05T10:05:00Z
+author: editorial
+category: content-strategy
+tags:
+  - generative engine optimization
+  - answer capsule
+  - content structure
+  - citations
+relatedPosts:
+  - how-ai-search-engines-read-your-blog
+citations:
+  - name: 'GEO: Generative Engine Optimization'
+    url: https://arxiv.org/abs/2311.09735
+    author: Aggarwal, Murahari, Rajpurohit, Kalyan, Narasimhan, and Deshpande
+    kind: peer-reviewed
+  - name: AI features and your website
+    url: https://developers.google.com/search/docs/appearance/ai-features
+    author: Google Search Central
+    kind: official-docs
+  - name: The rise of the AI crawler
+    url: https://vercel.com/blog/the-rise-of-the-ai-crawler
+    author: Vercel and MERJ
+    datePublished: 2024-12-17
+    kind: industry
+faq:
+  - question: How long should an answer capsule be?
+    answer: >-
+      Forty to sixty words. That is long enough to answer a question completely
+      and short enough to be quoted whole. Put the capsule directly under the
+      heading it answers, state the answer first with no preamble, and keep
+      hyperlinks out of it.
+  - question: Do statistics and quotations really increase AI citations?
+    answer: >-
+      The peer-reviewed GEO paper (ACM KDD 2024) reports that its top-performing
+      methods, Cite Sources, Quotation Addition, and Statistics Addition,
+      achieved a relative improvement of 30-40% on the Position-Adjusted Word
+      Count metric. Those measurements come from 2023 era models, so treat the
+      direction as reliable and the exact figures as dated.
+  - question: Should I add FAQ schema to every post?
+    answer: >-
+      Only when the questions and answers are visible on the page. Marking up
+      FAQs that a reader cannot see violates Google's structured data policy, and
+      FAQ markup is the most common way blogs trip it.
+  - question: Does keyword density still matter?
+    answer: >-
+      No. The GEO paper found keyword stuffing among the methods offering little
+      to no improvement in generative engine responses. Repeat entity names for
+      retrieval clarity, not keywords for density.
+---
+
+## What is an answer capsule, and where does it go?
+
+An answer capsule is a 40 to 60 word paragraph that answers a question completely, placed directly under the heading that asks it. Every post gets one under the H1, and every H2 section gets its own. The capsule states the answer first, with no preamble and no hyperlinks inside it.
+
+The reason is mechanical rather than stylistic. Retrieval systems split a page into chunks, embed each chunk as a vector, and match a reader's question against those vectors. A chunk whose first sentence is the answer survives truncation and produces a clean embedding. A chunk that opens with context, history, or a warm-up paragraph buries the answer in the middle, where it competes with everything around it.
+
+Two rules make an answer capsule work. Answer first, then elaborate: the inverted pyramid that newspapers use for human skimmers happens to be the same shape a retrieval system rewards. And keep links out of the capsule itself, because a hyperlink in the middle of an answer suggests the answer lives somewhere else.
+
+Write every answer capsule as if it will be quoted alone, without the paragraph before it and without the heading above it, because that is exactly how it gets used.
+
+## Which content edits actually increase AI citations?
+
+The strongest evidence comes from the GEO paper presented at ACM KDD 2024, which tested nine content edits against generative engine responses and measured which ones increased a source's visibility. Citing sources, quoting named sources, and adding real statistics led the results. Keyword stuffing did not.
+
+> Our top-performing methods, Cite Sources, Quotation Addition, and Statistics Addition, achieved a relative improvement of 30-40% on the Position-Adjusted Word Count metric and 15-30% on the Subjective Impression metric.
+>
+> Aggarwal et al., "GEO: Generative Engine Optimization", ACM KDD 2024
+
+<Stat
+  value="30 to 40%"
+  label="relative improvement in Position-Adjusted Word Count from citing sources, adding quotations, and adding statistics"
+  source="Aggarwal et al., GEO: Generative Engine Optimization, ACM KDD 2024"
+/>
+
+| Content edit        | What it means in practice                                   | Reported effect                                              |
+| ------------------- | ----------------------------------------------------------- | ------------------------------------------------------------ |
+| Cite Sources        | Link the primary source for every factual claim             | Top-performing group, 30-40% on Position-Adjusted Word Count |
+| Quotation Addition  | Quote a named person or organisation, with attribution      | Top-performing group, 30-40% on Position-Adjusted Word Count |
+| Statistics Addition | Replace vague quantifiers with a real number and its source | Top-performing group, 30-40% on Position-Adjusted Word Count |
+| Keyword Stuffing    | Repeat the target phrase to raise its density               | Reported as offering little to no improvement                |
+
+Two caveats belong next to those numbers. The GEO paper's measurements were taken on 2023 era models, so the ranking of the methods is more durable than the percentages attached to them. And the paper's abstract frames the overall result as a boost of up to 40% in generative engine responses, which is a ceiling rather than an expectation.
+
+None of this matters if the crawler cannot read the page at all. See [how AI search engines read your blog](/blog/how-ai-search-engines-read-your-blog) for the rendering side of the problem, which sits upstream of every writing decision on this page.
+
+## Why do question-format headings work?
+
+A question-format heading matches the shape of the query it should answer. When a reader asks an assistant "do AI crawlers execute JavaScript", a section headed with that exact question produces a chunk whose heading, embedding, and opening sentence all point at the same thing. A heading like "Crawler capabilities" points at nothing in particular.
+
+Mine the phrasing rather than inventing it. Google's People Also Ask boxes, the query report in Search Console, and the questions people actually type on Reddit are three free sources of real wording. The value is in matching how the question gets asked, not in guessing at a keyword.
+
+Give every H2 and H3 a stable `id` so the heading is addressable. Stable anchors let a table of contents link into the page, let Google offer jump-to links, and give an extraction pipeline clean section boundaries to cut on. Changing those ids later breaks every inbound deep link, so derive them from the heading text once and leave them alone.
+
+Nest headings without skipping levels. An H2 followed directly by an H4 is a broken outline, and the outline is one of the few structural signals a parser can read without any ambiguity at all.
+
+## How long should a section be?
+
+Aim for 150 to 300 words per H2 section, and make each section answer its own heading completely without depending on the sections around it. That range is short enough to fit inside a typical retrieval chunk and long enough to say something substantive.
+
+Self-containment is the harder discipline. A section that refers back to "the table above" or "as we saw earlier" produces a chunk that is incomprehensible on its own, because the chunk reaches the model without the table and without the earlier section. Repeat the small amount of context a section needs, even when the repetition feels redundant to a reader going top to bottom.
+
+One idea per paragraph, and the highest-value sentence first in each one. When a chunk gets truncated, the truncation happens at the end, so anything saved for a closing flourish is the first thing lost.
+
+Total length follows from coverage rather than from a target. Longer posts do get cited more often, but length is a proxy for completeness, not a cause of citation. A 900 word post that fully answers a narrow question beats a padded 2,500 word post, and the padding degrades the chunk quality of every section it touches.
+
+## Why do tables beat prose for extraction?
+
+A markdown table encodes relationships that prose only implies. Three columns and five rows give an extraction pipeline fifteen labelled cells, each one carrying its row key and its column key. The same information in a paragraph gives it one block of text from which those relationships have to be reconstructed, imperfectly.
+
+| How you present comparative data | What a parser recovers                      | What a reader recovers                   |
+| -------------------------------- | ------------------------------------------- | ---------------------------------------- |
+| Markdown or HTML table           | Every cell with its row and column labels   | Fast scanning and comparison             |
+| Prose paragraph                  | Unstructured text, relationships implied    | Slow comparison, easy to lose the thread |
+| Bulleted list                    | Items, but no shared dimensions across them | Fine for lists, poor for comparisons     |
+| Screenshot of a table            | Nothing, without OCR                        | Fine, unless the image fails to load     |
+
+That last row is the expensive mistake. A chart or table that exists only as an image is invisible to a crawler that does not run OCR, and it is invisible to a screen reader too. Original data of your own is one of the strongest assets a blog can publish, so pair every chart image with the underlying numbers in a real table beside it.
+
+Use tables where the data genuinely has shared dimensions. Forcing prose into a two-column table to look structured produces a table with one meaningful column, which helps nobody and costs the reader a scan.
+
+## Why repeat entity names instead of pronouns?
+
+Because a chunk is retrieved without the sentences that came before it. Write "Next.js Cache Components" rather than "it", and "PerplexityBot" rather than "the crawler". When the paragraph holding the pronoun is retrieved on its own, the referent is gone and the chunk describes an unnamed thing.
+
+Entity repetition is not keyword stuffing, though the two are easy to confuse. Keyword stuffing repeats a phrase to raise its density whether or not the repetition means anything, and the GEO paper found keyword stuffing among the methods offering little to no improvement. Entity repetition names the specific thing a sentence is about so that the sentence still parses in isolation. One is padding, the other is precision.
+
+The same principle applies across a whole site rather than only inside one post. Naming products, people, and organisations consistently helps an engine resolve them to a single entity, and the `sameAs` links in your Person and Organization structured data are what connect that name to a real profile somewhere else on the web.
+
+Google Search Central is clear that none of this requires special markup: "you don't need to create new machine readable files, AI text files, or markup to appear in these features." Ordinary, well-structured HTML with accurate structured data is the entire surface.
+
+## What actively hurts?
+
+Four things reliably work against citation, and all four are common. Keyword stuffing measurably underperforms. FAQ markup with no visible FAQs on the page violates Google's structured data policy. Content mounted on click never enters the crawler's copy at all. And a `dateModified` bumped without a real content change teaches engines to distrust your freshness signals.
+
+<Callout type="warning">
+  Never invent a statistic to fill a "statistics increase citations" slot. A number without a
+  verifiable source is worse than no number, because the first reader who checks it learns that your
+  citations cannot be trusted. If a figure cannot be sourced, state the claim qualitatively instead.
+</Callout>
+
+Freshness deserves its own note. Updating strong posts on a schedule is genuinely useful, and changing the modified date only when the content actually changed is the discipline that makes the signal mean anything. A refresh routine that bumps dates unconditionally manufactures exactly the distrust it was meant to avoid.
+
+The rendering failures are worth re-checking on the same schedule, since a post that was readable at launch can become unreadable after a redesign. The `curl` checks in [how AI search engines read your blog](/blog/how-ai-search-engines-read-your-blog) take under a minute per post and catch that regression before a crawler does.
+
+<KeyTakeaways
+  items={[
+    'Open every post and every H2 section with a 40 to 60 word direct answer, with no links inside it.',
+    'Use question-format H2s taken from real query phrasing, each with a stable id.',
+    'Keep sections to 150 to 300 words and make each one comprehensible on its own.',
+    'Put comparative data in a real table. A table that exists only as an image is invisible to a crawler.',
+    'Cite named sources and use real statistics. Never fabricate a number to fill the slot.',
+    'Repeat entity names instead of pronouns, because a retrieved chunk arrives without its context.',
+  ]}
+/>

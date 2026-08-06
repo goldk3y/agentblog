@@ -1,0 +1,10 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+
+# Native binaries whose postinstall must run for the install to be usable.
+allowBuilds:
+  "@tailwindcss/oxide": true
+  esbuild: true
+  sharp: true
+  unrs-resolver: true

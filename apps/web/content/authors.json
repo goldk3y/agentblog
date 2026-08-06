@@ -1,0 +1,15 @@
+[
+  {
+    "slug": "editorial",
+    "name": "The AgentBlog Team",
+    "bio": "We build AgentBlog, an open-source blog for Next.js that AI search engines can actually read. We write about what crawlers receive, what makes a page citable, and the parts of technical SEO that fail quietly.",
+    "jobTitle": "Maintainers",
+    "knowsAbout": [
+      "Generative engine optimization",
+      "Technical SEO for Next.js",
+      "Structured data and schema.org",
+      "AI crawler behaviour"
+    ],
+    "sameAs": ["https://github.com/agentblog/agentblog"]
+  }
+]
