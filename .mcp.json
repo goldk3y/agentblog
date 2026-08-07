@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "shadcn": {
+      "command": "pnpm",
+      "args": ["--filter", "@agentblog/web", "exec", "shadcn", "mcp"]
+    }
+  }
+}
