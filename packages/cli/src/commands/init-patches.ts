@@ -11,7 +11,7 @@
  * `public/*.txt` and `INDEXNOW_KEY` are absent. Together they are what make a
  * second `init` a byte for byte no-op.
  *
- * @see https://agentblog.dev/docs/installation
+ * @see https://docs.agentblog.dev/installation
  */
 import { randomBytes } from 'node:crypto'
 import { basename } from 'node:path'

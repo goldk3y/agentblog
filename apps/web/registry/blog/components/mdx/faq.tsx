@@ -28,7 +28,7 @@
  * way, closed or open, which is what makes the markup honest. This is the same
  * reason `TableOfContents` avoids conditional mounting.
  *
- * @see https://agentblog.dev/docs/geo-playbook
+ * @see https://docs.agentblog.dev/concepts/geo-playbook
  * @see lib/schema.ts, `buildFaq`
  */
 import type { FaqEntry } from '@/lib/types'

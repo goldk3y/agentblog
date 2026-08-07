@@ -28,7 +28,7 @@
  * Remote sources need `images.remotePatterns` in `next.config.ts`. `agentblog
  * doctor` checks for it.
  *
- * @see https://agentblog.dev/docs/geo-playbook*/
+ * @see https://docs.agentblog.dev/concepts/geo-playbook*/
 import Image from 'next/image'
 import type { ComponentPropsWithoutRef, ReactNode } from 'react'
 

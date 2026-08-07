@@ -13,7 +13,7 @@
  * UTF-8, containing the key and nothing else; a key hosted under a subpath only
  * authorizes URLs beneath that subpath. The per-request limit is 10,000 URLs.
  *
- * @see https://agentblog.dev/docs/agent-layer
+ * @see https://docs.agentblog.dev/guides/write-with-your-agent
  */
 import { randomBytes } from 'node:crypto'
 

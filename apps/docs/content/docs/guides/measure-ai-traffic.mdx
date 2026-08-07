@@ -1,0 +1,119 @@
+---
+title: Measure traffic from AI assistants
+description: Separating visits that came from ChatGPT, Perplexity, or Claude out of your ordinary referral report, in three lines against the analytics you already run.
+icon: Compass
+---
+
+`lib/ai-referrers.ts` answers one question: did this visit come from an AI
+assistant, and which one. It is a pure function with no dependencies. It sends
+nothing anywhere and sets no cookie, so wiring it to your analytics is your
+decision and stays your decision.
+
+## Why this needs its own dimension
+
+Assistant referrals do not group with search traffic in any default report.
+`chatgpt.com` arrives as an ordinary referral, sitting in the same list as a
+forum link and a newsletter, and `perplexity.ai` sits three rows below it. The
+one number that tells you whether writing for retrieval is working is scattered
+across a dozen rows nobody totals.
+
+Classifying at the source collapses those rows into one dimension you can chart
+over time. That chart is the only feedback loop available here, because AI
+answer engines send no query data, no impression counts, and no rank.
+
+## Wire it up
+
+Three lines against whatever you already run. Put them in a client component
+that renders on the post route, or on the server against the `Referer` header.
+
+```ts title="Google Analytics 4"
+const ai = classifyReferrer(document.referrer)
+if (ai) gtag('event', 'ai_referral', { ai_source: ai.source, ai_host: ai.host })
+```
+
+```ts title="Vercel Analytics"
+const ai = classifyReferrer(document.referrer)
+if (ai) track('ai_referral', { source: ai.source, host: ai.host })
+```
+
+```ts title="PostHog"
+const ai = classifyReferrer(document.referrer)
+if (ai) posthog.capture('ai_referral', { source: ai.source, host: ai.host })
+```
+
+Chart `ai_source` as the dimension and `ai_host` as the drill-down. The host is
+kept alongside the source deliberately: it is how you notice a new subdomain
+sending traffic before it has a name of its own.
+
+## The API
+
+```ts
+import { classifyReferrer, isAiReferrer } from '@/lib/ai-referrers'
+
+classifyReferrer('https://chatgpt.com/c/abc123')
+// { source: 'chatgpt', host: 'chatgpt.com' }
+
+classifyReferrer('https://news.ycombinator.com/item?id=1')
+// null
+
+isAiReferrer(document.referrer)
+// boolean
+```
+
+| Export             | Signature                                                                                         |
+| ------------------ | ------------------------------------------------------------------------------------------------- |
+| `classifyReferrer` | `(referrer: string \| null \| undefined) => AiReferrer \| null`                                   |
+| `isAiReferrer`     | `(referrer: string \| null \| undefined) => boolean`                                              |
+| `AiReferrer`       | `{ source: AiReferrerSource; host: string }`                                                      |
+| `AiReferrerSource` | `'chatgpt' \| 'perplexity' \| 'gemini' \| 'copilot' \| 'claude' \| 'grok' \| 'you' \| 'other-ai'` |
+
+`null` covers empty referrers, direct traffic, unparseable strings, and every
+ordinary referral, so you can branch on truthiness and be done.
+
+The input may be a full URL or a bare hostname. `document.referrer` gives you a
+full URL and a `Referer` header usually does too, but log pipelines and tag
+managers hand over bare hosts often enough that it is handled here rather than
+at every call site.
+
+## It is safe in a client component
+
+`lib/ai-referrers.ts` has no `server-only` import, no Node built-ins, no config
+import, and no I/O. That is deliberate, so it can be imported from a
+`'use client'` component and read `document.referrer` on first paint.
+
+It is the only file in `lib/` with that property. Everything else that touches
+config imports `server-only`, and a build-time check fails if that ever changes.
+
+## What it recognises
+
+Four matching strategies, in order.
+
+| Strategy         | Example                                                                   | Why it is separate                                                                 |
+| ---------------- | ------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| Exact host       | `chatgpt.com`, `chat.openai.com`                                          | Old hostnames stay alive in old links for years                                    |
+| Path-scoped host | `bing.com/chat`                                                           | `bing.com` on its own is a search referral. Counting all of it as AI overstates it |
+| Apex suffix      | `*.perplexity.ai`, `*.claude.ai`, `*.x.ai`                                | These products add and rename subdomains                                           |
+| Known other      | `poe.com`, `phind.com`, `meta.ai`, `chat.mistral.ai`, `chat.deepseek.com` | Classified as `other-ai`, so newer assistants are never counted as ordinary links  |
+
+Adding a host to the `other-ai` list is the low-risk edit. Make it freely.
+
+## Why the integration is not shipped
+
+Shipping a Google Analytics integration would mean choosing Google Analytics for
+you, adding a dependency to a block whose pitch is that it adds none, and owning
+a consent surface nobody here can see.
+
+The classifier is the part that is genuinely hard to get right, and it is the
+part where a mistake is silent: a subdomain that stops matching does not throw,
+it quietly stops appearing in your numbers.
+
+## Also worth watching
+
+```bash
+npx agentblog@latest audit --crawlers /path/to/access.log
+```
+
+That parses a server or CDN access log and reports crawler hits per bot per
+week, verifying each hit against the operators' published IP ranges. User agent
+strings are trivially spoofed, so any count that trusts the string alone is
+reporting noise.

@@ -49,7 +49,7 @@
  * means the client behaviour we ship today is the client behaviour we ship when
  * the product exists.
  *
- * @see https://agentblog.dev/docs/installation
+ * @see https://docs.agentblog.dev/installation
  */
 
 /** Bearer tokens are per-request, so this can never be a cached static route. */
@@ -102,7 +102,7 @@ export async function GET(
         item,
         message:
           'The @agentblog-pro registry namespace is reserved. There is no paid tier yet, so nothing here is installable. Everything AgentBlog currently ships is in the public @agentblog namespace: npx shadcn@latest add @agentblog/blog',
-        docs: 'https://agentblog.dev/docs/installation',
+        docs: 'https://docs.agentblog.dev/installation',
       },
       {
         status: 402,

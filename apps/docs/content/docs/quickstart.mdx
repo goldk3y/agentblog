@@ -1,0 +1,175 @@
+---
+title: Quickstart
+description: Install AgentBlog into a Next.js app you already have, and see a real post render at /blog, in about ten minutes.
+icon: Rocket
+---
+
+One command installs the blog. Two small edits afterwards are yours to make,
+because they are decisions about your site rather than about the software. At
+the end of this page you have a working `/blog` running locally.
+
+<Callout type="warn" title="Pre-release">
+  `agentblog.dev` is not serving the registry yet, so the commands below resolve to nothing today.
+  To try AgentBlog now, follow [installing from a local
+  checkout](/installation#install-from-a-local-checkout) instead. This notice comes down when the
+  registry is live.
+</Callout>
+
+## Before you start
+
+You need an existing Next.js app. AgentBlog adds a section to a project you
+already have, it does not create one.
+
+| You need              | How to check                                                  |
+| --------------------- | ------------------------------------------------------------- |
+| Next.js 16.3 or newer | `npx next --version`                                          |
+| The App Router        | You have an `app/` folder rather than a `pages/` folder       |
+| React 19              | Comes with Next.js 16                                         |
+| Tailwind CSS v4       | `@import 'tailwindcss';` at the top of your global stylesheet |
+| shadcn/ui set up      | A `components.json` file at the root of your project          |
+| Node 20.9 or newer    | `node --version`                                              |
+
+If you do not have `components.json` yet, run `npx shadcn@latest init` first.
+That command asks you to choose a base colour and a component style, and those
+are your choices to make, so AgentBlog will not run it for you.
+
+Starting from nothing, `npx agentblog@latest create my-blog` scaffolds a new
+Next.js project and installs the blog into it. Everything below then applies
+inside that directory.
+
+## Install it
+
+<Steps>
+
+<Step>
+
+### Run the installer
+
+```bash
+npx agentblog@latest init
+```
+
+It checks the requirements above, then asks you four questions: where your site
+lives in production, your brand name, the slug you want as the default author,
+and where posts should come from (answer `mdx` unless you know you want
+something else).
+
+Then it copies the files in and patches the two config files a file copier
+cannot reach. It shows you every change first and backs up every file it edits,
+so `npx agentblog@latest revert` puts everything back.
+
+</Step>
+
+<Step>
+
+### Add one line to your stylesheet
+
+Open your global stylesheet, usually `app/globals.css`, and add the second line
+here, after the Tailwind import.
+
+```css title="app/globals.css"
+@import 'tailwindcss';
+@import '../styles/agentblog.css';
+```
+
+In a `src/` layout the path is `'../../styles/agentblog.css'`.
+
+This is the one step nothing will remind you about. That file carries the
+article typography. Without it your posts render as correct HTML in a single
+undifferentiated font size, and no error appears anywhere.
+
+</Step>
+
+<Step>
+
+### Put yourself in the author list
+
+Open `content/authors.json` and replace the placeholder record with your own.
+
+```json title="content/authors.json"
+[
+  {
+    "slug": "editorial",
+    "name": "Your Name",
+    "role": "Founder",
+    "bio": "One or two sentences about who you are and why you know this subject.",
+    "sameAs": ["https://www.linkedin.com/in/you", "https://github.com/you"]
+  }
+]
+```
+
+Keep the `editorial` slug for now. The two example posts reference it, and a
+post that names an author who does not exist fails the build.
+
+`sameAs` is worth filling in. It is how a search engine or an assistant connects
+"this post's author" to a real person rather than a name, which is the whole
+mechanism behind author credibility signals.
+
+</Step>
+
+<Step>
+
+### Look at it
+
+```bash
+npm run dev
+```
+
+Open `http://localhost:3000/blog`. You should see two example posts, styled with
+your own colours and fonts, and each one opening onto a full article page.
+
+If the text looks unstyled, step 2 did not take. If the build printed a warning
+mentioning `htmlLimitedBots`, run `npx agentblog@latest doctor --fix`.
+
+</Step>
+
+<Step>
+
+### Check the install
+
+```bash
+npx agentblog@latest doctor
+```
+
+This reads your config and reports anything still missing, with the fix for each
+one. It exits non-zero when it finds an error, so it also works as a CI step.
+
+</Step>
+
+</Steps>
+
+## What you have now
+
+- `/blog`, `/blog/<post>`, category pages, tag pages, and an author page for
+  everyone in `content/authors.json`.
+- `sitemap.xml`, `robots.txt`, and `feed.xml`, kept in step with your posts.
+- A generated social image for every post.
+- Two example posts, which are also the format specification: they are what your
+  agent imitates when it writes a new one.
+- Four skills in `.claude/skills/`, so your coding agent knows how to write and
+  audit a post without being told.
+
+## Next
+
+<Cards>
+  <Card
+    title="Write your first post"
+    href="/first-post"
+    description="Scaffold a post, ask your agent to write it, and check it before publishing."
+  />
+  <Card
+    title="Put it live"
+    href="/deploy"
+    description="Deploy, set two environment variables, and verify a crawler can read the result."
+  />
+  <Card
+    title="Full installation guide"
+    href="/installation"
+    description="The registry path, what each edit does, and installing from a local checkout."
+  />
+  <Card
+    title="Configuration"
+    href="/reference/configuration"
+    description="Every field in agentblog.config.ts and what breaks when it is wrong."
+  />
+</Cards>

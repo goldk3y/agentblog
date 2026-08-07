@@ -1,0 +1,191 @@
+---
+title: Write posts with your coding agent
+description: The four skills AgentBlog installs, what to ask for, what the agent will refuse to do, and where the skills deliberately stop.
+icon: Bot
+---
+
+Posts are MDX files in your repository, so writing one is editing a file, which
+is the thing coding agents are already good at. AgentBlog installs four skills
+that tell your agent what a good post looks like here, so you do not have to
+describe the format every time.
+
+## The four skills
+
+They land in `.claude/skills/` during the install.
+
+| Skill               | What it does                                                                      |
+| ------------------- | --------------------------------------------------------------------------------- |
+| `write-blog-post`   | Writes a new post in the format AI search engines can quote                       |
+| `refresh-blog-post` | Re-checks an existing post's sources and updates only what actually changed       |
+| `agentblog-setup`   | Finishes install wiring, if you took the registry path and skipped `doctor --fix` |
+| `agentblog-audit`   | Runs the pre-publish gate, including a raw crawler fetch                          |
+
+Claude Code loads a skill when what you asked for matches its description, so
+most of the time you write a normal sentence and the right skill appears. You
+can also call one directly with `/write-blog-post`.
+
+## What to actually say
+
+Good prompts name the file and the goal. The skill supplies the format.
+
+```text
+Write content/blog/do-ai-crawlers-run-javascript.mdx.
+The reader is a developer deciding whether their marketing site
+needs server rendering. Match the voice of the two existing posts.
+```
+
+```text
+Refresh content/blog/how-ai-search-engines-read-your-blog.mdx.
+Check every citation still says what we claim it says.
+```
+
+```text
+Audit content/blog/do-ai-crawlers-run-javascript.mdx before I publish it.
+```
+
+You do not need to explain answer capsules, heading format, or schema fields.
+That is what the skill is.
+
+## What the agent does when it writes
+
+1. Reads `agentblog.config.ts` and your existing posts, to learn your voice, your
+   topic clusters, and which posts should link to the new one.
+2. Works out the question the post answers, and the sub-questions under it.
+3. Outlines the H2 headings as questions.
+4. Drafts answer-first: 40 to 60 words directly under the H1, and again under
+   each H2, with no links inside those paragraphs.
+5. Keeps sections to 150 to 300 words, each one able to stand alone.
+6. Includes at least one real statistic and one named-source quotation, both
+   cited in the frontmatter.
+7. Puts comparison data in a real table rather than in prose.
+8. Adds five to fifteen internal links, and at least one link from an existing
+   post to the new one, so it is not an orphan.
+9. Fills in the frontmatter completely.
+10. Runs the [pre-publish checklist](/guides/pre-publish-checklist) and reports
+    each item pass or fail.
+
+## What it will not do
+
+Four rules sit in the skill's always-loaded text rather than in a reference file
+it might not open, because these are the ones where skipping is expensive.
+
+- **Never invent a statistic, a quotation, or a source.** This is the rule that
+  keeps the whole idea from being a liability. If a number cannot be verified at
+  a source the agent actually fetched, the claim goes qualitative instead.
+- No keyword stuffing. It measures worse than writing normally, not neutral.
+- No padding to reach a word count.
+- No em dashes, and no stock phrasing. See [why the copy style
+  matters](#the-copy-style-rules).
+
+## Refreshing a post is not rewriting it
+
+`refresh-blog-post` exists because a refresh that reflows correct prose produces
+a large diff with no information in it and buries the actual corrections.
+
+The agent fetches every source in `citations[]` and answers three questions
+about each: does it still resolve, does it still say what your post says it
+says, and has it been superseded. Documentation gets rewritten and vendors
+quietly restate figures, so the second question is the one that matters and the
+one everybody skips.
+
+Then it applies the smallest correct change, and decides the date deliberately:
+
+| What changed                                                         | `dateModified` |
+| -------------------------------------------------------------------- | -------------- |
+| A number, a dead citation, a new section, a corrected claim          | Moves          |
+| A typo, a reflowed paragraph, a reformatted table with the same rows | Stays          |
+| Nothing, because every fact still checks out                         | Stays          |
+
+Freshness correlates with being cited, which is a reason to genuinely update
+posts and not a reason to restamp them. A date that does not match a real change
+teaches everything downstream to ignore that field, and the engines that reward
+freshness are the same ones holding a copy of what your page said last week.
+
+"Nothing needed changing" is a successful outcome. The skill is instructed to
+say so and stop.
+
+It also refuses to refresh, and says why, when more than about half the post's
+claims are now wrong or the central premise has been invalidated. Refreshing the
+numbers around a dead premise produces a well-cited wrong article.
+
+To find what needs a refresh:
+
+```bash
+npx agentblog@latest audit --stale
+```
+
+That ranks posts by how overdue they are, weighted by how many internal links
+point at them.
+
+## Installing the skills without installing the blog
+
+The same four skills are also a Claude Code plugin, which is useful if you want
+them in a repository that is not your Next.js app.
+
+```text
+/plugin marketplace add goldk3y/agentblog
+/plugin install agentblog@agentblog
+```
+
+The install id is `<plugin>@<marketplace>`. Both halves are `agentblog` here,
+which reads like a typo and is not.
+
+Or through the registry, into `.claude/skills/`:
+
+```bash
+npx shadcn@latest add @agentblog/agent-kit
+```
+
+## AGENTS.md
+
+The install also appends a block to your `AGENTS.md`, which most agent tools
+read as project instructions. It states the ten rules that must not be broken,
+so an agent that never loads a skill still knows the important ones: do not
+fabricate, do not narrow `htmlLimitedBots`, do not add `'use client'` to the
+article render path, do not bump `dateModified` without a reason.
+
+On Next.js 16.3 and later, `next dev` also manages a block in that file between
+its own markers. AgentBlog writes strictly after the closing marker and never
+inside it, and never writes `CLAUDE.md` at all.
+
+## The copy style rules
+
+One rule sits above the rest: no em dashes. Not in posts, not in the docs, not
+in CLI output.
+
+The reason is commercial rather than aesthetic. The em dash has become the most
+recognizable tell of machine-written prose, and readers discount text that leans
+on it. For a product whose deliverable is AI-assisted writing that people
+actually read, shipping copy that reads as machine-written undermines the thing
+being sold.
+
+Bundled with it, since they share a cause: no "in today's fast-paced world"
+openers, no "it is not just X, it is Y" construction, no delve, leverage,
+robust, seamless, landscape, or tapestry, no rhetorical question followed by its
+own answer, and no three-item list where two would do.
+
+`agentblog audit` fails a post that contains any of them.
+
+## What the skills deliberately do not teach
+
+Two things already own their surface, and duplicating them would make the skills
+worse.
+
+Next.js ships version-matched documentation inside `node_modules`, so an agent
+in your repository already has correct API docs with no network call. shadcn
+ships an official skill covering its CLI and registry system. AgentBlog's skills
+assume both exist and cover what is genuinely ours: the writing playbook, the
+schema shapes, and the install wiring.
+
+<Cards>
+  <Card
+    title="What to write about"
+    href="/guides/plan-your-content"
+    description="Picking topics, clustering them, and knowing when to refresh."
+  />
+  <Card
+    title="The playbook itself"
+    href="/concepts/geo-playbook"
+    description="Why the format is the format, with the evidence attached."
+  />
+</Cards>

@@ -45,7 +45,7 @@
  * check that fails for the wrong reason, and the usual repair for that is to
  * weaken the check.
  *
- * @see https://agentblog.dev/docs/blog-block
+ * @see https://docs.agentblog.dev/reference/files
  */
 import { readFileSync } from 'node:fs'
 const args = new Map()

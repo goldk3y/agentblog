@@ -29,7 +29,7 @@
  * never reads the consumer's `tsconfig.json`, never resolves their imports, and
  * never type checks. It parses one file, edits its syntax tree, and prints it.
  *
- * @see https://agentblog.dev/docs/cli-reference
+ * @see https://docs.agentblog.dev/reference/cli
  */
 import { IndentationText, Node, Project, QuoteKind, SyntaxKind } from 'ts-morph'
 import type { ArrayLiteralExpression, ObjectLiteralExpression, SourceFile } from 'ts-morph'

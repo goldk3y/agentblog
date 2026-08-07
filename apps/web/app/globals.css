@@ -12,18 +12,46 @@
  * 3. `@custom-variant dark`, because shadcn v4 drives dark mode from a `.dark`
  *    class rather than the `prefers-color-scheme` media query. `next-themes`
  *    puts that class on `<html>`.
- * 4. The token block, in `oklch()`. Tailwind v3 era shadcn stored bare HSL
- *    channel triplets and the idiom was `hsl(var(--foreground))`. v4 stores
- *    complete colours, so the correct reference is `var(--foreground)` with no
- *    wrapper. The v3 form fails silently by producing an invalid colour that
- *    inherits, which is why this comment exists.
- * 5. `@theme inline`, which is what turns a variable into a utility class.
+ * 4. The Geist primitive scale (`--ds-*`), then the shadcn semantic tokens
+ *    bound to it.
+ * 5. `@theme` for the Geist type scale, and `@theme inline` for the colour
+ *    utilities.
  *
- * The token values below are shadcn's `neutral` base. This site keeps them
- * because a monochrome palette is the honest demonstration of the product's
- * theming claim: the blog inherits whatever the host app defines. The only
- * colour on the site is `--brand` for links and the two signal colours used by
- * the crawler comparison panels, where red and green carry actual meaning.
+ * ---------------------------------------------------------------------------
+ * THE DESIGN SYSTEM
+ * ---------------------------------------------------------------------------
+ * This site runs Vercel's Geist design system. Two layers, in this order:
+ *
+ *   --ds-*        The Geist primitives, taken verbatim from Vercel's published
+ *                 values. Never referenced from a component.
+ *   shadcn tokens `--background`, `--foreground`, `--border` and the rest, each
+ *                 bound to a `--ds-*` primitive. This is the layer components
+ *                 read, and it is the layer the blog block inherits.
+ *
+ * Keeping both layers matters. The blog block's entire theming claim is that it
+ * reads whatever the host app defines for the shadcn tokens, so the block stays
+ * correct while this site swaps the palette underneath it. If a component ever
+ * reads `--ds-gray-900` directly, that claim stops being demonstrated here.
+ *
+ * Geist scale semantics, which is what makes the bindings below non-arbitrary:
+ *
+ *   100  default background      600  active border
+ *   200  hover background        700  solid fill, high contrast
+ *   300  active background       800  solid fill, hover
+ *   400  default border          900  secondary text and icons
+ *   500  hover border           1000  primary text and icons
+ *
+ * Solid `gray-*` holds its contrast on any surface, so it carries text.
+ * `gray-alpha-*` composites with whatever is behind it, so it carries borders.
+ *
+ * The site is monochrome by rule. Colour appears in exactly three places, each
+ * of which carries meaning that is lost without it: `--ring` and `--brand` for
+ * focus and links, and `--signal-ok` / `--signal-bad` for the two crawler
+ * response panels on the landing page, where the panels also differ in content
+ * and carry a text label, so colour is never the only cue.
+ *
+ * @see https://vercel.com/geist/colors
+ * @see https://vercel.com/geist/vercel-brand.css
  */
 
 @import 'tailwindcss';
@@ -34,122 +62,267 @@
  */
 @import '../registry/blog/styles/agentblog.css';
 
-/*
- * The docs are prose, not markup, so Tailwind must not read them as a source.
- *
- * Tailwind v4 auto-detects sources by walking the project, which pulls in
- * `content/docs/*.md`. Those files are long-form documentation *about* this
- * stylesheet, so they quote class names in backticks, and Tailwind's extractor
- * does not know a backtick from an attribute. `theming.md` and `blog-block.md`
- * both explain why `dark:prose-invert` must not be used, and that mention alone
- * generated `.dark\:prose-invert:is(.dark *)`, 1534 bytes of rules that rebind
- * every `--tw-prose-*` variable to the plugin's inverted greys. That selector
- * has specificity (0,2,0) and is emitted after the bridge in `agentblog.css`,
- * so if it ever reached an element it would silently undo the whole point of
- * that file. Measured: 78259 bytes of compiled CSS before, 76725 after.
- *
- * Nothing is lost by excluding them: the docs render inside `.docs-prose`,
- * defined at the bottom of this file, and carry no `class` attributes of their
- * own. Every class the docs pages actually use is written in the `.tsx` that
- * renders them.
- *
- * A bare `.prose-invert` at (0,1,0) survives this, from the same phrase quoted
- * in a code comment in `components/blog/prose.tsx`. It is a tie with `.prose`
- * rather than a win over it, and it still reaches nothing, so it is left alone:
- * excluding `.tsx` files from Tailwind's sources is not a trade worth making to
- * delete one unreachable rule.
- */
-@source not '../content/docs';
-
 @custom-variant dark (&:is(.dark *));
 
+/* -------------------------------------------------------------------------- */
+/*  Layer 1: Geist primitives                                                 */
+/* -------------------------------------------------------------------------- */
+
 :root {
-  --radius: 0.5rem;
+  --ds-background-100: #ffffff;
+  --ds-background-200: #fafafa;
 
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.985 0 0);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  --ds-gray-100: #f2f2f2;
+  --ds-gray-200: #ebebeb;
+  --ds-gray-300: #e6e6e6;
+  --ds-gray-400: #eaeaea;
+  --ds-gray-500: #c9c9c9;
+  --ds-gray-600: #a8a8a8;
+  --ds-gray-700: #8f8f8f;
+  --ds-gray-800: #7d7d7d;
+  --ds-gray-900: #4d4d4d;
+  --ds-gray-1000: #171717;
 
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
+  --ds-gray-alpha-100: #0000000d;
+  --ds-gray-alpha-200: #00000015;
+  --ds-gray-alpha-300: #0000001a;
+  --ds-gray-alpha-400: #00000014;
+  --ds-gray-alpha-500: #00000036;
+  --ds-gray-alpha-600: #0000003d;
+  --ds-gray-alpha-700: #00000070;
+  --ds-gray-alpha-800: #00000082;
+  --ds-gray-alpha-900: #000000b3;
+  --ds-gray-alpha-1000: #000000e8;
 
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
-
-  /* Site-only tokens. The blog block ships none of these. */
-  --brand: oklch(0.48 0.17 264);
-  --brand-foreground: oklch(0.985 0 0);
-  --signal-ok: oklch(0.5 0.13 155);
-  --signal-bad: oklch(0.53 0.2 27);
-  --grid-line: oklch(0.922 0 0);
+  --ds-blue-700: #0070f7;
+  --ds-blue-900: #0064e2;
+  --ds-green-700: #28a948;
+  --ds-green-900: #107d32;
+  --ds-red-700: #fc0035;
+  --ds-red-900: #d60020;
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.185 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.185 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.985 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.245 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.245 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.245 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --destructive-foreground: oklch(0.145 0 0);
-  --border: oklch(1 0 0 / 12%);
-  --input: oklch(1 0 0 / 16%);
-  --ring: oklch(0.556 0 0);
+  --ds-background-100: #000000;
+  --ds-background-200: #000000;
 
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
+  --ds-gray-100: #1a1a1a;
+  --ds-gray-200: #1f1f1f;
+  --ds-gray-300: #292929;
+  --ds-gray-400: #2e2e2e;
+  --ds-gray-500: #454545;
+  --ds-gray-600: #878787;
+  --ds-gray-700: #8f8f8f;
+  --ds-gray-800: #7d7d7d;
+  --ds-gray-900: #a0a0a0;
+  --ds-gray-1000: #ededed;
 
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 12%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --ds-gray-alpha-100: #ffffff12;
+  --ds-gray-alpha-200: #ffffff17;
+  --ds-gray-alpha-300: #ffffff21;
+  --ds-gray-alpha-400: #ffffff24;
+  --ds-gray-alpha-500: #ffffff3d;
+  --ds-gray-alpha-600: #ffffff82;
+  --ds-gray-alpha-700: #ffffff8a;
+  --ds-gray-alpha-800: #ffffff78;
+  --ds-gray-alpha-900: #ffffff9c;
+  --ds-gray-alpha-1000: #ffffffeb;
 
-  --brand: oklch(0.78 0.13 264);
-  --brand-foreground: oklch(0.145 0 0);
-  --signal-ok: oklch(0.75 0.15 155);
-  --signal-bad: oklch(0.72 0.17 25);
-  --grid-line: oklch(1 0 0 / 10%);
+  --ds-blue-700: #0071f6;
+  --ds-blue-900: #50a8ff;
+  --ds-green-700: #00ab3e;
+  --ds-green-900: #00ca52;
+  --ds-red-700: #f13242;
+  --ds-red-900: #ff5e63;
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Layer 2: shadcn semantic tokens                                           */
+/* -------------------------------------------------------------------------- */
+
+/*
+ * Declared once, not once per theme. `next-themes` puts `.dark` on `<html>`,
+ * which is the same element `:root` selects, so the `--ds-*` block above has
+ * already resolved to the active theme by the time these substitutions are
+ * computed. A second copy of this block under `.dark` would be identical text
+ * and one more place to forget.
+ */
+:root {
+  /* Geist radii: 6px for controls, 8px for containers, 12px for panels. */
+  --radius: 0.5rem;
+
+  --background: var(--ds-background-100);
+  --foreground: var(--ds-gray-1000);
+
+  /*
+   * Cards are flat and the border does the separating, which is the Geist
+   * convention and the reason a card reads the same on either surface. Lifting
+   * the fill instead would need a second surface value per theme and would put
+   * two competing separators on the same edge.
+   */
+  --card: var(--ds-background-100);
+  --card-foreground: var(--ds-gray-1000);
+  --popover: var(--ds-background-100);
+  --popover-foreground: var(--ds-gray-1000);
+
+  /* 1000 fill with a 100 label is the Geist primary button, in both themes. */
+  --primary: var(--ds-gray-1000);
+  --primary-foreground: var(--ds-background-100);
+
+  --secondary: var(--ds-gray-100);
+  --secondary-foreground: var(--ds-gray-1000);
+  --muted: var(--ds-gray-100);
+  --muted-foreground: var(--ds-gray-900);
+  --accent: var(--ds-gray-100);
+  --accent-foreground: var(--ds-gray-1000);
+
+  --destructive: var(--ds-red-900);
+  --destructive-foreground: var(--ds-background-100);
+
+  /* Step 400 is the default border in the Geist scale, alpha so it composites. */
+  --border: var(--ds-gray-alpha-400);
+  --input: var(--ds-gray-alpha-400);
+  --ring: var(--ds-blue-900);
+
+  /*
+   * Charts stay monochrome. Geist reserves chromatic tokens for meaning, and a
+   * category has no meaning a hue can carry.
+   */
+  --chart-1: var(--ds-gray-1000);
+  --chart-2: var(--ds-gray-900);
+  --chart-3: var(--ds-gray-800);
+  --chart-4: var(--ds-gray-700);
+  --chart-5: var(--ds-gray-600);
+
+  --sidebar: var(--ds-background-200);
+  --sidebar-foreground: var(--ds-gray-1000);
+  --sidebar-primary: var(--ds-gray-1000);
+  --sidebar-primary-foreground: var(--ds-background-100);
+  --sidebar-accent: var(--ds-gray-100);
+  --sidebar-accent-foreground: var(--ds-gray-1000);
+  --sidebar-border: var(--ds-gray-alpha-400);
+  --sidebar-ring: var(--ds-blue-900);
+
+  /* Site-only tokens. The blog block ships none of these. */
+  --brand: var(--ds-blue-900);
+  --brand-foreground: var(--ds-background-100);
+  --signal-ok: var(--ds-green-900);
+  --signal-bad: var(--ds-red-900);
+}
+
+/* -------------------------------------------------------------------------- */
+/*  The Geist type scale                                                      */
+/* -------------------------------------------------------------------------- */
+/*
+ * Three families of role, each a complete decision. Using one means size, line
+ * height, tracking, and weight all arrive together, so a heading cannot end up
+ * at the right size with the wrong tracking.
+ *
+ *   heading-*  Weight 450. Tracking tightens as size grows, exactly as Geist
+ *              specifies: -0.02em to 20px, -0.04em at 24 and 32, -0.06em at 40
+ *              and above. This is why large Geist headings read as one shape
+ *              rather than as spaced-out letters.
+ *   copy-*     Weight 400, default tracking. Body and lede text.
+ *   label-*    Weight 500, default tracking. Controls, eyebrows, column heads.
+ *   mono-*     Weight 400. Commands, paths, and code, and nothing else.
+ *
+ * Values transcribed from Vercel's shipped stylesheets. Do not add a step: if a
+ * size is missing here it is missing on purpose, and reaching for `text-[27px]`
+ * is how a scale stops being one.
+ */
+@theme {
+  --text-heading-64: 4rem;
+  --text-heading-64--line-height: 4rem;
+  --text-heading-64--letter-spacing: -0.06em;
+  --text-heading-64--font-weight: 450;
+
+  --text-heading-56: 3.5rem;
+  --text-heading-56--line-height: 3.5rem;
+  --text-heading-56--letter-spacing: -0.06em;
+  --text-heading-56--font-weight: 450;
+
+  --text-heading-48: 3rem;
+  --text-heading-48--line-height: 3.5rem;
+  --text-heading-48--letter-spacing: -0.06em;
+  --text-heading-48--font-weight: 450;
+
+  --text-heading-40: 2.5rem;
+  --text-heading-40--line-height: 3rem;
+  --text-heading-40--letter-spacing: -0.06em;
+  --text-heading-40--font-weight: 450;
+
+  --text-heading-32: 2rem;
+  --text-heading-32--line-height: 2.5rem;
+  --text-heading-32--letter-spacing: -0.04em;
+  --text-heading-32--font-weight: 450;
+
+  --text-heading-24: 1.5rem;
+  --text-heading-24--line-height: 2rem;
+  --text-heading-24--letter-spacing: -0.04em;
+  --text-heading-24--font-weight: 450;
+
+  --text-heading-20: 1.25rem;
+  --text-heading-20--line-height: 1.625rem;
+  --text-heading-20--letter-spacing: -0.02em;
+  --text-heading-20--font-weight: 450;
+
+  --text-heading-16: 1rem;
+  --text-heading-16--line-height: 1.5rem;
+  --text-heading-16--letter-spacing: -0.02em;
+  --text-heading-16--font-weight: 450;
+
+  --text-heading-14: 0.875rem;
+  --text-heading-14--line-height: 1.25rem;
+  --text-heading-14--letter-spacing: -0.02em;
+  --text-heading-14--font-weight: 450;
+
+  --text-copy-20: 1.25rem;
+  --text-copy-20--line-height: 2rem;
+  --text-copy-20--font-weight: 400;
+
+  --text-copy-18: 1.125rem;
+  --text-copy-18--line-height: 1.75rem;
+  --text-copy-18--font-weight: 400;
+
+  --text-copy-16: 1rem;
+  --text-copy-16--line-height: 1.5rem;
+  --text-copy-16--font-weight: 400;
+
+  --text-copy-14: 0.875rem;
+  --text-copy-14--line-height: 1.25rem;
+  --text-copy-14--font-weight: 400;
+
+  --text-copy-13: 0.8125rem;
+  --text-copy-13--line-height: 1.125rem;
+  --text-copy-13--font-weight: 400;
+
+  --text-label-16: 1rem;
+  --text-label-16--line-height: 1.5rem;
+  --text-label-16--font-weight: 500;
+
+  --text-label-14: 0.875rem;
+  --text-label-14--line-height: 1.25rem;
+  --text-label-14--font-weight: 500;
+
+  --text-label-13: 0.8125rem;
+  --text-label-13--line-height: 1rem;
+  --text-label-13--font-weight: 500;
+
+  --text-label-12: 0.75rem;
+  --text-label-12--line-height: 1rem;
+  --text-label-12--font-weight: 500;
+
+  --text-mono-14: 0.875rem;
+  --text-mono-14--line-height: 1.25rem;
+  --text-mono-14--font-weight: 400;
+
+  --text-mono-13: 0.8125rem;
+  --text-mono-13--line-height: 1.25rem;
+  --text-mono-13--font-weight: 400;
+
+  --text-mono-12: 0.75rem;
+  --text-mono-12--line-height: 1rem;
+  --text-mono-12--font-weight: 400;
 }
 
 @theme inline {
@@ -192,16 +365,26 @@
   --color-brand-foreground: var(--brand-foreground);
   --color-signal-ok: var(--signal-ok);
   --color-signal-bad: var(--signal-bad);
-  --color-grid-line: var(--grid-line);
+
+  /*
+   * The Geist alpha steps, exposed only for chrome that needs an edge weaker or
+   * stronger than `--border`. Text never reads from these.
+   */
+  --color-line-subtle: var(--ds-gray-alpha-200);
+  --color-line-strong: var(--ds-gray-alpha-500);
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
 
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  --font-serif: var(--font-source-serif), ui-serif, Georgia, serif;
-  --font-mono: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, monospace;
+  /*
+   * Geist ships one typeface in two cuts, and that is the whole font stack. No
+   * serif is defined, so `font-serif` resolves to nothing and cannot be used by
+   * accident.
+   */
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, monospace;
 
   /* Reading measure for long-form site copy. The block has its own. */
   --spacing-measure: 68ch;
@@ -228,180 +411,36 @@
     background-color: var(--background);
     color: var(--foreground);
     font-family: var(--font-sans);
-    font-feature-settings: 'cv11', 'ss01';
+    /*
+     * Vercel's published Geist settings. `calt` is off deliberately: Geist's
+     * contextual alternates are tuned for the mono cut, and leaving them on in
+     * the sans changes letter shapes mid-word at heading sizes.
+     */
+    font-feature-settings:
+      'rlig' 1,
+      'calt' 0;
+    font-kerning: normal;
+    font-optical-sizing: auto;
+    /* Geist is variable across 100 to 900, so weight 450 is a real instance. */
+    font-synthesis: none;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
   }
 
   ::selection {
-    background-color: color-mix(in oklch, var(--brand) 24%, transparent);
+    background-color: color-mix(in srgb, var(--ds-blue-900) 26%, transparent);
   }
 
   :focus-visible {
-    outline: 2px solid var(--brand);
+    outline: 2px solid var(--ring);
     outline-offset: 2px;
   }
-}
 
-/*
- * Long-form styling for the docs pages.
- *
- * These rules are deliberately self contained rather than delegating to
- * `@tailwindcss/typography`. The typography plugin belongs to the blog block,
- * where it is bridged to the shadcn tokens; duplicating that bridge here would
- * mean two places to keep in sync for no gain. Docs prose is a narrower problem
- * than article prose and about thirty lines of CSS solves it outright.
- */
-@layer components {
-  .docs-prose {
-    max-width: var(--spacing-measure);
-    color: var(--foreground);
-    font-size: 1rem;
-    line-height: 1.75;
-  }
-
-  .docs-prose > * + * {
-    margin-top: 1.25em;
-  }
-
-  .docs-prose h2 {
-    margin-top: 2.75em;
-    margin-bottom: 0.75em;
-    font-family: var(--font-serif);
-    font-size: 1.6rem;
-    font-weight: 600;
-    letter-spacing: -0.015em;
-    line-height: 1.25;
-    scroll-margin-top: 6rem;
-  }
-
-  .docs-prose h3 {
-    margin-top: 2em;
-    margin-bottom: 0.5em;
-    font-size: 1.125rem;
-    font-weight: 650;
-    letter-spacing: -0.01em;
-    scroll-margin-top: 6rem;
-  }
-
-  .docs-prose h4 {
-    margin-top: 1.75em;
-    margin-bottom: 0.35em;
-    font-size: 1rem;
-    font-weight: 650;
-  }
-
-  .docs-prose a {
-    color: var(--brand);
-    text-decoration: underline;
-    text-underline-offset: 3px;
-    text-decoration-thickness: 1px;
-  }
-
-  .docs-prose strong {
-    font-weight: 650;
-    color: var(--foreground);
-  }
-
-  .docs-prose ul,
-  .docs-prose ol {
-    padding-left: 1.35em;
-  }
-
-  .docs-prose ul {
-    list-style: disc;
-  }
-
-  .docs-prose ol {
-    list-style: decimal;
-  }
-
-  .docs-prose li::marker {
-    color: var(--muted-foreground);
-  }
-
-  .docs-prose li + li {
-    margin-top: 0.4em;
-  }
-
-  .docs-prose blockquote {
-    border-left: 2px solid var(--border);
-    padding-left: 1.25em;
-    color: var(--muted-foreground);
-  }
-
-  .docs-prose hr {
-    margin-top: 3em;
-    margin-bottom: 3em;
-    border-color: var(--border);
-  }
-
-  .docs-prose code {
-    font-family: var(--font-mono);
-    font-size: 0.85em;
-    background-color: var(--muted);
-    border-radius: var(--radius-sm);
-    padding: 0.15em 0.4em;
-  }
-
-  .docs-prose pre {
-    overflow-x: auto;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    background-color: var(--muted);
-    padding: 1rem 1.15rem;
-    font-size: 0.8125rem;
-    line-height: 1.65;
-  }
-
-  .docs-prose pre code {
-    background-color: transparent;
-    padding: 0;
-    font-size: inherit;
-  }
-
-  /* rehype-pretty-code emits its own palette; let it win inside a highlighted block. */
-  .docs-prose pre[data-theme] {
-    background-color: var(--muted);
-  }
-
-  .docs-prose pre[data-theme] span {
-    color: var(--shiki-light);
-  }
-
-  .dark .docs-prose pre[data-theme] span {
-    color: var(--shiki-dark);
-  }
-
-  .docs-prose table {
-    display: block;
-    overflow-x: auto;
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.9rem;
-  }
-
-  .docs-prose th,
-  .docs-prose td {
-    border-bottom: 1px solid var(--border);
-    padding: 0.6rem 0.9rem 0.6rem 0;
-    text-align: left;
-    vertical-align: top;
-  }
-
-  .docs-prose th {
-    font-weight: 650;
-    white-space: nowrap;
-    color: var(--foreground);
-  }
-
-  .docs-prose td {
-    color: var(--muted-foreground);
-  }
-
-  .docs-prose img {
-    max-width: 100%;
-    height: auto;
-    border-radius: var(--radius-lg);
+  /* Figures and totals line up in columns rather than drifting by digit width. */
+  code,
+  kbd,
+  samp,
+  pre {
+    font-variant-numeric: tabular-nums slashed-zero;
   }
 }

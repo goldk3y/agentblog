@@ -25,7 +25,7 @@
  * so a file that was replaced and restored still appears in the backup and in
  * the diff, rather than being invisible because it happened to end up the same.
  *
- * @see https://agentblog.dev/docs/installation
+ * @see https://docs.agentblog.dev/installation
  */
 import { appPath, appPathLabel, type ProjectContext } from '../detect/project.ts'
 import { exists, readFile, toPosixRelative, walk, writeFileEnsuringDir } from '../util/fs.ts'

@@ -8,9 +8,9 @@ import type { NextConfig } from 'next'
  * changes here and changes to `packages/cli/src/patchers/next-config.ts` belong
  * in the same commit.
  *
- * Two settings below are agentblog.dev's own and are NOT written by the CLI:
- * `rewrites` (the Markdown variants of the docs pages) and the `/docs/**` entry
- * in `outputFileTracingIncludes`. A consumer's blog has neither.
+ * One setting below is agentblog.dev's own and is NOT written by the CLI:
+ * `redirects`, which forwards the documentation to its own site. A consumer's
+ * blog has none.
  */
 const nextConfig: NextConfig = {
   /**
@@ -41,29 +41,66 @@ const nextConfig: NextConfig = {
   // linted and type checked alongside them.
   outputFileTracingIncludes: {
     '/blog/**': ['./registry/blog/content/**/*'],
-    '/docs/**': ['./content/docs/**/*'],
-    '/docs-md/**': ['./content/docs/**/*'],
   },
 
   /*
-   * NOT part of the `agentblog init` patch. This is agentblog.dev serving a
-   * Markdown variant of every docs page, matching what Next.js does for its own
-   * documentation.
+   * NOT part of the `agentblog init` patch. The documentation moved to
+   * docs.agentblog.dev, which is `apps/docs` in this repository.
    *
-   * App Router segments are path segments rather than filename patterns, so
-   * `/docs/installation.md` cannot be expressed as a route, and a page and a
-   * route handler cannot share a segment folder. Rewriting to a sibling tree is
-   * the way to get the URL we want.
+   * Every page that ever existed under `/docs` is mapped to its new URL
+   * individually rather than through one catch-all, because the structure
+   * changed at the same time as the host: a blanket redirect to the docs home
+   * would turn every inbound link to a specific page into a bounce, and lose
+   * whatever ranking that page had earned.
    *
-   * `:slug` is lazy in `path-to-regexp`, so it stops before the literal `.md`
-   * rather than swallowing it.
-   *
-   * See `app/docs-md/[slug]/route.ts`.
+   * `permanent: true` emits a 308, which search engines treat as a permanent
+   * move and follow while passing the signals along.
    */
-  async rewrites() {
+  async redirects() {
+    const DOCS = 'https://docs.agentblog.dev'
+
+    const moved: Record<string, string> = {
+      introduction: '/',
+      installation: '/installation',
+      upgrading: '/guides/take-an-update',
+      configuration: '/reference/configuration',
+      'cli-reference': '/reference/cli',
+      'blog-block': '/reference/files',
+      'content-sources': '/reference/content-sources',
+      theming: '/guides/match-your-design',
+      'agent-layer': '/guides/write-with-your-agent',
+      'geo-playbook': '/concepts/geo-playbook',
+      'seo-geo-checklist': '/guides/pre-publish-checklist',
+      troubleshooting: '/troubleshooting',
+      'troubleshooting-cdn': '/troubleshooting/cdn-blocking-crawlers',
+      monorepo: '/guides/monorepo',
+      'ai-referrers': '/guides/measure-ai-traffic',
+      'no-llms-txt': '/concepts/why-no-llms-txt',
+      roadmap: '/project/roadmap',
+      licensing: '/project/licensing',
+      'llms.txt': '/llms.txt',
+      'llms-full.txt': '/llms-full.txt',
+    }
+
     return [
-      { source: '/docs/:slug.md', destination: '/docs-md/:slug' },
-      { source: '/docs.md', destination: '/docs-md' },
+      ...Object.entries(moved).map(([from, to]) => ({
+        source: `/docs/${from}`,
+        destination: `${DOCS}${to}`,
+        permanent: true,
+      })),
+      // The Markdown variants, which were `/docs/<slug>.md` and are now served
+      // from the same path on the docs site.
+      ...Object.entries(moved)
+        .filter(([from]) => !from.endsWith('.txt'))
+        .map(([from, to]) => ({
+          source: `/docs/${from}.md`,
+          destination: `${DOCS}${to === '/' ? '/index' : to}.md`,
+          permanent: true,
+        })),
+      { source: '/docs', destination: DOCS, permanent: true },
+      // Anything under `/docs` that is not named above. Last, so the specific
+      // rules above win.
+      { source: '/docs/:path*', destination: DOCS, permanent: true },
     ]
   },
 }

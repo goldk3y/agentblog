@@ -28,7 +28,7 @@
  * Usage:
  *   node scripts/assert-agents-md.mjs [project dir]
  *
- * @see https://agentblog.dev/docs/agent-layer
+ * @see https://docs.agentblog.dev/guides/write-with-your-agent
  * @see BUILD-SPEC section 1, agentRules
  */
 import { existsSync, readFileSync } from 'node:fs'

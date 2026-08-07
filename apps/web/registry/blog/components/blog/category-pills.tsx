@@ -27,7 +27,7 @@ import { cn } from '@/lib/utils'
  *     across pages; `aria-current` is what tells a screen reader which hub the
  *     reader is on.
  *
- * @see https://agentblog.dev/docs/geo-playbook*
+ * @see https://docs.agentblog.dev/concepts/geo-playbook*
  * WHERE A SHADCN PRIMITIVE DID NOT FIT CLEANLY
  * `Badge` supports `asChild` in current shadcn, which would let the anchor *be*
  * the badge. This component wraps instead: `<Link><Badge/></Link>`. A consumer

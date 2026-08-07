@@ -36,7 +36,7 @@
  * which is the right place for that question, and the reason `init` refuses to
  * run `shadcn init` itself in an existing project.
  *
- * @see https://agentblog.dev/docs/installation, BUILD-SPEC section 12
+ * @see https://docs.agentblog.dev/installation, BUILD-SPEC section 12
  */
 import { resolve } from 'node:path'
 

@@ -6,7 +6,7 @@
  * know that `.slice(` sits *inside* `generateStaticParams` and not in some
  * unrelated helper, and a grep cannot tell the difference.
  *
- * @see https://agentblog.dev/docs/cli-reference
+ * @see https://docs.agentblog.dev/reference/cli
  */
 import { Node } from '../patchers/ts-project.ts'
 import { appPath, appPathLabel } from '../detect/project.ts'

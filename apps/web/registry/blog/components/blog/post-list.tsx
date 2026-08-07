@@ -29,7 +29,7 @@ import { PostCard } from './post-card'
  *   every post link out of the crawlable HTML. Infinite scroll in particular is
  *   a listed extraction killer: the links below the fold never exist in the
  *   markup at all. Pagination stays server rendered, with real hrefs.
- *   @see https://agentblog.dev/docs/geo-playbook* - Turning the `<ul>` into a `<div>` loses the list semantics that make the
+ *   @see https://docs.agentblog.dev/concepts/geo-playbook* - Turning the `<ul>` into a `<div>` loses the list semantics that make the
  *   count announceable.
  */
 export interface PostListProps {
@@ -40,7 +40,7 @@ export interface PostListProps {
    * Off by default, and it should stay off unless you have confirmed that the
    * first card really is the LCP element on that route. A route that also has
    * its own hero above the list already spent its one preload.
-   * @see https://agentblog.dev/docs/blog-block
+   * @see https://docs.agentblog.dev/reference/files
    */
   readonly priorityFirst?: boolean | undefined
   /** Heading level used by each card title. @see `PostCard` for why it matters. */

@@ -14,6 +14,7 @@
   "updateInternalDependencies": "patch",
   "ignore": [
     "@agentblog/web",
+    "@agentblog/docs",
     "fixture-next16",
     "fixture-no-shadcn",
     "@agentblog/checks",

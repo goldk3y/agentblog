@@ -72,7 +72,7 @@
  * purpose. `label` and `<caption>` are for `<Table>` rendered from your own
  * TSX.
  *
- * @see https://agentblog.dev/docs/geo-playbook
+ * @see https://docs.agentblog.dev/concepts/geo-playbook
  */
 import { Children, isValidElement } from 'react'
 import type { ComponentPropsWithoutRef, ReactNode } from 'react'

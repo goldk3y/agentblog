@@ -32,7 +32,7 @@
  *    string in and a string out is the thing we actually want to compare across
  *    two TypeScript majors.
  *
- * @see https://agentblog.dev/docs/cli-reference
+ * @see https://docs.agentblog.dev/reference/cli
  */
 import { defineConfig } from 'tsup'
 

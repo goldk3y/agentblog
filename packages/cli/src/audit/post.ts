@@ -11,7 +11,7 @@
  * cannot make, and a check that guesses at them would train users to ignore the
  * report. What is here is mechanical and provable.
  *
- * @see https://agentblog.dev/docs/geo-playbookthe AgentBlog docs
+ * @see https://docs.agentblog.dev/concepts/geo-playbook
  */
 import { basename } from 'node:path'
 

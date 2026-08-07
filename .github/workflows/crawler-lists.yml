@@ -14,7 +14,7 @@ name: Crawler lists
 # bot with a purpose field filled in by a cron job is worse than no entry at all.
 # The PR gives a human the diff and the question.
 #
-# @see https://agentblog.dev/docs/troubleshooting-cdn
+# @see https://docs.agentblog.dev/troubleshooting/cdn-blocking-crawlers
 
 on:
   schedule:

@@ -42,8 +42,8 @@
  * mdast's default, which is why images contribute nothing (an `<img>` element
  * has no text) and raw HTML is skipped.
  *
- * @see https://agentblog.dev/docs/blog-block
- * @see https://agentblog.dev/docs/geo-playbook*/
+ * @see https://docs.agentblog.dev/reference/files
+ * @see https://docs.agentblog.dev/concepts/geo-playbook*/
 import GithubSlugger from 'github-slugger'
 import type { Heading, Nodes, Root } from 'mdast'
 import type { VFile } from 'vfile'

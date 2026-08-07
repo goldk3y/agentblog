@@ -37,7 +37,7 @@
  * undo. Guessing wrong in the restrictive direction is one environment variable
  * and is visible the moment anyone opens `/robots.txt`.
  *
- * @see https://agentblog.dev/docs/troubleshooting-cdn
+ * @see https://docs.agentblog.dev/troubleshooting/cdn-blocking-crawlers
  */
 import type { MetadataRoute } from 'next'
 

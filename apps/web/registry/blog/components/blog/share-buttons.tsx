@@ -21,7 +21,7 @@ import { CheckIcon, LinkIcon, MailIcon, ShareIcon } from './icons'
  * `mailto:`. The only thing the client boundary buys is the copy-link button,
  * which needs `navigator.clipboard`, and its "Copied" confirmation. Turn the
  * JavaScript off and the component still shares.
- * @see https://agentblog.dev/docs/blog-block
+ * @see https://docs.agentblog.dev/reference/files
  *
  * WHY NO BRAND ICONS
  * Lucide deprecated its brand glyphs and may remove them in a minor release,

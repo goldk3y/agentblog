@@ -1,0 +1,160 @@
+---
+title: Components you can use in a post
+description: The six components a post can use beyond ordinary Markdown, their props, and when each one earns its place.
+icon: FileText
+---
+
+A post is Markdown first. Headings, lists, links, tables, and code fences all
+work, and each one is already styled and given the right markup. These six
+components exist for the cases where plain Markdown loses information a
+retrieval system can use.
+
+They live in `components/mdx/` in your project, so all of them are yours to
+edit.
+
+## Callout
+
+An aside for something that costs money to get wrong.
+
+```mdx
+<Callout variant="warning" title="Do not skip this">
+  The CSS import has no warning attached to it.
+</Callout>
+```
+
+| Prop       | Type                                     | Default          |
+| ---------- | ---------------------------------------- | ---------------- |
+| `variant`  | `note`, `tip`, `important`, or `warning` | `note`           |
+| `title`    | string                                   | The variant name |
+| `children` | content                                  | required         |
+
+There is no amber or green variant, because there is no amber or green in a
+shadcn token set. Inventing one would make the blog stop looking like the
+product it is attached to.
+
+## Stat
+
+One number, presented as a number.
+
+```mdx
+<Stat
+  value="2.5x"
+  label="more citations for pages that answer the question in the first paragraph"
+  source="Ahrefs"
+  href="https://ahrefs.com/blog/example"
+/>
+```
+
+| Prop     | Type   | Notes                                                |
+| -------- | ------ | ---------------------------------------------------- |
+| `value`  | string | The number as it should read, units included         |
+| `label`  | string | What the number measures. A full clause reads better |
+| `source` | string | Who reported it                                      |
+| `href`   | string | Where it was reported. Turns `source` into a link    |
+
+Statistics with numbers are among the highest-effect elements measured for AI
+citation. They are also one of the two things a language model will happily
+invent, so every one needs a source you actually read.
+
+## Quote
+
+A quotation with attribution.
+
+```mdx
+<Quote source="Gary Illyes" context="Google Search Central" cite="https://example.com/talk">
+  We do not support llms.txt and we are not planning to.
+</Quote>
+```
+
+| Prop      | Type   | Notes                                                          |
+| --------- | ------ | -------------------------------------------------------------- |
+| `source`  | string | Who said it. This is the part that carries the measured effect |
+| `context` | string | Their role or publication, shown after the name                |
+| `cite`    | string | URL of the document being quoted. Links the attribution        |
+
+A Markdown blockquote maps to this component too, without attribution, which is
+why every prop is optional. A quotation from a named source measures far better
+than the same sentence unattributed.
+
+## KeyTakeaways
+
+What the reader will know by the end.
+
+```mdx
+<KeyTakeaways
+  items={[
+    'AI crawlers fetch your HTML once and never run JavaScript.',
+    'Anything rendered in the browser is invisible to them.',
+  ]}
+/>
+```
+
+| Prop      | Type            | Default         |
+| --------- | --------------- | --------------- |
+| `items`   | list of strings | required        |
+| `heading` | string          | `Key takeaways` |
+
+One complete sentence per item, three to six items. This is not a replacement
+for the answer capsule: the capsule answers the post's question in prose, this
+lists what the reader leaves with.
+
+## Figure
+
+An image with a caption, sized and lazy-loaded correctly.
+
+```mdx
+<Figure
+  src="/blog/crawler-response.png"
+  alt="A terminal showing an empty HTML shell returned to GPTBot"
+  caption="The same page, fetched as GPTBot."
+/>
+```
+
+| Prop      | Type    | Notes                                                      |
+| --------- | ------- | ---------------------------------------------------------- |
+| `src`     | string  | required                                                   |
+| `alt`     | string  | required. Describe what the image shows, in plain language |
+| `caption` | content | Rendered in a `figcaption`                                 |
+| `width`   | number  | Defaults to 1600                                           |
+| `height`  | number  | Defaults to 900                                            |
+| `preload` | boolean | At most one per page, and only for the largest image       |
+
+Plain Markdown images work too and are routed through the same image handling.
+Use `Figure` when the image needs a caption.
+
+## Table
+
+You almost never write this one directly. A Markdown table compiles to it
+automatically, complete with a scrollable container and correct header markup.
+
+```md
+| Crawler   | Runs JavaScript |
+| --------- | --------------- |
+| GPTBot    | No              |
+| Googlebot | Yes             |
+```
+
+The `label` prop exists for a table rendered from your own TSX, to give the
+scrollable region an accessible name when a post has several tables and none of
+them carry a caption.
+
+Put comparison and specification data in a table rather than in prose. A table
+is structurally unambiguous about which value belongs to which row, which is
+exactly what a retrieval system needs and exactly what prose obscures.
+
+## The FAQ section is not a component
+
+It renders from the `faq:` block in your frontmatter, and only when there are
+entries, so the structured data can never describe questions the page does not
+show. See [post frontmatter](/reference/post-frontmatter#faq-entries).
+
+## What is deliberately not a component
+
+Paragraphs, lists, bold, and italic are left to the typography layer, which is
+bound to your theme tokens in `styles/agentblog.css`. Adding pass-through
+components for them would put long-form styling in two places that have to
+agree, and the second one always loses.
+
+If body copy looks wrong, fix the binding in that stylesheet rather than adding
+a component. See [make it look like your
+site](/guides/match-your-design#the-typography-plugin-is-bridged-rather-than-fought).

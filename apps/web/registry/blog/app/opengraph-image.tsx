@@ -38,7 +38,7 @@
  * - Satori supports flexbox and a subset of CSS. `display: grid` does not work.
  *   Every element with children below sets `display: flex` explicitly.
  *
- * @see https://agentblog.dev/docs/blog-block
+ * @see https://docs.agentblog.dev/reference/files
  */
 import { ImageResponse } from 'next/og'
 import { readFile } from 'node:fs/promises'

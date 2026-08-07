@@ -24,7 +24,7 @@
  * left in a git tracked `.env` is the exact condition doctor check 13 exists to
  * flag, and uninstall was recreating it and calling it success.
  *
- * @see https://agentblog.dev/docs/installation
+ * @see https://docs.agentblog.dev/installation
  */
 import { rmSync } from 'node:fs'
 

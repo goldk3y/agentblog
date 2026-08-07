@@ -24,7 +24,7 @@ export default tseslint.config(
         { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
       ],
       // Domain types are inferred from Zod schemas and never hand-authored.
-      // See https://agentblog.dev/docs/content-sources: a hand-written interface and a
+      // See https://docs.agentblog.dev/reference/content-sources: a hand-written interface and a
       // validator always drift, and here they would drift between what we
       // validate and what we type.
       'no-restricted-syntax': [
@@ -32,7 +32,7 @@ export default tseslint.config(
         {
           selector: 'TSInterfaceDeclaration[id.name=/^(Post|Author|Category|Citation|FaqEntry)$/]',
           message:
-            'Domain types are inferred from Zod schemas with z.infer, never declared as interfaces. See https://agentblog.dev/docs/content-sources.',
+            'Domain types are inferred from Zod schemas with z.infer, never declared as interfaces. See https://docs.agentblog.dev/reference/content-sources.',
         },
       ],
     },

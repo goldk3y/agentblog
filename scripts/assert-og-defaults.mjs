@@ -33,7 +33,7 @@
  *     --path /blog/hello-world \
  *     [--site-name "Fixture Blog"]
  *
- * @see https://agentblog.dev/docs/blog-block
+ * @see https://docs.agentblog.dev/reference/files
  * @see BUILD-SPEC section 10, lib/metadata.ts
  */
 const args = new Map()

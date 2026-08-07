@@ -19,7 +19,7 @@
  * reason. `--all` replays backups newest to oldest, which is the only order that
  * composes, since each restore undoes the run that produced it.
  *
- * @see https://agentblog.dev/docs/installation
+ * @see https://docs.agentblog.dev/installation
  */
 import { unifiedDiff } from '../util/diff.ts'
 import { detectProject } from '../detect/project.ts'

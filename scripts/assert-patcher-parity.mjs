@@ -55,7 +55,7 @@
  * Usage:
  *   node scripts/assert-patcher-parity.mjs [--ci] [--project apps/fixture-next16]
  *
- * @see https://agentblog.dev/docs/cli-reference
+ * @see https://docs.agentblog.dev/reference/cli
  */
 import { spawnSync } from 'node:child_process'
 import {

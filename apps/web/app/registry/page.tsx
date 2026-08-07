@@ -23,12 +23,12 @@ export default function RegistryPage() {
   const items = getRegistryItems()
 
   return (
-    <div className="mx-auto max-w-6xl px-5 py-16 sm:px-8 sm:py-24">
-      <p className="text-muted-foreground font-mono text-xs tracking-wider uppercase">Registry</p>
-      <h1 className="mt-4 max-w-3xl font-serif text-4xl leading-[1.1] font-semibold tracking-tight text-balance sm:text-5xl">
+    <div className="mx-auto w-full max-w-5xl px-6 py-16 sm:py-24">
+      <p className="text-muted-foreground text-label-13">Registry</p>
+      <h1 className="text-heading-32 sm:text-heading-40 mt-3 max-w-3xl text-balance">
         Every item, installable on its own
       </h1>
-      <p className="text-muted-foreground mt-5 max-w-2xl text-lg leading-relaxed">
+      <p className="text-muted-foreground text-copy-18 mt-5 max-w-2xl text-pretty">
         <code className="font-mono text-base">@agentblog/blog</code> is an umbrella that pulls in
         everything below. Each piece is also addressable by itself, so you can take the JSON-LD
         builders without the routes, or the components without the content adapter.
@@ -97,10 +97,8 @@ export default function RegistryPage() {
         </ul>
       )}
 
-      <h2 className="mt-20 font-serif text-2xl font-semibold tracking-tight">
-        What the item types mean
-      </h2>
-      <dl className="mt-6 grid max-w-3xl gap-x-8 gap-y-4 text-sm sm:grid-cols-[auto_1fr]">
+      <h2 className="text-heading-24 mt-20">What the item types mean</h2>
+      <dl className="mt-6 grid max-w-3xl grid-cols-1 gap-x-8 gap-y-4 text-sm sm:grid-cols-[auto_1fr]">
         <dt className="text-foreground font-mono">block</dt>
         <dd className="text-muted-foreground">
           A group of files that ships together, usually routes or a component set.

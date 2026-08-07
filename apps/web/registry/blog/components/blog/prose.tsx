@@ -29,7 +29,7 @@ import { cn } from '@/lib/utils'
  * inverted palette layers a second, hardcoded set of greys on top of tokens that
  * have already switched, so dark mode ends up fighting itself. It also breaks
  * outright for any consumer whose dark theme is not near-black.
- * @See https://agentblog.dev/docs/theming.3, rules 2 and 5
+ * @See https://docs.agentblog.dev/guides/match-your-design#only-semantic-tokens-never-a-palette-utility
  *
  * WHAT BREAKS IF YOU CHANGE IT
  * - Adding `'use client'` here pulls the entire article body out of the static

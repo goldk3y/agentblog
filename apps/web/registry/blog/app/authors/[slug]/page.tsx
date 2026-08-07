@@ -27,8 +27,8 @@
  * `app/blog/layout.tsx`. That is deliberate: the author page is a site-level
  * entity page, not a blog archive page.
  *
- * @see https://agentblog.dev/docs/blog-block
- * @see https://agentblog.dev/docs/geo-playbook
+ * @see https://docs.agentblog.dev/reference/files
+ * @see https://docs.agentblog.dev/concepts/geo-playbook
  */
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'

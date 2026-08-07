@@ -17,7 +17,7 @@
  * feature rather than a flag on this one, so the report says plainly that these
  * counts include anything spoofing the user agent.
  *
- * @see https://agentblog.dev/docs/ai-referrers
+ * @see https://docs.agentblog.dev/guides/measure-ai-traffic
  */
 import { AI_CRAWLERS } from '@agentblog/checks'
 

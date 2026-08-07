@@ -6,7 +6,7 @@
  * is a `src/` layout, which is exactly the layout where a wrong answer writes a
  * file into a directory Next.js never reads.
  *
- * @see https://agentblog.dev/docs/installation
+ * @see https://docs.agentblog.dev/installation
  */
 import { existsSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
@@ -112,7 +112,7 @@ function detectPackageManager(root: string): PackageManager {
  * CLI can add is telling the user which root received `agentblog.config.ts`,
  * `AGENTS.md`, and the skills.
  *
- * @see https://agentblog.dev/docs/cli-reference check 32
+ * @see https://docs.agentblog.dev/guides/monorepo
  */
 function findWorkspaceRoot(start: string): string | null {
   let current = start

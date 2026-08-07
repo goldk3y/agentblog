@@ -30,7 +30,7 @@
  *   node scripts/assert-no-server-only-in-client.mjs [registry/blog dir]
  *
  * @see BUILD-SPEC section 6, "Zero 'use client' in the article render path"
- * @see https://agentblog.dev/docs/content-sources
+ * @see https://docs.agentblog.dev/reference/content-sources
  */
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
 import { dirname, join, relative, resolve, sep } from 'node:path'

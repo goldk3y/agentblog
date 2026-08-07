@@ -45,7 +45,7 @@ import { ClockIcon } from './icons'
  *   Googlebot's own timezone, which can move a post across a day boundary.
  * - Adding `'use client'` removes the byline from the static HTML shell.
  *
- * @see https://agentblog.dev/docs/geo-playbook
+ * @see https://docs.agentblog.dev/concepts/geo-playbook
  */
 
 /**

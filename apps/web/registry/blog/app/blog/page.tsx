@@ -48,8 +48,8 @@
  * A page number past the end returns a real 404 rather than an empty list, so
  * `?page=9999` cannot mint an unlimited supply of thin indexable URLs.
  *
- * @see https://agentblog.dev/docs/blog-block
- * @see https://agentblog.dev/docs/geo-playbook
+ * @see https://docs.agentblog.dev/reference/files
+ * @see https://docs.agentblog.dev/concepts/geo-playbook
  */
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'

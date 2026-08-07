@@ -9,7 +9,7 @@
  * The paid counterpart ranks by search impression decay. The free version has to
  * exist first, or there is nothing to charge for the scheduled version of.
  *
- * @see https://agentblog.dev/docs/agent-layer
+ * @see https://docs.agentblog.dev/guides/write-with-your-agent
  */
 import { internalLinksIn, type PostFile } from './post.ts'
 

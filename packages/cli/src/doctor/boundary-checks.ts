@@ -10,7 +10,7 @@
  * edited the components deliberately, and telling somebody their own edit is a
  * failure is how a check gets disabled.
  *
- * @see https://agentblog.dev/docs/theming
+ * @see https://docs.agentblog.dev/guides/match-your-design
  */
 import { basename } from 'node:path'
 

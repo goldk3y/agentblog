@@ -27,7 +27,7 @@
  * `pre` wrapper resets the styles its child `code` would otherwise inherit, so
  * `InlineCode` can style itself unconditionally and both cases come out right.
  *
- * @see https://agentblog.dev/docs/blog-block
+ * @see https://docs.agentblog.dev/reference/files
  */
 import type { ComponentPropsWithoutRef } from 'react'
 

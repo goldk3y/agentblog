@@ -1,0 +1,78 @@
+---
+title: Install in a monorepo
+description: What works in a workspace today, where each file lands, and the one Turborepo setting worth adding.
+icon: Wrench
+---
+
+Monorepos work to the extent shadcn gives it for free, which is a real level of
+support and worth stating precisely rather than generously.
+
+## What works
+
+shadcn already handles workspace layouts. It routes base components to your UI
+package and blocks to the app you ran the command in, and it rewrites imports
+accordingly. Two requirements: each workspace has its own `components.json`, and
+the workspaces agree on `style`, `iconLibrary`, and `baseColor`.
+
+AgentBlog asks for `card`, `badge`, `separator`, `avatar`, and `button` by bare
+name, so they resolve through your configuration and inherit all of that with no
+work from you.
+
+## Where the files land
+
+| File                                | Destination                                                           |
+| ----------------------------------- | --------------------------------------------------------------------- |
+| `app/**`, `components/**`, `lib/**` | The app you ran the command in                                        |
+| `components/ui/*`                   | Wherever your `components.json` aliases point, often a shared package |
+| `agentblog.config.ts`               | The project root, as shadcn resolves it                               |
+| `AGENTS.md`                         | The same root                                                         |
+| `.claude/skills/**`                 | The same root                                                         |
+
+In a workspace, which root those last three land in is the genuine unknown, and
+getting it wrong scatters the agent layer somewhere nobody looks. It fails
+quietly, because the files do get written.
+
+So `agentblog doctor` detects a workspace, reports where each of the three
+landed, and never blocks:
+
+```text
+AgentBlog: pnpm workspace detected.
+  agentblog.config.ts   apps/web/agentblog.config.ts
+  AGENTS.md             AGENTS.md          (repo root)
+  .claude/skills/       .claude/skills/    (repo root)
+Verify these are where your tooling expects them.
+```
+
+If the split is wrong for your setup, move the files and update the single
+import in `lib/config.ts`. That is the only place `@/agentblog.config` is read,
+which is exactly why there is only one importer.
+
+## Turborepo
+
+Nothing special is required. Add the blog to whichever app owns it and the usual
+`build`, `lint`, and `typecheck` tasks pick it up.
+
+One setting is worth adding: give the content directory an input on the build
+task, so editing a post invalidates the cache.
+
+```json title="turbo.json"
+{
+  "tasks": {
+    "build": {
+      "inputs": ["$TURBO_DEFAULT$", "content/**", "agentblog.config.ts"]
+    }
+  }
+}
+```
+
+Without it, Turborepo can serve a cached build that predates your new post. The
+symptom is a post that exists in the repository and not on the site.
+
+## What has not been tested
+
+A monorepo fixture is not in CI yet. It joins when the first database-backed
+content source ships, because that is when workspace users become likely.
+
+Until then the mechanism is sound and the disclosure above is accurate. If
+something lands in the wrong place, please open an issue with your workspace
+layout. That is more useful than a passing test written to fit the assumption.

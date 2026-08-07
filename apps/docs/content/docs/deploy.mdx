@@ -1,0 +1,147 @@
+---
+title: Put it live
+description: Deploy the blog, set the two environment variables it needs, and verify that a crawler can actually read the result.
+icon: Rocket
+---
+
+Your blog deploys with the rest of your app. There is nothing to host
+separately. What this page covers is the small amount of configuration that only
+matters once the site is public, and the one check worth running the day you
+ship.
+
+## Environment variables
+
+| Variable                      | Where                           | Needed for                                                                           |
+| ----------------------------- | ------------------------------- | ------------------------------------------------------------------------------------ |
+| `AGENTBLOG_REVALIDATE_SECRET` | Production and preview          | The publish webhook. Without it, `/api/publish` refuses every request                |
+| `INDEXNOW_KEY`                | Production                      | Telling Bing, Yandex, Seznam, and Naver about a new post the same day                |
+| `AGENTBLOG_PUBLIC_SITE`       | Production, on non-Vercel hosts | Allowing crawlers at all. Read the warning below before skipping it                  |
+| `AGENTBLOG_DEPLOY_WAIT_MS`    | Optional                        | How long the publish webhook waits for a deploy hook. Defaults to 45000 milliseconds |
+
+`agentblog doctor --fix` generates the first two into `.env.local` if they are
+missing, and writes the `public/<key>.txt` file IndexNow requires. Copy both
+values into your host's environment settings. If the key file and `INDEXNOW_KEY`
+disagree, IndexNow rejects every submission, and `doctor` reports it.
+
+<Callout type="warn" title="Not deploying on Vercel? Set AGENTBLOG_PUBLIC_SITE">
+  `app/robots.ts` decides whether to allow crawling from the deployment
+  environment, and it fails closed. Vercel sets `VERCEL_ENV` for it. Nothing
+  else does, so on any other host you must set `AGENTBLOG_PUBLIC_SITE=true` in
+  production or your live site serves a blanket `Disallow: /`.
+
+Failing closed is deliberate. Guessing permissively gets a staging site
+indexed and competing with your production pages, which takes weeks to undo.
+Guessing restrictively costs one environment variable and is visible the
+moment anyone opens `/robots.txt`.
+
+</Callout>
+
+Preview deployments stay closed to crawlers with no configuration, which is what
+you want: two indexable copies of the same post compete with each other.
+
+## The day you first deploy
+
+<Steps>
+
+<Step>
+### Check `robots.txt` by eye
+
+Open `https://yoursite.com/robots.txt`. If you see `Disallow: /`, read the
+warning above. This takes five seconds and it is the failure that costs the
+most.
+
+</Step>
+
+<Step>
+### Check what a crawler receives
+
+```bash
+npx agentblog@latest doctor --url https://yoursite.com/blog/your-post
+```
+
+This fetches your live URL five times, once each as GPTBot, ClaudeBot,
+PerplexityBot, OAI-SearchBot, and Googlebot, and asserts every one of them gets
+a 200 with the article text present and the `<title>` inside `<head>`.
+
+Run it from your own machine or from CI, never from inside the deployment. The
+request originates wherever the CLI runs, and a request from inside your network
+can bypass the exact CDN rule the check exists to find.
+
+If any crawler comes back blocked, go to [when your CDN blocks
+crawlers](/troubleshooting/cdn-blocking-crawlers). This is common, it is not
+your install, and it is fixable.
+
+</Step>
+
+<Step>
+### Submit the sitemap
+
+Add `https://yoursite.com/sitemap.xml` in [Google Search
+Console](https://search.google.com/search-console) and [Bing Webmaster
+Tools](https://www.bing.com/webmasters). You only do this once. Verification
+tokens go in `agentblog.config.ts` under `verification`, so they land in your
+root layout rather than in a file you have to keep.
+
+</Step>
+
+</Steps>
+
+## Tell search engines about a new post
+
+Publishing an MDX post is a git push, and the deploy rebuilds everything, so the
+sitemap and the feed are current the moment the deploy finishes. That is enough.
+
+To also push the URL rather than wait to be crawled:
+
+```bash
+npx agentblog@latest ping do-ai-crawlers-run-javascript
+```
+
+That calls your own `/api/publish` endpoint, which revalidates the post, the
+index, the category and tag pages, the sitemap, and the feed, and then submits
+the URL to IndexNow. It prints the IndexNow response code with its meaning
+attached, because a 403 for an invalid key and a 200 look identical from the
+caller's side otherwise.
+
+The endpoint takes `{ "slug": "my-post" }` and the shared secret, so a CMS
+webhook or a publishing agent can call it directly:
+
+```bash
+curl -X POST https://yoursite.com/api/publish \
+  -H "content-type: application/json" \
+  -H "authorization: Bearer $AGENTBLOG_REVALIDATE_SECRET" \
+  -d '{"slug":"do-ai-crawlers-run-javascript"}'
+```
+
+<Callout title="Why the endpoint revalidates more than the post">
+  `sitemap.xml` and `feed.xml` are cached route handlers. A publish step that revalidates only the
+  post pages leaves both serving their build-time output, and then pings IndexNow about a URL your
+  own sitemap does not list. You end up telling a search engine that a page is new and important and
+  that it does not exist on your site. The endpoint revalidates both explicitly for that reason.
+</Callout>
+
+## Keeping it healthy
+
+Add `doctor` to your CI, where it costs nothing and catches a config change
+someone made for another reason:
+
+```bash
+npx agentblog@latest doctor --offline
+```
+
+`--offline` skips the network checks, which is what you want on every commit.
+Run the `--url` form on a schedule instead, weekly is plenty, because the thing
+it catches is a CDN rule someone else changed.
+
+<Cards>
+  <Card
+    title="Measure what AI traffic arrives"
+    href="/guides/measure-ai-traffic"
+    description="Separating assistant referrals from ordinary search in the analytics you already run."
+  />
+  <Card
+    title="Troubleshooting"
+    href="/troubleshooting"
+    description="The failures that actually happen after a deploy."
+  />
+</Cards>

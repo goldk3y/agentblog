@@ -15,7 +15,7 @@ Running `shadcn init` on the user's behalf would pick a component base, set a
 `baseColor`, and write CSS variables into their stylesheet. That is choosing a
 design system for someone who already has one, and it is the failure that makes
 people uninstall rather than restyle. A project with Tailwind already has a
-visual identity. See https://agentblog.dev/docs/installation and section 4.3 rule 3.
+visual identity. See https://docs.agentblog.dev/installation and section 4.3 rule 3.
 
 The refusal costs one line of output:
 

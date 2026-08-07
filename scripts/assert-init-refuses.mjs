@@ -32,8 +32,8 @@
  * Usage:
  *   node scripts/assert-init-refuses.mjs [fixture dir] [--ci]
  *
- * @see https://agentblog.dev/docs/installation
- * @see https://agentblog.dev/docs/theming rule 3
+ * @see https://docs.agentblog.dev/installation
+ * @see https://docs.agentblog.dev/guides/match-your-design rule 3
  */
 import { spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'

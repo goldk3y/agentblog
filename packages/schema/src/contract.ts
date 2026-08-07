@@ -32,7 +32,7 @@
  * than a stub, because it also catches transitive request-scoped access through
  * a client SDK.
  *
- * @see https://agentblog.dev/docs/content-sources
+ * @see https://docs.agentblog.dev/reference/content-sources
  */
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'

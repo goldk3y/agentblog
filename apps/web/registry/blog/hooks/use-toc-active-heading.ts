@@ -22,7 +22,7 @@
  * thread and fires only when a heading actually crosses a boundary, so a long
  * post with sixty headings costs nothing while the reader is not moving.
  *
- * @see https://agentblog.dev/docs/blog-block
+ * @see https://docs.agentblog.dev/reference/files
  */
 import { useEffect, useState } from 'react'
 

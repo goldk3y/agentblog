@@ -4,7 +4,7 @@
 
 **A production blog for Next.js that AI search engines can actually read, installed with one command, with an agent layer that knows how to write for it.**
 
-[Documentation](https://agentblog.dev/docs) · [Live demo](https://agentblog.dev/blog) · [Registry](https://agentblog.dev/registry) · [The GEO playbook](https://agentblog.dev/docs/geo-playbook)
+[Documentation](https://docs.agentblog.dev) · [Live demo](https://agentblog.dev/blog) · [Registry](https://agentblog.dev/registry) · [The GEO playbook](https://docs.agentblog.dev/concepts/geo-playbook)
 
 </div>
 
@@ -32,7 +32,7 @@ why every claim on this page has an assertion script behind it in `scripts/`.
 > is not serving the registry yet, so `@agentblog/blog` resolves to nothing and
 > every `agentblog.dev` link on this page is a 404 today. To evaluate AgentBlog
 > now, build the registry from a checkout and serve it yourself:
-> [Installing from a local checkout](./apps/web/content/docs/installation.md#installing-from-a-local-checkout).
+> [Installing from a local checkout](./apps/docs/content/docs/installation.mdx#install-from-a-local-checkout).
 
 **Two commands, then four edits.** The commands are ours. Every edit is a
 decision only you can make, which is why none of them is automated.
@@ -66,7 +66,7 @@ Worth knowing before you run either command: adding `@agentblog` to your
 dependencies, and CSS from `agentblog.dev` and write them into your app, every
 time it runs. That is the same trust you extend to an npm publisher, without a
 lockfile. `--dry-run` prints everything it would write first, and
-[the installation guide](https://agentblog.dev/docs/installation) explains the
+[the installation guide](https://docs.agentblog.dev/installation) explains the
 tradeoff between the two paths honestly.
 
 Starting from nothing:
@@ -310,13 +310,13 @@ print a unified diff before touching anything, back up every file they modify to
 `.agentblog/backup/`, and are idempotent. Running `init` twice is a no-op, and CI
 asserts it. `--dry-run`, `--yes`, `--force`, and `--json` belong to specific
 commands rather than to the CLI as a whole; the
-[CLI reference](https://agentblog.dev/docs/cli-reference#flags) has the table.
+[CLI reference](https://docs.agentblog.dev/reference/cli#flags) has the table.
 
 Taking a later fix into an install you have already edited is
 `npx shadcn@latest add @agentblog/blog --diff` to see what moved, then
 `--overwrite` on the items you want, then `npx agentblog@latest doctor --fix` for
 the config half. See
-[Taking an update](https://agentblog.dev/docs/upgrading).
+[Taking an update](https://docs.agentblog.dev/guides/take-an-update).
 
 ## Requirements
 
@@ -354,28 +354,29 @@ and never claims done on a fail.
 
 ## Documentation
 
-| Page                                                          | For                                                         |
-| ------------------------------------------------------------- | ----------------------------------------------------------- |
-| [Installation](https://agentblog.dev/docs/installation)       | Both install paths, and the four edits neither one makes    |
-| [Configuration](https://agentblog.dev/docs/configuration)     | Every field in `agentblog.config.ts`                        |
-| [CLI reference](https://agentblog.dev/docs/cli-reference)     | Every command, every flag, and what `doctor --fix` declines |
-| [Troubleshooting](https://agentblog.dev/docs/troubleshooting) | The failures that actually happen, and what each looks like |
-| [The GEO playbook](https://agentblog.dev/docs/geo-playbook)   | Why the content format is the content format                |
+| Page                                                                 | For                                                         |
+| -------------------------------------------------------------------- | ----------------------------------------------------------- |
+| [Installation](https://docs.agentblog.dev/installation)              | Both install paths, and the four edits neither one makes    |
+| [Configuration](https://docs.agentblog.dev/reference/configuration)  | Every field in `agentblog.config.ts`                        |
+| [CLI reference](https://docs.agentblog.dev/reference/cli)            | Every command, every flag, and what `doctor --fix` declines |
+| [Troubleshooting](https://docs.agentblog.dev/troubleshooting)        | The failures that actually happen, and what each looks like |
+| [The GEO playbook](https://docs.agentblog.dev/concepts/geo-playbook) | Why the content format is the content format                |
 
 ## Non-goals for v1
 
 Stated as decisions rather than gaps: multi-locale routing, Tailwind v3, an
 `llms.txt` inside the blog block, and certified monorepo support. Each one has a
 reason and a reserved seam where there is one. See
-[Roadmap and non-goals](https://agentblog.dev/docs/roadmap).
+[Roadmap and non-goals](https://docs.agentblog.dev/project/roadmap).
 
 ## Contributing
 
 ### How this repository is built
 
 ```
-apps/web              agentblog.dev: landing, docs, registry host, and the demo blog
+apps/web              agentblog.dev: landing page, registry host, and the demo blog
   registry/           the source of truth for every file AgentBlog ships
+apps/docs             docs.agentblog.dev: the documentation, built with Fumadocs
 apps/fixture-next16   clean Next.js 16 app; CI installs into it and builds
 packages/schema       Zod schemas, inferred types, ContentSource, contract suite
 packages/checks       dependency-free config predicates, vendored bot list
@@ -403,7 +404,7 @@ become your published content, so they carry no attribution requirement.
 | Seed posts (`apps/web/registry/blog/content/**`) | [CC0](./LICENSE-SEED)          | These become your published content. An attribution requirement would mean every user owes credit on their own blog        |
 | Docs and playbook prose                          | [CC BY 4.0](./LICENSE-CONTENT) | Reproducing the playbook requires a credit link, which is exactly the citation this product exists to generate             |
 
-Full text in [Licensing](https://agentblog.dev/docs/licensing).
+Full text in [Licensing](https://docs.agentblog.dev/project/licensing).
 
 ## Acknowledgements
 

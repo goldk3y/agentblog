@@ -21,7 +21,7 @@
  * shadcn 2.3.0, a CLI that predates registry namespaces, `include`, and
  * `registry:base`. Half the install path does not function there.
  *
- * @see https://agentblog.dev/docs/cli-reference
+ * @see https://docs.agentblog.dev/reference/cli
  */
 import { TAILWIND_V4_MIGRATION_URL } from '../constants.ts'
 import {

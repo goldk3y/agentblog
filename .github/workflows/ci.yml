@@ -80,6 +80,17 @@ jobs:
       - name: Vendored Next.js bot list matches the installed Next.js
         run: node scripts/assert-html-bots-current.mjs
 
+      # docs.agentblog.dev is subject to the rule it documents. The docs app
+      # sets `htmlLimitedBots` itself, so it can narrow the same way a
+      # consumer's config can.
+      - name: The docs site bot list is a superset too
+        run: node scripts/assert-htmlbots-superset.mjs apps/docs/next.config.mjs
+
+      # A broken internal link on the docs site is a 404 for a reader and a dead
+      # end for an agent, and nothing else in the pipeline can see one.
+      - name: Documentation links resolve
+        run: node scripts/assert-docs-links.mjs
+
   unit:
     name: Unit and contract tests
     runs-on: ubuntu-latest

@@ -35,7 +35,7 @@
  * Usage:
  *   node scripts/assert-schema-valid.mjs [path/to/public/r]
  *
- * @see https://agentblog.dev/docs/../CONTRIBUTING.md
+ * @see CONTRIBUTING.md
  * @see BUILD-SPEC section 12
  */
 import { existsSync, readFileSync, readdirSync } from 'node:fs'

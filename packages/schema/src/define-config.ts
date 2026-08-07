@@ -26,7 +26,7 @@
  * below can depend on which content source you passed. `satisfies` checks the
  * object against a fixed type and cannot do that.
  *
- * @see https://agentblog.dev/docs/configuration
+ * @see https://docs.agentblog.dev/reference/configuration
  */
 import { z } from 'zod'
 

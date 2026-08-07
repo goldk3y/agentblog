@@ -1,0 +1,190 @@
+/*
+ * docs.agentblog.dev stylesheet.
+ *
+ * ---------------------------------------------------------------------------
+ * WHAT IS IN HERE AND WHY IT IS ORDERED THIS WAY
+ * ---------------------------------------------------------------------------
+ * 1. `@import "tailwindcss"` first, because Tailwind v4 requires the import to
+ *    precede everything that uses its at-rules.
+ * 2. `fumadocs-ui/css/shadcn.css`, which binds every `--color-fd-*` token
+ *    Fumadocs paints with to the shadcn token of the same meaning. That is what
+ *    makes the palette below the only palette on the page.
+ * 3. `fumadocs-ui/css/preset.css`, the Fumadocs theme itself: typography,
+ *    layout, code blocks, animations.
+ * 4. The Geist primitive scale (`--ds-*`), then the shadcn semantic tokens
+ *    bound to it. Both are the same values agentblog.dev uses, so the docs and
+ *    the product site are one design rather than two that resemble each other.
+ *
+ * The order matters in one direction only: the imports must come first. The
+ * token declarations are custom properties, which resolve where they are used
+ * rather than where they are written, so they override the presets from below.
+ *
+ * ---------------------------------------------------------------------------
+ * THE PALETTE
+ * ---------------------------------------------------------------------------
+ * Two layers, as on agentblog.dev:
+ *
+ *   --ds-*        The Geist primitives, taken verbatim from Vercel's published
+ *                 values. Never referenced from a component.
+ *   shadcn tokens `--background`, `--foreground`, `--border` and the rest, each
+ *                 bound to a `--ds-*` primitive. Fumadocs reads this layer.
+ *
+ * Geist scale semantics:
+ *
+ *   100  default background      600  active border
+ *   200  hover background        700  solid fill, high contrast
+ *   300  active background       800  solid fill, hover
+ *   400  default border          900  secondary text and icons
+ *   500  hover border           1000  primary text and icons
+ *
+ * @see https://vercel.com/geist/colors
+ */
+
+@import 'tailwindcss';
+@import 'fumadocs-ui/css/shadcn.css';
+@import 'fumadocs-ui/css/preset.css';
+
+/*
+ * The documentation is prose, not markup, so Tailwind must not read it as a
+ * source.
+ *
+ * Tailwind v4 auto-detects sources by walking the project, which pulls in every
+ * MDX file under `content`. Those files quote class names inside backticks, and
+ * Tailwind's extractor does not know a backtick from an attribute, so a page
+ * that documents a dark-mode prose variant emits the rule that would undo the
+ * theme.
+ *
+ * The rule this implies: MDX content carries no `className`. Everything a page
+ * needs is a component from `components/mdx.tsx`.
+ */
+@source not '../content';
+
+/* -------------------------------------------------------------------------- */
+/*  Layer 1: Geist primitives                                                 */
+/* -------------------------------------------------------------------------- */
+
+:root {
+  --ds-background-100: #ffffff;
+  --ds-background-200: #fafafa;
+
+  --ds-gray-100: #f2f2f2;
+  --ds-gray-200: #ebebeb;
+  --ds-gray-300: #e6e6e6;
+  --ds-gray-400: #eaeaea;
+  --ds-gray-500: #c9c9c9;
+  --ds-gray-600: #a8a8a8;
+  --ds-gray-700: #8f8f8f;
+  --ds-gray-800: #7d7d7d;
+  --ds-gray-900: #4d4d4d;
+  --ds-gray-1000: #171717;
+
+  --ds-gray-alpha-100: #0000000d;
+  --ds-gray-alpha-200: #00000015;
+  --ds-gray-alpha-300: #0000001a;
+  --ds-gray-alpha-400: #00000014;
+  --ds-gray-alpha-500: #00000036;
+  --ds-gray-alpha-600: #0000003d;
+
+  --ds-blue-700: #0070f7;
+  --ds-blue-900: #0064e2;
+  --ds-red-900: #d60020;
+}
+
+.dark {
+  --ds-background-100: #000000;
+  --ds-background-200: #0a0a0a;
+
+  --ds-gray-100: #1a1a1a;
+  --ds-gray-200: #1f1f1f;
+  --ds-gray-300: #292929;
+  --ds-gray-400: #2e2e2e;
+  --ds-gray-500: #454545;
+  --ds-gray-600: #878787;
+  --ds-gray-700: #8f8f8f;
+  --ds-gray-800: #7d7d7d;
+  --ds-gray-900: #a0a0a0;
+  --ds-gray-1000: #ededed;
+
+  --ds-gray-alpha-100: #ffffff12;
+  --ds-gray-alpha-200: #ffffff17;
+  --ds-gray-alpha-300: #ffffff21;
+  --ds-gray-alpha-400: #ffffff24;
+  --ds-gray-alpha-500: #ffffff3d;
+  --ds-gray-alpha-600: #ffffff82;
+
+  --ds-blue-700: #0071f6;
+  --ds-blue-900: #50a8ff;
+  --ds-red-900: #ff5e63;
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Layer 2: shadcn semantic tokens                                           */
+/* -------------------------------------------------------------------------- */
+
+/*
+ * Declared once, not once per theme. `next-themes` puts `.dark` on `<html>`,
+ * which is the same element `:root` selects, so the `--ds-*` block above has
+ * already resolved to the active theme by the time these substitutions are
+ * computed.
+ */
+:root {
+  --radius: 0.5rem;
+
+  --background: var(--ds-background-100);
+  --foreground: var(--ds-gray-1000);
+
+  --card: var(--ds-background-100);
+  --card-foreground: var(--ds-gray-1000);
+  --popover: var(--ds-background-100);
+  --popover-foreground: var(--ds-gray-1000);
+
+  --primary: var(--ds-gray-1000);
+  --primary-foreground: var(--ds-background-100);
+
+  --secondary: var(--ds-gray-100);
+  --secondary-foreground: var(--ds-gray-1000);
+  --muted: var(--ds-gray-100);
+  --muted-foreground: var(--ds-gray-900);
+  --accent: var(--ds-gray-100);
+  --accent-foreground: var(--ds-gray-1000);
+
+  --destructive: var(--ds-red-900);
+  --destructive-foreground: var(--ds-background-100);
+
+  --border: var(--ds-gray-alpha-400);
+  --input: var(--ds-gray-alpha-400);
+  --ring: var(--ds-blue-900);
+
+  /* The sidebar is the one surface that is not the page background. */
+  --sidebar: var(--ds-background-200);
+  --sidebar-foreground: var(--ds-gray-1000);
+  --sidebar-primary: var(--ds-gray-1000);
+  --sidebar-primary-foreground: var(--ds-background-100);
+  --sidebar-accent: var(--ds-gray-100);
+  --sidebar-accent-foreground: var(--ds-gray-1000);
+  --sidebar-border: var(--ds-gray-alpha-400);
+  --sidebar-ring: var(--ds-blue-900);
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Type and layout                                                           */
+/* -------------------------------------------------------------------------- */
+
+@theme {
+  /*
+   * Geist and Geist Mono, loaded by `next/font` in `app/layout.tsx`. The
+   * fallbacks are what renders if that ever fails, and they are system fonts
+   * rather than a second webfont so the failure is invisible.
+   */
+  --font-sans:
+    var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, 'SFMono-Regular', 'Menlo', monospace;
+}
+
+:root {
+  /*
+   * Wider than the Fumadocs default so a three-column table in the reference
+   * pages does not need a horizontal scrollbar at 1440px.
+   */
+  --fd-layout-width: 90rem;
+}

@@ -12,7 +12,7 @@
  * documentation for both a human and a coding agent, and a patcher that ate them
  * would make the file worse every time it ran.
  *
- * @see https://agentblog.dev/docs/configuration
+ * @see https://docs.agentblog.dev/reference/configuration
  */
 import {
   createProject,

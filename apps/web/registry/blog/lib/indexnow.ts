@@ -36,7 +36,7 @@
  * the publish webhook after the revalidation has already succeeded, and a failed
  * ping must not turn a successful publish into a 500.
  *
- * @see https://agentblog.dev/docs/agent-layer
+ * @see https://docs.agentblog.dev/guides/write-with-your-agent
  */
 import { absoluteUrl, config } from '@/lib/config'
 

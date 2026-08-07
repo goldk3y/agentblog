@@ -25,7 +25,7 @@
  * validation outright. `setProperty` emits the initializer verbatim for exactly
  * this reason.
  *
- * @see https://agentblog.dev/docs/blog-block
+ * @see https://docs.agentblog.dev/reference/files
  */
 import { buildHtmlLimitedBotsPattern } from '@agentblog/checks'
 

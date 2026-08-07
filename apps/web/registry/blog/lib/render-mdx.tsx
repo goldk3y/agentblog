@@ -84,7 +84,7 @@
  * author role you control. See the same warning on `ContentSource` in
  * `lib/types.ts`.
  *
- * @see https://agentblog.dev/docs/blog-block
+ * @see https://docs.agentblog.dev/reference/files
  */
 import 'server-only'
 

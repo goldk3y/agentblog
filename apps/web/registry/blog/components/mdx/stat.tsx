@@ -26,7 +26,7 @@
  * putting it in an H2 would corrupt the document outline and the table of
  * contents built from it.
  *
- * @see https://agentblog.dev/docs/geo-playbook*/
+ * @see https://docs.agentblog.dev/concepts/geo-playbook*/
 export interface StatProps {
   /** The number as it should read, units included. For example `2.5x` or `72.4%`. */
   readonly value: string

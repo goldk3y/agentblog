@@ -9,7 +9,7 @@
  * which already imports our block, so writing there duplicates our rules into
  * the agent's context twice and invites `next dev` to overwrite us.
  *
- * @see https://agentblog.dev/docs/agent-layer
+ * @see https://docs.agentblog.dev/guides/write-with-your-agent
  */
 
 /** Next.js owns everything between these two lines. We never write inside them. */
@@ -125,7 +125,7 @@ export function isAgentBlogEnvComment(line: string): boolean {
  * of output and keeps the promise that AgentBlog inherits a theme rather than
  * replacing one.
  *
- * @see https://agentblog.dev/docs/installation
+ * @see https://docs.agentblog.dev/installation
  */
 export const NO_COMPONENTS_JSON_MESSAGE = [
   'AgentBlog builds on shadcn/ui, and it inherits your theme rather than replacing it.',

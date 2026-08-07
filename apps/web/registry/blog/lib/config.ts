@@ -40,7 +40,7 @@
  * If you find yourself writing a template literal that starts with
  * `config.siteUrl`, add a helper here instead.
  *
- * @see https://agentblog.dev/docs/configuration
+ * @see https://docs.agentblog.dev/reference/configuration
  */
 import 'server-only'
 

@@ -48,7 +48,7 @@
  *    characters that do that, and this escape is the second layer.
  *    `app/feed.xml/route.ts` has carried the same rule since it was written.
  *
- * @see https://agentblog.dev/docs/blog-block
+ * @see https://docs.agentblog.dev/reference/files
  */
 import type { MetadataRoute } from 'next'
 

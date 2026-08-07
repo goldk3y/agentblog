@@ -41,7 +41,7 @@
  *     [--slug cold-slug-probe] [--secret $AGENTBLOG_PUBLISH_SECRET] \
  *     [--keep]
  *
- * @see https://agentblog.dev/docs/blog-block
+ * @see https://docs.agentblog.dev/reference/files
  */
 import { readFileSync, readdirSync, existsSync, rmSync, writeFileSync } from 'node:fs'
 import { dirname, join, relative, resolve } from 'node:path'

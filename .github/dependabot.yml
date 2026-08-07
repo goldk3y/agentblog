@@ -4,7 +4,7 @@ version: 2
 # surfaces in this repository before it surfaces in a user's. Dependabot is what
 # keeps that true. It only works if someone is expected to look at the red build.
 #
-# @see https://agentblog.dev/docs/roadmap
+# @see https://docs.agentblog.dev/project/roadmap
 
 updates:
   # One ecosystem entry covers the whole pnpm workspace: `directories: ['/']`

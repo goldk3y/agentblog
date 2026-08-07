@@ -12,7 +12,7 @@
  * requirement passes, and everything written goes through the patch set, which
  * backs up first and prints a diff.
  *
- * @see https://agentblog.dev/docs/installation
+ * @see https://docs.agentblog.dev/installation
  */
 import prompts from 'prompts'
 

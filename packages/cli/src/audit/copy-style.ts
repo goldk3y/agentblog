@@ -16,7 +16,7 @@
  * A style guide nobody can run is a style guide nobody follows, which is why
  * this lives here rather than in a contributing document.
  *
- * @see https://agentblog.dev/docs/agent-layer
+ * @see https://docs.agentblog.dev/guides/write-with-your-agent
  */
 
 export interface CopyIssue {

@@ -40,7 +40,7 @@
  * Usage:
  *   node scripts/assert-theme-conformance.mjs [registry/blog dir]
  *
- * @see https://agentblog.dev/docs/theming, rules 2 and 5
+ * @see https://docs.agentblog.dev/guides/match-your-design, rules 2 and 5
  * @see BUILD-SPEC section 0, rule 3
  */
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
