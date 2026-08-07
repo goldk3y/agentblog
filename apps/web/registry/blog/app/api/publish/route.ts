@@ -156,6 +156,11 @@ function handlerPathsFor(slug: string): string[] {
   return [
     '/sitemap.xml',
     '/feed.xml',
+    // Same reasoning as the two above: a cached route handler built from the
+    // post list, so a publish that does not invalidate it leaves a retrieval
+    // agent reading an index that is missing the post we just told IndexNow
+    // about.
+    '/llms.txt',
     /**
      * Best effort. Next.js derives its own route path for metadata image
      * handlers and appends a generated suffix for cache busting, so this call

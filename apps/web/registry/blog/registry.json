@@ -331,6 +331,11 @@
           "target": "app/feed.xml/route.ts"
         },
         {
+          "path": "app/llms.txt/route.ts",
+          "type": "registry:page",
+          "target": "app/llms.txt/route.ts"
+        },
+        {
           "path": "app/opengraph-image.tsx",
           "type": "registry:page",
           "target": "app/opengraph-image.tsx"

@@ -165,7 +165,7 @@ export default function LandingPage() {
               narrower widths where it has to wrap.
             */}
             <p className="text-muted-foreground sm:text-copy-18 text-copy-16 mt-6 max-w-2xl text-balance">
-              One command installs a complete blog you or your agent can edit. Open Source.
+              One command installs a complete, SEO optimized blog into your site. Open Source.
             </p>
 
             <div className="mt-10 w-full">
@@ -237,12 +237,12 @@ export default function LandingPage() {
       {/*  `scripts/assert-file-count.mjs` parses the digits in this        */}
       {/*  section's lead and fails the build when they stop matching what  */}
       {/*  `@agentblog/blog` actually resolves to. Reword it freely, but    */}
-      {/*  keep the count in the form `71 files,`.                          */}
+      {/*  keep the count in the form `72 files,`.                          */}
       {/* ---------------------------------------------------------------- */}
       <Section
         id="what-you-get"
         title="One command installs the whole blog"
-        lead="71 files, and you own every one of them. No runtime package to depend on, and nothing of ours to upgrade around."
+        lead="72 files, and you own every one of them. No runtime package to depend on, and nothing of ours to upgrade around."
       >
         <Panel
           label="your-app/"

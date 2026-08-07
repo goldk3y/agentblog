@@ -1,6 +1,6 @@
 ---
 title: What gets installed
-description: A file-by-file tour of the 71 files AgentBlog writes into your repository, and the rules each piece obeys.
+description: A file-by-file tour of the 72 files AgentBlog writes into your repository, and the rules each piece obeys.
 icon: FileText
 ---
 
@@ -50,14 +50,24 @@ hides everything past page one from a crawler.
 | `app/sitemap.ts`           | `lastModified` comes from each post's `dateModified`, never from the build time |
 | `app/robots.ts`            | Guarded on the deployment environment, and emits your `aiAccess` rules          |
 | `app/feed.xml/route.ts`    | RSS 2.0                                                                         |
+| `app/llms.txt/route.ts`    | The post list as Markdown, for retrieval agents that fetch it                   |
 | `app/opengraph-image.tsx`  | The site-level social card                                                      |
 | `app/not-found.tsx`        | A 404 that links back into the content rather than being a dead end             |
 | `app/api/publish/route.ts` | Revalidation and IndexNow, in that order                                        |
 
-`sitemap.xml`, `robots.txt`, `feed.xml`, and the social images are all cached
-route handlers. That is why the publish webhook revalidates the sitemap and the
-feed explicitly rather than only the post paths: a new post that never reaches
-either is a failure with no symptom.
+`sitemap.xml`, `robots.txt`, `feed.xml`, `llms.txt`, and the social images are
+all cached route handlers. That is why the publish webhook revalidates them
+explicitly rather than only the post paths: a new post that never reaches them
+is a failure with no symptom.
+
+`llms.txt` is worth being precise about, because it is widely oversold. Google
+has said no Search system reads it, and OpenAI's and Google's crawlers do not
+request it in meaningful volume, so it is not an SEO lever and nothing here
+treats it as one. It ships because Perplexity has confirmed it fetches the file
+to decide which pages are worth retrieving, and Anthropic recommends publishing
+one and honours it in Claude's retrieval. Read it as an agent-readable table of
+contents built from the same content source as the sitemap, not as a ranking
+signal.
 
 ## Components
 
