@@ -23,7 +23,7 @@ const OPTIONS = [
     id: 'you',
     label: 'For you',
     command: 'npx agentblog@latest init',
-    note: 'Writes the blog into your Next.js app, then verifies it.',
+    note: 'Installs the blog into your Next.js app, then verifies it.',
   },
   {
     id: 'agent',

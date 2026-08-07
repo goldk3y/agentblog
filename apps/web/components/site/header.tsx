@@ -31,13 +31,8 @@ export function SiteHeader() {
   return (
     <header className="border-border bg-background/80 sticky top-0 z-40 border-b backdrop-blur-md">
       <div className="mx-auto flex h-14 w-full max-w-5xl items-center gap-8 px-6">
-        <Link
-          href="/"
-          className="text-foreground text-mono-13 font-mono"
-          aria-label="AgentBlog home"
-        >
-          agentblog
-          <span className="text-muted-foreground">.dev</span>
+        <Link href="/" className="text-foreground text-label-14" aria-label="AgentBlog home">
+          AgentBlog
         </Link>
 
         <nav aria-label="Main" className="hidden flex-1 items-center gap-6 md:flex">

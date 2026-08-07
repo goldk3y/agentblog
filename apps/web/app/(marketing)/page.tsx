@@ -165,7 +165,7 @@ export default function LandingPage() {
               narrower widths where it has to wrap.
             */}
             <p className="text-muted-foreground sm:text-copy-18 text-copy-16 mt-6 max-w-2xl text-balance">
-              Like shadcn for your blog. One command writes it into your Next.js app.
+              Like shadcn for your blog. One command installs it into your Next.js app.
             </p>
 
             <div className="mt-10 w-full">
@@ -241,7 +241,7 @@ export default function LandingPage() {
       {/* ---------------------------------------------------------------- */}
       <Section
         id="what-you-get"
-        title="One command writes the whole blog"
+        title="One command installs the whole blog"
         lead="71 files, and you own every one of them. No runtime package to depend on, and nothing of ours to upgrade around."
       >
         <Panel
@@ -263,8 +263,8 @@ export default function LandingPage() {
         </Panel>
 
         <p className="text-muted-foreground text-copy-14 mx-auto mt-8 max-w-2xl text-center">
-          Already on shadcn? <C>npx shadcn@latest add @agentblog/blog</C> writes the same files, and{' '}
-          <C>npx agentblog@latest doctor --fix</C> finishes the config a registry cannot reach.
+          Already on shadcn? <C>npx shadcn@latest add @agentblog/blog</C> installs the same files,
+          and <C>npx agentblog@latest doctor --fix</C> finishes the config a registry cannot reach.
         </p>
       </Section>
 
@@ -274,7 +274,7 @@ export default function LandingPage() {
       <Section
         id="agent-layer"
         title="Your coding agent writes the posts"
-        lead="Posts are MDX files in your repository. Installing AgentBlog also writes four skills and a rule block your agent reads, so it knows the format before you ask."
+        lead="Posts are MDX files in your repository. Installing AgentBlog also adds four skills and a rule block your agent reads, so it knows the format before you ask."
       >
         <Panel label=".claude/skills/" bodyClassName="grid grid-cols-1 sm:grid-cols-2">
           {SKILLS.map((skill, index) => (
