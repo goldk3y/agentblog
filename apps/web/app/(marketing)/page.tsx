@@ -165,7 +165,7 @@ export default function LandingPage() {
               narrower widths where it has to wrap.
             */}
             <p className="text-muted-foreground sm:text-copy-18 text-copy-16 mt-6 max-w-2xl text-balance">
-              Like shadcn for your blog. One command installs it into your Next.js app.
+              One command installs a complete blog you or your agent can edit. Open Source.
             </p>
 
             <div className="mt-10 w-full">
