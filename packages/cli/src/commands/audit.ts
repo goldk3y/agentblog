@@ -11,9 +11,8 @@
  *
  * @see https://docs.agentblog.dev/guides/pre-publish-checklist
  */
-import { join } from 'node:path'
 
-import { auditPost, loadPosts } from '../audit/post.ts'
+import { auditPost, loadPosts, resolveContentDir } from '../audit/post.ts'
 import { parseCrawlerLog } from '../audit/crawlers.ts'
 import { findStale } from '../audit/stale.ts'
 import { detectProject } from '../detect/project.ts'
@@ -55,7 +54,7 @@ export function auditCommand(slug: string | undefined, options: AuditOptions): v
   setSilent(json)
 
   const project = detectProject(options.cwd ?? process.cwd())
-  const dir = resolveContentDir(project.root, options.dir, project.usesSrcDir)
+  const dir = resolveContentDir(project.root, project.usesSrcDir, options.dir)
 
   if (options.crawlers) {
     auditCrawlers(options.crawlers, json)
@@ -111,12 +110,6 @@ export function auditCommand(slug: string | undefined, options: AuditOptions): v
     options.telemetry === false,
   )
   process.exitCode = reporter.count('error') > 0 ? 1 : 0
-}
-
-function resolveContentDir(root: string, dir: string | undefined, usesSrcDir: boolean): string {
-  if (dir) return join(root, dir)
-  const candidate = join(root, usesSrcDir ? 'src/content/blog' : 'content/blog')
-  return exists(candidate) ? candidate : join(root, 'content/blog')
 }
 
 /**

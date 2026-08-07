@@ -19,6 +19,7 @@ import prompts from 'prompts'
 import { BLOG_REGISTRY_ITEM, SOURCE_REGISTRY_ITEMS } from '../constants.ts'
 import { appPathLabel, detectProject, type ProjectContext } from '../detect/project.ts'
 import { readManifest, writeManifest } from '../detect/routes.ts'
+import type { InstallManifest } from '../detect/routes.ts'
 import { DEFAULT_REGISTRY_URL } from '../patchers/components-json.ts'
 import { PatchSet } from '../patchers/patch-set.ts'
 import { restoreContent, snapshotContent } from './init-content.ts'
@@ -64,6 +65,23 @@ export async function initCommand(options: InitOptions): Promise<void> {
     return
   }
 
+  /*
+   * The existing install is announced BEFORE the prompts, not after them.
+   *
+   * It used to be reported from inside the install step, which runs after
+   * `ask`. So a second `init` asked for a site URL, a brand, and an author,
+   * and only then said it had been here before. Every one of those answers was
+   * then declined by the config patcher, because the placeholders they would
+   * have replaced are long gone. The user typed four answers into a form that
+   * had already decided to ignore them.
+   *
+   * Saying it first costs one screen and makes the prompts honest: the answers
+   * still matter when a placeholder survives, which is exactly the case where
+   * the patcher will use them.
+   */
+  const existing = options.skipInstall ? null : readManifest(project)
+  if (existing && !options.reinstall) describeExistingInstall(existing)
+
   const answers = await ask(options)
   if (!answers) {
     note('Nothing was written.')
@@ -103,7 +121,7 @@ export async function initCommand(options: InitOptions): Promise<void> {
   }
   for (const line of registryDeclined) note(`  ${line}`)
 
-  if (!runInstallStep(project, answers, options)) {
+  if (!runInstallStep(project, answers, options, existing)) {
     process.exitCode = 1
     return
   }
@@ -125,6 +143,7 @@ export async function initCommand(options: InitOptions): Promise<void> {
     if (options.dryRun) {
       say()
       note('Dry run. Nothing was written.')
+      reportDeclined(declined)
       return
     }
 
@@ -139,8 +158,24 @@ export async function initCommand(options: InitOptions): Promise<void> {
         `Backup: ${toPosixRelative(project.root, applied.backupDir)}. Undo with npx agentblog revert.`,
       )
     }
-    for (const line of declined) note(`  ${line}`)
   }
+
+  /*
+   * Declines are reported on BOTH branches, and that is the whole point.
+   *
+   * They used to print only when there was also something to write, so the one
+   * run where every answer was rejected was the one run that explained nothing:
+   * a second `init` collected a site URL, a brand, and an author, declined all
+   * three because the placeholders were already gone, and printed "Every patch
+   * site is already correct. Nothing to write." The values the user had just
+   * typed were on screen four lines above the message claiming everything was
+   * correct, and their absence from the config was reported nowhere.
+   *
+   * A decline is not the absence of a change. It is a decision this command
+   * made about the user's file, and it is the only record of why the answer
+   * they gave is not the value on disk.
+   */
+  reportDeclined(declined)
 
   if (!options.dryRun) {
     writeManifest(project, {
@@ -336,10 +371,37 @@ function withoutPrompts(options: InitOptions): InitAnswers | null {
  *
  * @see `init-content.ts`
  */
+/**
+ * Every value this command chose not to write, and why.
+ *
+ * Headed rather than loose, because a decline read out of context looks like an
+ * error, and these are usually the correct outcome: the user already answered.
+ */
+function reportDeclined(declined: readonly string[]): void {
+  if (declined.length === 0) return
+  say()
+  note('Left alone, because these are already answered rather than placeholders:')
+  for (const line of declined) note(`  ${line}`)
+}
+
+/** Printed before the prompts, so a re-run says so before it asks anything. */
+function describeExistingInstall(manifest: InstallManifest): void {
+  step('AgentBlog is already installed here, so the registry files will be left alone')
+  bullet(`installed ${manifest.installedAt} by agentblog ${manifest.cliVersion}`)
+  bullet(`${manifest.files.length} file(s) recorded in .agentblog/manifest.json`)
+  note(
+    'Pass --reinstall to run `shadcn add --overwrite` again. It replaces the block code, and your content is snapshotted and restored either way.',
+  )
+  note(
+    'The config patches still run and are idempotent. Answers below are only used where a placeholder survives; anything you already set is reported and kept.',
+  )
+}
+
 function runInstallStep(
   project: ProjectContext,
   answers: InitAnswers,
   options: InitOptions,
+  existing: InstallManifest | null,
 ): boolean {
   const items = [BLOG_REGISTRY_ITEM, SOURCE_REGISTRY_ITEMS[answers.source]].filter(
     (item): item is string => Boolean(item),
@@ -352,17 +414,8 @@ function runInstallStep(
     return true
   }
 
-  const manifest = readManifest(project)
-  if (manifest && !options.reinstall) {
-    step('AgentBlog is already installed here, so the registry files were left alone')
-    bullet(`installed ${manifest.installedAt} by agentblog ${manifest.cliVersion}`)
-    bullet(`${manifest.files.length} file(s) recorded in .agentblog/manifest.json`)
-    note('The config patches below still run, and they are idempotent.')
-    note(
-      'Pass --reinstall to run `shadcn add --overwrite` again. It replaces the block code, and your content is snapshotted and restored either way.',
-    )
-    return true
-  }
+  // Already announced by `describeExistingInstall`, before the prompts ran.
+  if (existing && !options.reinstall) return true
 
   if (options.dryRun) {
     /*

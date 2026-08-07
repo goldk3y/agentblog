@@ -160,7 +160,7 @@ program
   .option('--fix', 'repair what can be repaired, backing up every file first')
   .option(
     '--url <url>',
-    'also fetch this live URL as GPTBot, ClaudeBot, PerplexityBot, OAI-SearchBot, and Googlebot',
+    'also check this live site as GPTBot, ClaudeBot, PerplexityBot, OAI-SearchBot, and Googlebot. Pass an origin and a real post is probed; pass a post URL to probe that one',
   )
   .option('--dry-run', 'with --fix, print the unified diff and write nothing')
   .option('--verbose', 'list passing checks as well as failures')

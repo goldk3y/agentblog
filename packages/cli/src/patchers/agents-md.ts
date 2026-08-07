@@ -60,6 +60,44 @@ export function locateBlock(source: string): BlockPosition {
 }
 
 /**
+ * The block to write: the shipped fragment when there is one, else our own.
+ *
+ * ===========================================================================
+ * WHY THE FRAGMENT WINS
+ * ===========================================================================
+ * Two rule sets existed and the weaker one shipped. `registry/agent` installs
+ * `AGENTS.agentblog.md`, whose own install note says:
+ *
+ *   "AGENTS.agentblog.md is a fragment, not a replacement for your AGENTS.md.
+ *    Run `npx agentblog@latest doctor --fix` to merge it into your real
+ *    AGENTS.md"
+ *
+ * No code ever did that. `grep -rn AGENTS.agentblog packages/cli/src` returned
+ * nothing, so `init` wrote its own shorter block from `constants.ts` and the
+ * fragment sat unread beside it. Both files carry the same
+ * `<!-- agentblog:start -->` markers, so a project ended up with two competing
+ * AgentBlog blocks, and the one an agent actually loads (`CLAUDE.md` imports
+ * `AGENTS.md`) was the one missing the rules that matter most: never fabricate
+ * a statistic, `dateModified` only when the content changed, spread the shared
+ * metadata defaults, build JSON-LD in one place.
+ *
+ * The fragment is also the deliberately install-path-agnostic wording. It names
+ * the skill rather than a slash command, because the command differs between a
+ * registry install and the plugin, and only the CLI knows which happened.
+ *
+ * So the fragment is now the source when it is present, and the built-in block
+ * is the fallback for an install that took the blog item without the agent one.
+ */
+export function resolveAgentsBlock(shipped: string | null, fallback: string): string {
+  if (shipped === null) return fallback
+  const position = locateBlock(shipped)
+  if (!position.present) return fallback
+
+  const block = shipped.slice(position.start, position.end).trim()
+  return block.length > 0 ? `${block}\n` : fallback
+}
+
+/**
  * Put `block` in the file, replacing any previous copy of it.
  *
  * Idempotent: running this over its own output returns the same string, which is

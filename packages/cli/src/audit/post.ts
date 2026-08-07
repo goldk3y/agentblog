@@ -14,6 +14,7 @@
  * @see https://docs.agentblog.dev/concepts/geo-playbook
  */
 import { basename } from 'node:path'
+import { exists, join } from '../util/fs.ts'
 
 import {
   checkAnswerCapsule,
@@ -41,6 +42,23 @@ export interface PostFile {
   readonly body: string
   /** Set when the frontmatter is not valid YAML. `data` is empty when it is. */
   readonly frontmatterError: FrontmatterError | null
+}
+
+/**
+ * Where posts live, for the two commands that have to agree about it.
+ *
+ * `audit` resolves it to read every post and `doctor --url` resolves it to pick
+ * one real slug to probe. If those two disagreed, `doctor` would report a live
+ * failure for a URL `audit` had never heard of.
+ */
+export function resolveContentDir(
+  root: string,
+  usesSrcDir: boolean,
+  override?: string | undefined,
+): string {
+  if (override) return join(root, override)
+  const candidate = join(root, usesSrcDir ? 'src/content/blog' : 'content/blog')
+  return exists(candidate) ? candidate : join(root, 'content/blog')
 }
 
 export function loadPosts(dir: string): PostFile[] {

@@ -28,6 +28,7 @@
  */
 import { appPath, appPathLabel, type ProjectContext } from './project.ts'
 import { exists, join, readFile, readJson, toPosixRelative } from '../util/fs.ts'
+import { PLACEHOLDER_AUTHOR } from '../constants.ts'
 
 export interface Roster {
   /** Slugs found in the file, in file order. Empty when the file is unusable. */
@@ -44,9 +45,6 @@ export interface Rosters {
   /** `defaultAuthor` from `agentblog.config.ts`, when it names a real slug. */
   readonly defaultAuthor: string | null
 }
-
-/** The placeholder the shipped config and the old `new` template both used. */
-const PLACEHOLDER_AUTHOR = 'your-name'
 
 export function readRosters(project: ProjectContext, contentDir?: string): Rosters {
   const authors = readRoster(project, 'authors.json', contentDir)

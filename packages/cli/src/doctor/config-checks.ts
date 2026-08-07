@@ -27,7 +27,7 @@ import { blockFiles } from '../detect/routes.ts'
 import { readFile, toPosixRelative } from '../util/fs.ts'
 import { readJsonc } from '../detect/resolve.ts'
 import { join } from 'node:path'
-import { NO_COMPONENTS_JSON_MESSAGE } from '../constants.ts'
+import { NO_COMPONENTS_JSON_MESSAGE, PLACEHOLDER_AUTHOR } from '../constants.ts'
 import type { DoctorContext } from './context.ts'
 
 export function runConfigChecks(ctx: DoctorContext): void {
@@ -266,6 +266,33 @@ function checkAgentblogConfig(ctx: DoctorContext): void {
       remedy: 'Set siteUrl to your production origin, https, with no trailing slash.',
     })
   }
+  /*
+   * Check 26, the author half.
+   *
+   * Both spellings are matched because the template holds the slug in a
+   * `DEFAULT_AUTHOR` constant while a hand edited config often flattens it to a
+   * literal, and a check that knows only one of them passes on the other.
+   *
+   * It reports as an error even though a fresh install builds clean. Both seed
+   * posts name `editorial` explicitly, so the placeholder only bites on the
+   * first post written without an `author` line, and it bites as a build
+   * failure. An unfired build failure sitting in a config file is not a warning.
+   */
+  const defaultAuthor =
+    /defaultAuthor\s*:\s*['"`]([^'"`]+)['"`]/.exec(code)?.[1] ??
+    /DEFAULT_AUTHOR\s*=\s*['"`]([^'"`]+)['"`]/.exec(code)?.[1]
+  if (defaultAuthor === PLACEHOLDER_AUTHOR) {
+    reporter.fail('26 defaultAuthor placeholder', {
+      id: 'default-author-placeholder',
+      severity: 'error',
+      message: `agentblog.config.ts still has the placeholder defaultAuthor "${PLACEHOLDER_AUTHOR}", which matches no record in content/authors.json. The first post written without an explicit author fails the build with: unknown author slug "${PLACEHOLDER_AUTHOR}".`,
+      remedy:
+        'Set defaultAuthor to a slug that exists in content/authors.json, such as editorial. In the shipped template that means editing the DEFAULT_AUTHOR constant at the top of the file.',
+    })
+  } else if (defaultAuthor !== undefined) {
+    reporter.pass(`26 defaultAuthor is "${defaultAuthor}", not the placeholder`)
+  }
+
   if (/sameAs:\s*\[\s*\]/.test(code)) {
     reporter.fail('brand.sameAs', {
       id: 'same-as-empty',

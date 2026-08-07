@@ -15,13 +15,14 @@ import { stripComments } from '@agentblog/checks'
 
 import {
   AGENTBLOG_ENV_KEYS,
+  AGENTS_FRAGMENT_PATH,
   buildAgentsBlock,
   INDEXNOW_KEY_COMMENT,
   movedOutOfComment,
   REVALIDATE_SECRET_COMMENT,
 } from '../constants.ts'
 import { appPath, appPathLabel, type ProjectContext } from '../detect/project.ts'
-import { placeBlock } from '../patchers/agents-md.ts'
+import { placeBlock, resolveAgentsBlock } from '../patchers/agents-md.ts'
 import { patchNextConfig } from '../patchers/next-config.ts'
 import { patchRobots } from '../patchers/robots.ts'
 import { patchRootLayout } from '../patchers/root-layout.ts'
@@ -308,7 +309,13 @@ function fixAgentsMd(
   const contentDir = appPathLabel(project, 'content/blog')
   const skillCommand = '/write-blog-post'
 
-  const result = placeBlock(existing, buildAgentsBlock({ contentDir, skillCommand }))
+  const result = placeBlock(
+    existing,
+    resolveAgentsBlock(
+      readFile(join(project.root, AGENTS_FRAGMENT_PATH)),
+      buildAgentsBlock({ contentDir, skillCommand }),
+    ),
+  )
   changes.push(...result.changes)
   declined.push(...result.declined)
   patches.add({

@@ -1,5 +1,5 @@
 ---
-title: Put it live
+title: Make it live
 description: Deploy the blog, set the two environment variables it needs, and verify that a crawler can actually read the result.
 icon: Rocket
 ---
@@ -11,12 +11,12 @@ ship.
 
 ## Environment variables
 
-| Variable                      | Where                           | Needed for                                                                           |
-| ----------------------------- | ------------------------------- | ------------------------------------------------------------------------------------ |
-| `AGENTBLOG_REVALIDATE_SECRET` | Production and preview          | The publish webhook. Without it, `/api/publish` refuses every request                |
-| `INDEXNOW_KEY`                | Production                      | Telling Bing, Yandex, Seznam, and Naver about a new post the same day                |
-| `AGENTBLOG_PUBLIC_SITE`       | Production, on non-Vercel hosts | Allowing crawlers at all. Read the warning below before skipping it                  |
-| `AGENTBLOG_DEPLOY_WAIT_MS`    | Optional                        | How long the publish webhook waits for a deploy hook. Defaults to 45000 milliseconds |
+| Variable                      | Where                        | Needed for                                                                           |
+| ----------------------------- | ---------------------------- | ------------------------------------------------------------------------------------ |
+| `AGENTBLOG_REVALIDATE_SECRET` | Production and preview       | The publish webhook. Without it, `/api/publish` refuses every request                |
+| `INDEXNOW_KEY`                | Production                   | Telling Bing, Yandex, Seznam, and Naver about a new post the same day                |
+| `AGENTBLOG_PUBLIC_SITE`       | Production build, non-Vercel | Allowing crawlers at all. Read the warning below before skipping it                  |
+| `AGENTBLOG_DEPLOY_WAIT_MS`    | Optional                     | How long the publish webhook waits for a deploy hook. Defaults to 45000 milliseconds |
 
 `agentblog doctor --fix` generates the first two into `.env.local` if they are
 missing, and writes the `public/<key>.txt` file IndexNow requires. Copy both
@@ -26,8 +26,26 @@ disagree, IndexNow rejects every submission, and `doctor` reports it.
 <Callout type="warn" title="Not deploying on Vercel? Set AGENTBLOG_PUBLIC_SITE">
   `app/robots.ts` decides whether to allow crawling from the deployment
   environment, and it fails closed. Vercel sets `VERCEL_ENV` for it. Nothing
-  else does, so on any other host you must set `AGENTBLOG_PUBLIC_SITE=true` in
-  production or your live site serves a blanket `Disallow: /`.
+  else does, so on any other host you must set `AGENTBLOG_PUBLIC_SITE=true` or
+  your live site serves a blanket `Disallow: /`.
+
+**It has to be set for the build, not only for the running server.**
+`/robots.txt` is a prerendered static route, so its contents are decided once,
+by `next build`, and the value that mattered is the one present in the build
+environment. Setting it only in a runtime environment (a container's `docker
+run`, a platform's runtime-only variables, a `.env` read after the image was
+built) leaves the baked file saying `Disallow: /` while the variable reads
+correctly on the server, and nothing in the running application disagrees with
+itself. Confirm the built output rather than the setting:
+
+```bash
+curl https://yourdomain.com/robots.txt
+npx agentblog@latest doctor --url https://yourdomain.com
+```
+
+`doctor` fetches `robots.txt` and reports, per crawler, whether it is allowed
+to have the page. That is the only check in the product that catches this,
+because every other symptom of it is that the site looks perfect.
 
 Failing closed is deliberate. Guessing permissively gets a staging site
 indexed and competing with your production pages, which takes weeks to undo.

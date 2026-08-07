@@ -37,6 +37,7 @@
  *
  * @see https://docs.agentblog.dev/troubleshooting/cdn-blocking-crawlers
  */
+import { loadPosts, resolveContentDir } from '../audit/post.ts'
 import type { DoctorContext } from './context.ts'
 
 interface Agent {
@@ -90,6 +91,67 @@ interface Fetched {
   readonly headers: Headers
 }
 
+/** Blog routes that are real pages but are never a post. */
+const NON_POST_SEGMENTS = new Set(['category', 'tag', 'page'])
+
+interface Probe {
+  /** The URL every agent is actually sent to. */
+  readonly url: string
+  /** Explains a URL the user did not type, or `null` when they typed it. */
+  readonly derivedFrom: string | null
+}
+
+/**
+ * The URL to probe, which is not always the URL the user passed.
+ *
+ * ===========================================================================
+ * WHY THIS IS NOT JUST `ctx.url`
+ * ===========================================================================
+ * `--url` is documented as a live URL and the natural thing to hand it is the
+ * site root. AgentBlog's primary install path is adding a blog to an app that
+ * already exists, so that root is somebody else's landing page. It is often a
+ * marketing hero of a dozen words, and check 16 then reported five errors
+ * saying the article was client rendered, on an install where every article was
+ * prerendered correctly. Those errors exit non-zero, so a correct install broke
+ * the CI step that was added to protect it, and the remedy told the user to go
+ * looking for a server component behind a page that is not an article at all.
+ *
+ * A false error in the one check nobody can verify from inside the repository
+ * is worse than no check: it is the finding people learn to ignore. So a URL
+ * that does not already name a post is treated as an origin, and the probe
+ * targets a real slug read off disk. The derivation is printed, because a check
+ * that silently tests a different URL than the one you gave it is its own trap.
+ */
+function resolveProbeUrl(ctx: DoctorContext): Probe {
+  const given = ctx.url as string
+  if (namesAPost(given)) return { url: given, derivedFrom: null }
+
+  const dir = resolveContentDir(ctx.project.root, ctx.project.usesSrcDir)
+  const slug = loadPosts(dir)[0]?.slug
+  if (!slug) return { url: given, derivedFrom: null }
+
+  try {
+    return { url: new URL(`/blog/${slug}`, given).toString(), derivedFrom: given }
+  } catch {
+    return { url: given, derivedFrom: null }
+  }
+}
+
+/** `true` when the path is `/blog/<slug>` rather than an index or a taxonomy. */
+function namesAPost(url: string): boolean {
+  let path: string
+  try {
+    path = new URL(url).pathname
+  } catch {
+    return false
+  }
+  const segments = path.split('/').filter(Boolean)
+  const blogAt = segments.indexOf('blog')
+  if (blogAt === -1) return segments.length > 0
+  const next = segments[blogAt + 1]
+  return next !== undefined && !NON_POST_SEGMENTS.has(next)
+}
+
 export async function runLiveChecks(ctx: DoctorContext): Promise<void> {
   if (!ctx.url) {
     ctx.reporter.group('Live crawler access')
@@ -101,7 +163,17 @@ export async function runLiveChecks(ctx: DoctorContext): Promise<void> {
     return
   }
 
-  ctx.reporter.group(`Live crawler access (${ctx.url})`)
+  const probe = resolveProbeUrl(ctx)
+  ctx.reporter.group(`Live crawler access (${probe.url})`)
+
+  if (probe.derivedFrom) {
+    ctx.reporter.fail('16 probe URL', {
+      id: 'live-probe-derived',
+      severity: 'info',
+      message: `${probe.derivedFrom} does not name a post, so these checks measure a real article instead. Word counts on a site root say nothing about whether your posts are readable.`,
+      remedy: 'Pass a post URL directly to probe a specific one.',
+    })
+  }
 
   // Said before any result, because a pass printed on the deploy host is the one
   // result in this whole report that can be confidently wrong.
@@ -112,9 +184,14 @@ export async function runLiveChecks(ctx: DoctorContext): Promise<void> {
     remedy: 'If this ran on the deploy host, run it again from somewhere outside the network.',
   })
 
+  const robots = await fetchRobots(probe.url)
+  const path = pathOf(probe.url)
+
   let cdn: string | null = null
   for (const agent of AGENTS) {
-    const result = await fetchAs(ctx.url, agent.ua)
+    assessRobots(ctx, agent, robots, path)
+
+    const result = await fetchAs(probe.url, agent.ua)
     if (!result) {
       ctx.reporter.fail(`16 ${agent.name}`, {
         id: `live-fetch-failed-${agent.name}`,
@@ -140,6 +217,150 @@ export async function runLiveChecks(ctx: DoctorContext): Promise<void> {
   }
 }
 
+/* -------------------------------------------------------------------------- */
+/*  robots.txt                                                                 */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Whether the site's own `robots.txt` lets each crawler have the page.
+ *
+ * ===========================================================================
+ * THE FAILURE THIS EXISTS FOR
+ * ===========================================================================
+ * The shipped `app/robots.ts` serves `Disallow: /` unless it can prove it is in
+ * production, and it proves that with `VERCEL_ENV === 'production'`. Off Vercel
+ * that variable does not exist, so a correct install on Netlify, Fly, Cloud Run,
+ * or any container ships a production site that asks every crawler to leave.
+ * `AGENTBLOG_PUBLIC_SITE=true` is the documented answer and it is one line in a
+ * dashboard nobody revisits.
+ *
+ * Until now the live checks fetched the page as five crawler user agents and
+ * never asked whether those crawlers were allowed to want it. A well behaved
+ * bot reads `robots.txt` first and never sends the request that check 16
+ * measures, so a completely deindexed site scored a clean pass on the one check
+ * that exists to catch a site crawlers cannot read. Fetching one more file
+ * closes that, and it is the cheapest request in this whole command.
+ *
+ * `null` means the question could not be answered (no `robots.txt`, or it did
+ * not parse), which is reported as unknown rather than as a pass.
+ */
+export interface RobotsGroup {
+  readonly tokens: readonly string[]
+  readonly rules: readonly RobotsRule[]
+}
+
+interface RobotsRule {
+  readonly allow: boolean
+  readonly path: string
+}
+
+/**
+ * A deliberately small subset of RFC 9309: groups, `Allow`, `Disallow`, `*`,
+ * and `$`. Enough to answer "is this one path allowed for this one token",
+ * which is the only question asked here. Anything it cannot parse it drops,
+ * because a robots parser that guesses would produce exactly the confident
+ * wrong answer this check was added to stop.
+ *
+ * @see https://www.rfc-editor.org/rfc/rfc9309.html
+ */
+export function parseRobots(text: string): RobotsGroup[] {
+  const groups: RobotsGroup[] = []
+  let tokens: string[] = []
+  let rules: RobotsRule[] = []
+  let collectingTokens = false
+
+  const flush = (): void => {
+    if (tokens.length > 0) groups.push({ tokens, rules })
+    tokens = []
+    rules = []
+  }
+
+  for (const raw of text.split(/\r?\n/)) {
+    const line = raw.replace(/#.*$/, '').trim()
+    if (line === '') continue
+    const separator = line.indexOf(':')
+    if (separator === -1) continue
+
+    const field = line.slice(0, separator).trim().toLowerCase()
+    const value = line.slice(separator + 1).trim()
+
+    if (field === 'user-agent') {
+      // A new user-agent line after rules starts a new group. Consecutive ones
+      // share the group that follows them.
+      if (!collectingTokens) flush()
+      collectingTokens = true
+      tokens.push(value.toLowerCase())
+      continue
+    }
+
+    if (field === 'allow' || field === 'disallow') {
+      collectingTokens = false
+      rules.push({ allow: field === 'allow', path: value })
+    }
+  }
+  flush()
+  return groups
+}
+
+/**
+ * `true` when `path` is allowed for `token`, `false` when disallowed, `null`
+ * when no group applies.
+ *
+ * Group selection and rule precedence both follow the specification: the most
+ * specific user-agent group wins and `*` is the fallback, then the longest
+ * matching rule wins, and `Allow` breaks a tie.
+ */
+export function isAllowed(
+  groups: readonly RobotsGroup[],
+  token: string,
+  path: string,
+): boolean | null {
+  const lower = token.toLowerCase()
+  const specific = groups.filter((group) => group.tokens.includes(lower))
+  const applicable = specific.length > 0 ? specific : groups.filter((g) => g.tokens.includes('*'))
+  if (applicable.length === 0) return null
+
+  let winner: RobotsRule | null = null
+  for (const group of applicable) {
+    for (const rule of group.rules) {
+      if (rule.path === '' || !matchesRobotsPath(rule.path, path)) continue
+      if (
+        winner === null ||
+        rule.path.length > winner.path.length ||
+        (rule.path.length === winner.path.length && rule.allow)
+      ) {
+        winner = rule
+      }
+    }
+  }
+  return winner === null ? true : winner.allow
+}
+
+/** `*` matches any run of characters, a trailing `$` anchors the end. */
+function matchesRobotsPath(pattern: string, path: string): boolean {
+  const anchored = pattern.endsWith('$')
+  const body = anchored ? pattern.slice(0, -1) : pattern
+  const expression = body
+    .split('*')
+    .map((part) => part.replace(/[.+?^${}()|[\]\\]/g, '\\$&'))
+    .join('.*')
+  return new RegExp(`^${expression}${anchored ? '$' : ''}`).test(path)
+}
+
+async function fetchRobots(probeUrl: string): Promise<readonly RobotsGroup[] | null> {
+  let robotsUrl: string
+  try {
+    robotsUrl = new URL('/robots.txt', probeUrl).toString()
+  } catch {
+    return null
+  }
+  const result = await fetchAs(robotsUrl, AGENTS[0]?.ua ?? '')
+  if (!result || result.status !== 200) return null
+  // A robots.txt route that errors into an HTML page is not a robots.txt.
+  if (/^\s*</.test(result.body)) return null
+  return parseRobots(result.body)
+}
+
 async function fetchAs(url: string, ua: string): Promise<Fetched | null> {
   const controller = new AbortController()
   const timer = setTimeout(() => controller.signal.aborted || controller.abort(), 15_000)
@@ -155,6 +376,56 @@ async function fetchAs(url: string, ua: string): Promise<Fetched | null> {
   } finally {
     clearTimeout(timer)
   }
+}
+
+/** The path a robots rule is matched against, `/` when the URL will not parse. */
+function pathOf(url: string): string {
+  try {
+    return new URL(url).pathname
+  } catch {
+    return '/'
+  }
+}
+
+/**
+ * Check 16, the half that runs before any request.
+ *
+ * A crawler that reads `Disallow: /` never asks for the page, so every result
+ * below this line describes traffic that would not happen. That makes this the
+ * one finding here worth reporting even though the fetch that follows it
+ * succeeds: the fetch proves the origin will serve a bot, not that any bot will
+ * ever ask.
+ */
+function assessRobots(
+  ctx: DoctorContext,
+  agent: Agent,
+  robots: readonly RobotsGroup[] | null,
+  path: string,
+): void {
+  const name = `16 ${agent.name} robots.txt`
+
+  if (robots === null) {
+    ctx.reporter.skip(name, 'no parseable robots.txt was served, so nothing could be decided')
+    return
+  }
+
+  const allowed = isAllowed(robots, agent.name, path)
+  if (allowed === false) {
+    ctx.reporter.fail(name, {
+      id: `live-robots-disallowed-${agent.name}`,
+      severity: 'error',
+      message: `robots.txt disallows ${path} for ${agent.name}, so this crawler will never request the page no matter how well it renders.${agent.name === 'Googlebot' ? ' This also removes the site from classic search.' : ''}`,
+      remedy:
+        'The shipped app/robots.ts serves Disallow: / unless VERCEL_ENV is production. Off Vercel, set AGENTBLOG_PUBLIC_SITE=true on the production deployment. See https://docs.agentblog.dev/deploy.',
+    })
+    return
+  }
+
+  if (allowed === null) {
+    ctx.reporter.skip(name, 'robots.txt has no group matching this agent or *')
+    return
+  }
+  ctx.reporter.pass(`16 ${agent.name}: robots.txt allows ${path}`)
 }
 
 function assess(ctx: DoctorContext, agent: Agent, result: Fetched, cdn: string | null): void {

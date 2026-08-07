@@ -16,11 +16,16 @@
 import { randomBytes } from 'node:crypto'
 import { basename } from 'node:path'
 
-import { buildAgentsBlock, INDEXNOW_KEY_COMMENT, REVALIDATE_SECRET_COMMENT } from '../constants.ts'
+import {
+  AGENTS_FRAGMENT_PATH,
+  buildAgentsBlock,
+  INDEXNOW_KEY_COMMENT,
+  REVALIDATE_SECRET_COMMENT,
+} from '../constants.ts'
 import { appPathLabel, type ProjectContext } from '../detect/project.ts'
 import { contentPathsOf } from '../detect/routes.ts'
 import { patchAgentblogConfig } from '../patchers/agentblog-config.ts'
-import { placeBlock } from '../patchers/agents-md.ts'
+import { placeBlock, resolveAgentsBlock } from '../patchers/agents-md.ts'
 import { patchComponentsJson } from '../patchers/components-json.ts'
 import { envValue, hasNonEmptyEnvValue, upsertEnv } from '../patchers/env.ts'
 import { addAgentBlogIgnore, isAgentBlogIgnored } from '../patchers/gitignore.ts'
@@ -264,10 +269,13 @@ export function patchConfigFiles(
   const agentsSource = readFile(agentsPath)
   const agents = placeBlock(
     agentsSource,
-    buildAgentsBlock({
-      contentDir: appPathLabel(project, 'content/blog'),
-      skillCommand: '/write-blog-post',
-    }),
+    resolveAgentsBlock(
+      readFile(join(project.root, AGENTS_FRAGMENT_PATH)),
+      buildAgentsBlock({
+        contentDir: appPathLabel(project, 'content/blog'),
+        skillCommand: '/write-blog-post',
+      }),
+    ),
   )
   changes.push(...agents.changes)
   declined.push(...agents.declined)

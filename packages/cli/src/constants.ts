@@ -20,6 +20,30 @@ export const NEXT_AGENT_RULES_END = '<!-- END:nextjs-agent-rules -->'
 export const AGENTBLOG_BLOCK_BEGIN = '<!-- agentblog:start -->'
 export const AGENTBLOG_BLOCK_END = '<!-- agentblog:end -->'
 
+/**
+ * The rules fragment the `agent` registry item installs at the project root.
+ *
+ * It is a delivery vehicle, not a file anything reads at runtime: an agent
+ * loads `AGENTS.md` (via the `CLAUDE.md` that Next.js generates), never this.
+ * `init` and `doctor --fix` merge its block into `AGENTS.md`, which is what its
+ * own install note has always told users to do.
+ */
+export const AGENTS_FRAGMENT_PATH = 'AGENTS.agentblog.md'
+
+/**
+ * The author slug the config template ships with.
+ *
+ * It deliberately matches no record in `content/authors.json`, so a post that
+ * omits `author` fails the build by name rather than rendering with a phantom
+ * byline. Three readers have to agree on it: the patcher that replaces it at
+ * install time, the scaffolder that refuses to write it into new frontmatter,
+ * and the doctor check that reports it as an unfired build failure. It lives
+ * here so those three cannot drift.
+ *
+ * Keep in sync with `apps/web/registry/blog/agentblog.config.ts`.
+ */
+export const PLACEHOLDER_AUTHOR = 'your-name'
+
 /** Where `init` and `doctor --fix` copy a file before touching it. */
 export const BACKUP_DIR = '.agentblog/backup'
 

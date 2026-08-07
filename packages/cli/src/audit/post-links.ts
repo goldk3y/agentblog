@@ -113,7 +113,36 @@ export function checkOrphan(post: PostFile, all: readonly PostFile[], reporter: 
 
 export function checkHeroImage(post: PostFile, reporter: Reporter): void {
   const hero = post.data['heroImage']
-  if (typeof hero !== 'string' || hero === '') return
+  if (typeof hero !== 'string' || hero === '') {
+    /*
+     * No hero means no `BlogPosting.image`, which Google lists as a recommended
+     * Article property. It is a warning and not an error because the markup is
+     * valid without it and nothing breaks.
+     *
+     * It is reported at all because the omission is invisible from the post:
+     * `lib/schema.ts` drops the `image` key entirely when `heroImage` is
+     * absent, so the graph is quietly one recommended property short and the
+     * page still renders perfectly. The seed posts ship without one, and the
+     * seed posts are the format every generated post copies.
+     *
+     * The generated `opengraph-image` is deliberately NOT substituted here.
+     * Google asks for an image that represents the article "rather than logos
+     * or captions", and a card with the title set in type is closer to a
+     * caption than to a photograph of the subject. Claiming it as the
+     * article's representative image would be the CLI answering a question
+     * only the writer can answer.
+     *
+     * @see https://developers.google.com/search/docs/appearance/structured-data/article
+     */
+    reporter.fail('hero image', {
+      id: 'hero-image-missing',
+      severity: 'warning',
+      message: `${post.slug} has no heroImage, so BlogPosting.image is omitted from the structured data and the post has no representative image for rich results.`,
+      remedy:
+        'Add heroImage and heroAlt to the frontmatter. Use an image about the subject, not a logo or a title card.',
+    })
+    return
+  }
   if (typeof post.data['heroAlt'] !== 'string' || post.data['heroAlt'] === '') {
     reporter.fail('hero image', {
       id: 'hero-alt-missing',
