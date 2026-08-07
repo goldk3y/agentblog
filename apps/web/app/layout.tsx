@@ -137,6 +137,26 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html
       lang={config.locale.split('_')[0] ?? 'en'}
       suppressHydrationWarning
+      /*
+       * Declares the `scroll-behavior: smooth` that `globals.css` sets on this
+       * element, and it is not decorative.
+       *
+       * Next.js pins `scroll-behavior: auto` on `<html>` for the duration of a
+       * route transition so the scroll reset is instant, but it only does so
+       * when this attribute is present. Reading the computed style on every
+       * navigation would cost a forced reflow, so the attribute is the opt in.
+       *
+       * Without it, the App Router's scroll handler calls `scrollIntoView` on
+       * the new segment, which React fans out over every top level child in
+       * reverse order. Each call retargets a smooth animation that is still in
+       * flight, and the final call (the hero, whose target clamps to 0) is a no
+       * op against a page already at 0, so it never cancels the animation the
+       * second section started. Clicking the wordmark from /blog then lands on
+       * section two instead of the top.
+       *
+       * @see https://nextjs.org/docs/messages/missing-data-scroll-behavior
+       */
+      data-scroll-behavior="smooth"
       className={`${geistSans.variable} ${geistMono.variable}`}
     >
       <body className="flex min-h-dvh flex-col antialiased">

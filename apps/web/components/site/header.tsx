@@ -31,7 +31,31 @@ export function SiteHeader() {
   return (
     <header className="border-border bg-background/80 sticky top-0 z-40 border-b backdrop-blur-md">
       <div className="mx-auto flex h-14 w-full max-w-5xl items-center gap-8 px-6">
-        <Link href="/" className="text-foreground text-label-14" aria-label="AgentBlog home">
+        <Link
+          href="/"
+          className="text-foreground text-label-16 flex items-center gap-2"
+          aria-label="AgentBlog home"
+        >
+          {/*
+            A plain `img` rather than `next/image`: the optimizer passes SVG
+            through untouched, so the component would add a preload tag and a
+            wrapper for no resizing work.
+
+            The source SVG bakes its drop shadow into the viewBox, so the
+            48-unit rounded square sits at the top of a 54-unit canvas, leaving
+            6 units of slack below it and none above. Shifting down by half that
+            slack optically centres the square against the wordmark; without it
+            the mark reads high. The translate is a percentage so it stays
+            correct if the box is resized: 3 of 54 units is 5.5% of the height.
+          */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/logos/agentblog-icon-logo.svg"
+            alt=""
+            width={32}
+            height={32}
+            className="size-8 translate-y-[5.5%]"
+          />
           AgentBlog
         </Link>
 
