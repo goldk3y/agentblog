@@ -255,7 +255,21 @@ jobs:
       # ordering is part of what is under test: a `doctor --fix` that patched the
       # layout with a placeholder origin would pass every later assertion here and
       # ship a site whose every canonical URL points at a domain nobody owns.
-      - name: Set a real siteUrl
+      #
+      # `DEFAULT_AUTHOR` is set here for the same reason and not because `doctor`
+      # is wrong to report it. This job takes the registry-only path (`shadcn add`
+      # with no `init`), so nothing has ever collected an author, and the shipped
+      # `'your-name'` survives. That is a real user state and check 26 exists to
+      # name it: the config compiles, both seed posts build because they carry
+      # `author: editorial` explicitly, and the failure waits for the first post
+      # written without an `author` line.
+      #
+      # `doctor --fix` deliberately does not repair it. The roster ships two
+      # records, so picking one would be the tool choosing a byline, which is the
+      # same judgement it already refuses to make for `siteUrl` two lines above.
+      # `init` collects it by prompt; `doctor` reports it. Filling it in here is
+      # this fixture standing in for the user who answered.
+      - name: Set a real siteUrl, brand, and author
         working-directory: apps/fixture-next16
         run: |
           node -e "
@@ -264,9 +278,14 @@ jobs:
             const source = fs.readFileSync(file, 'utf8')
               .replace('https://yourdomain.com', 'https://fixture.agentblog.dev')
               .replace(\"name: 'Your Brand'\", \"name: 'Fixture Blog'\")
+              .replace(\"DEFAULT_AUTHOR = 'your-name'\", \"DEFAULT_AUTHOR = 'editorial'\")
             fs.writeFileSync(file, source)
           "
           grep -q 'fixture.agentblog.dev' agentblog.config.ts
+          # `editorial` and not an invented slug: it is the one record the seed
+          # posts name and the one authors.json marks as keep-the-slug. A slug
+          # with no record fails the next build with `unknown author slug`.
+          grep -q "DEFAULT_AUTHOR = 'editorial'" agentblog.config.ts
 
       - name: agentblog doctor --fix
         working-directory: apps/fixture-next16
