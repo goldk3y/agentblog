@@ -119,11 +119,16 @@ export const metadata: Metadata = {
   },
 }
 
+/*
+ * One flat colour rather than a `prefers-color-scheme` pair. The site defaults
+ * to dark for every visitor regardless of the OS setting (see
+ * `components/site/theme-provider.tsx`), so keying the browser chrome off the OS
+ * would paint a white address bar above a dark page on a light desktop. Nothing
+ * can follow the toggle here: `theme-color` reads a meta tag, not the `.dark`
+ * class, so the correct value is the one the first paint uses.
+ */
 export const viewport: Viewport = {
-  themeColor: [
-    { media: '(prefers-color-scheme: light)', color: 'white' },
-    { media: '(prefers-color-scheme: dark)', color: 'black' },
-  ],
+  themeColor: 'black',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

@@ -5,21 +5,36 @@ import { readingTime } from '@/lib/reading-time'
 import type { Post } from '@/lib/types'
 import { cn } from '@/lib/utils'
 
-import { ClockIcon } from './icons'
-
 /**
- * The attribution line that sits directly under the H1 on a post.
+ * A post's attribution, split across two components in one file.
  *
- * WHERE IT RENDERS
- * Inside the `<header>` of `<article>` on `app/blog/[slug]/page.tsx`, as the
- * last element of that header: H1, then the answer capsule, then this. The
- * capsule goes above the byline deliberately, because it is the passage an
- * answer engine lifts and it has to survive chunk truncation.
+ * `<Byline>` is who wrote it and how long it takes to read, directly under the
+ * H1. `<PostDates>` is when it was published and last updated, at the foot of
+ * the article. They live together because they share the date formatters and
+ * because they are two halves of one contract with the JSON-LD graph, and
+ * splitting them across files is how one of them would come to format a date
+ * differently from the other.
  *
- * WHY IT IS SHAPED THIS WAY
- * This block is an E-E-A-T surface and a structured-data mirror at the same
- * time, so three details are load bearing rather than cosmetic:
+ * WHY THE DATES ARE NOT IN THE BYLINE
+ * A byline answers who wrote this and how much of my time it wants. The dates
+ * answer whether it is still current, which is a question about the article
+ * rather than about starting it, and the foot of the page is where the article
+ * is over. Author, date, updated date, and reading time was four facts and three
+ * bullets on one 14px line, which is a line a reader skips whole.
  *
+ * Nothing machine-readable moved with them. `datePublished` and `dateModified`
+ * are still in the graph, still in the HTML, and still in the first response
+ * byte, and both still carry `<time dateTime>`.
+ *
+ * Google asks for a visible date that is labelled ("Published February 4, 2019",
+ * "Last updated: Feb 14, 2019") and does not require a position on the page.
+ * `<PostDates>` renders exactly that shape. Google News is the one surface that
+ * does ask for the date between the headline and the article text, so a site
+ * that publishes to News should render `<PostDates>` in the header instead. It
+ * takes a `className` and no position of its own for that reason.
+ * @see https://developers.google.com/search/docs/appearance/publication-dates
+ *
+ * WHAT IS LOAD BEARING
  *   - `rel="author"` on the author link. It is the machine-readable statement
  *     that this URL identifies the person who wrote the post, and it is what
  *     ties the visible byline to the `Person` node in the JSON-LD graph.
@@ -43,7 +58,9 @@ import { ClockIcon } from './icons'
  * - Formatting the date into `dateTime` (rather than passing the raw ISO value)
  *   strips the UTC offset, and Google then reinterprets the timestamp in
  *   Googlebot's own timezone, which can move a post across a day boundary.
- * - Adding `'use client'` removes the byline from the static HTML shell.
+ * - Dropping `<PostDates>` from the route leaves the graph claiming a
+ *   publication date the page never shows.
+ * - Adding `'use client'` removes either component from the static HTML shell.
  *
  * @see https://docs.agentblog.dev/concepts/geo-playbook
  */
@@ -99,9 +116,19 @@ export interface BylineProps {
   readonly className?: string | undefined
 }
 
+/**
+ * Who wrote it, and how long it takes to read. Directly under the H1.
+ *
+ * The reading time carries no icon. A clock beside the words "min read" draws
+ * the noun the sentence already contains, and at 14px it draws it badly: it
+ * costs an element, an import, and a moment of a reader deciding whether it
+ * means anything other than what the words beside it mean.
+ *
+ * The separating bullet is `aria-hidden`, so the line announces as "By Jane Doe,
+ * 7 min read" rather than reading punctuation aloud.
+ */
 export function Byline({ post, className }: BylineProps) {
   const { minutes } = readingTime(post.body)
-  const isUpdated = post.dateModified !== post.datePublished
 
   return (
     <p
@@ -123,8 +150,46 @@ export function Byline({ post, className }: BylineProps) {
 
       <span aria-hidden="true">·</span>
 
-      {/* Raw ISO value with its offset. Never a formatted string. */}
-      <time dateTime={post.datePublished}>{formatPostDate(post.datePublished)}</time>
+      <span>{`${minutes} min read`}</span>
+    </p>
+  )
+}
+
+export interface PostDatesProps {
+  readonly post: Post
+  readonly className?: string | undefined
+}
+
+/**
+ * When it was published, and when it was last touched.
+ *
+ * WHERE IT RENDERS
+ * `app/blog/[slug]/page.tsx`, under a hairline at the foot of the article body,
+ * below the sources list and above the share controls. That position is the
+ * colophon slot: the article has ended, and this is the provenance of what was
+ * just read rather than one more thing to do next.
+ *
+ * Both dates are labelled in words. "July 28, 2026 · Updated August 5, 2026"
+ * makes a reader infer that the first date is the publication date;
+ * "Published July 28, 2026" tells them, and it is the shape Google's byline date
+ * documentation asks for. The label costs nine characters on a line that has
+ * room for them, which the byline under the H1 did not.
+ */
+export function PostDates({ post, className }: PostDatesProps) {
+  const isUpdated = post.dateModified !== post.datePublished
+
+  return (
+    <p
+      className={cn(
+        'text-muted-foreground flex flex-wrap items-center gap-x-2 gap-y-1 text-sm',
+        className,
+      )}
+    >
+      {/* Raw ISO value with its offset in `dateTime`. Never a formatted string. */}
+      <span>
+        {'Published '}
+        <time dateTime={post.datePublished}>{formatPostDate(post.datePublished)}</time>
+      </span>
 
       {isUpdated ? (
         <>
@@ -135,13 +200,6 @@ export function Byline({ post, className }: BylineProps) {
           </span>
         </>
       ) : null}
-
-      <span aria-hidden="true">·</span>
-
-      <span className="inline-flex items-center gap-1">
-        <ClockIcon className="size-3.5" aria-hidden="true" />
-        {`${minutes} min read`}
-      </span>
     </p>
   )
 }

@@ -1,6 +1,6 @@
 ---
 title: What gets installed
-description: A file-by-file tour of the 72 files AgentBlog writes into your repository, and the rules each piece obeys.
+description: A file-by-file tour of the 73 files AgentBlog writes into your repository, and the rules each piece obeys.
 icon: FileText
 ---
 
@@ -14,6 +14,7 @@ your `components.json` aliases.
 | ------------------------------------- | ----------------------------------------------------------- |
 | `app/blog/layout.tsx`                 | Imports the preflight check, adds the editorial policy link |
 | `app/blog/page.tsx`                   | Paginated index with `Blog` structured data                 |
+| `app/blog/opengraph-image.tsx`        | The social card every list surface points at                |
 | `app/blog/[slug]/page.tsx`            | The post route                                              |
 | `app/blog/[slug]/opengraph-image.tsx` | The social card for each post                               |
 | `app/blog/category/[slug]/page.tsx`   | Category hub, always indexable                              |
@@ -51,7 +52,6 @@ hides everything past page one from a crawler.
 | `app/robots.ts`            | Guarded on the deployment environment, and emits your `aiAccess` rules          |
 | `app/feed.xml/route.ts`    | RSS 2.0                                                                         |
 | `app/llms.txt/route.ts`    | The post list as Markdown, for retrieval agents that fetch it                   |
-| `app/opengraph-image.tsx`  | The site-level social card                                                      |
 | `app/not-found.tsx`        | A 404 that links back into the content rather than being a dead end             |
 | `app/api/publish/route.ts` | Revalidation and IndexNow, in that order                                        |
 
@@ -107,6 +107,7 @@ silently renders flush against its neighbour.
 | `lib/posts.ts`                      | The content source facade. Every route reads posts through this file          |
 | `lib/schema.ts`                     | The structured data builders, typed rather than hand-written JSON             |
 | `lib/metadata.ts`                   | The shared metadata defaults every route spreads                              |
+| `lib/og-card.tsx`                   | The social card layout both `opengraph-image` routes render                   |
 | `lib/render-mdx.tsx`                | The only place MDX is compiled                                                |
 | `lib/mdx-plugins/`                  | Table of contents extraction and answer capsule handling                      |
 | `lib/toc.ts`, `lib/reading-time.ts` | Heading extraction, word count and minutes                                    |

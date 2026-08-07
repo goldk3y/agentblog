@@ -39,10 +39,15 @@
  *   - `title` and `description` are set, and they are load bearing for the Open
  *     Graph tags rather than only for the tab. Next.js re-derives `og:title` and
  *     `og:description` from `title` and `description` in `postProcessMetadata`,
- *     after a file-based `app/opengraph-image.tsx` has put an `openGraph` object
+ *     after a file-based `app/opengraph-image.*` has put an `openGraph` object
  *     back on a page that cleared it. So `openGraph: null` alone still shipped a
  *     404 announcing the homepage's headline to every social scraper. Naming the
  *     page here is what stops that.
+ *
+ *     The block itself no longer writes a card into your app root, so the file
+ *     that triggers this is now yours rather than ours. That makes it more
+ *     likely to be present, not less: a site with its own social card has one
+ *     there by definition.
  *
  * One thing the export does not control: Next.js emits its own
  * `<meta name="robots" content="noindex">` for the not-found route, so the built

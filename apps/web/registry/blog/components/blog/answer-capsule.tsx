@@ -1,12 +1,17 @@
 import type { ReactNode } from 'react'
 
 /**
- * The 40 to 60 word direct answer that sits immediately under the H1.
+ * The 40 to 60 word direct answer that opens a post.
  *
  * WHERE IT RENDERS
- * `app/blog/[slug]/page.tsx`, inside the article `<header>`, directly under the
- * H1 and above the byline. `components/mdx/*` may also render one under an H2
- * for a section-level answer.
+ * `app/blog/[slug]/page.tsx`, inside the article `<header>`, under the H1 and
+ * the one-line byline and above everything else. `components/mdx/*` may also
+ * render one under an H2 for a section-level answer.
+ *
+ * The byline above it is a single line of names and numbers, which is what makes
+ * it a tolerable neighbour: the capsule is still the first prose in the document
+ * and still lands inside the opening chunk of any retrieval system that splits
+ * the page. Anything longer than a line belongs below the capsule, not above it.
  *
  * WHY IT IS SHAPED THIS WAY
  * This is the passage an answer engine lifts. Everything about the markup is in
@@ -64,24 +69,33 @@ export function AnswerCapsule({ text, children, className }: AnswerCapsuleProps)
 
   return (
     /*
-     * A standfirst, not a box.
+     * The first paragraph of the article, typeset as the first paragraph of the
+     * article.
      *
-     * This used to be a filled, bordered, rounded panel, which put it in exactly
-     * the same visual class as the table of contents directly beneath it, the
-     * FAQ further down, and every callout in the article. Six identical grey
-     * boxes on one page is six things of equal weight, and the whole argument
-     * for this component is that its sentence is the most important on the page.
+     * This used to be a filled, bordered, rounded panel, then a 20px standfirst.
+     * Both were attempts to make the most important sentence on the page look
+     * like the most important sentence on the page, and both bought that at the
+     * cost of a seam: the panel put the capsule in the same visual class as the
+     * table of contents, the FAQ, and every callout below it, and the standfirst
+     * opened a size step down into the body text one paragraph later, which is
+     * where the reader has only just settled in.
      *
-     * Type size says it instead, and says it without adding a fifth surface.
-     * At 20px between a 48px headline and a 14px byline this reads as the
-     * standfirst of an article, which is exactly what it is, and the contents
-     * list below is then the only card in the header, so it stops competing.
+     * Position is the emphasis now, and position is what an answer engine reads
+     * anyway. The capsule is the first prose on the page and the first thing in
+     * the opening chunk; a reader who starts at the top starts here, and nothing
+     * about the type asks them to stop and change gear one paragraph later.
      *
-     * There is deliberately no left rule and no indent either, although both
-     * were tried. Any indent puts the most important sentence on the page 24px
-     * to the right of the headline above it, the byline below it, and every
-     * paragraph after it. One left edge down the whole article is worth more
-     * than a decorative rule.
+     * The size comes from `--agentblog-reading-size` in `styles/agentblog.css`,
+     * which is the same variable `@utility prose` sets `font-size` from. That is
+     * the point of the variable: this paragraph sits in the article `<header>`,
+     * outside `.prose`, so it cannot inherit the reading size and would
+     * otherwise be a hardcoded 16px that drifts the first time somebody tunes
+     * the body text.
+     *
+     * There is deliberately no left rule and no indent, although both were
+     * tried. Any indent puts the most important sentence on the page 24px to the
+     * right of the headline and byline above it and every paragraph after it.
+     * One left edge down the whole article is worth more than a decorative rule.
      *
      * The markup is unchanged and must stay unchanged: one `<div>` carrying the
      * `data-agentblog` hook, wrapping exactly one `<p>`. Everything in the
@@ -89,7 +103,9 @@ export function AnswerCapsule({ text, children, className }: AnswerCapsuleProps)
      * classes on it.
      */
     <div data-agentblog="answer-capsule" className={className}>
-      <p className="text-foreground text-lg leading-relaxed text-pretty sm:text-xl">{content}</p>
+      <p className="text-foreground text-(length:--agentblog-reading-size) leading-(--agentblog-reading-leading) text-pretty">
+        {content}
+      </p>
     </div>
   )
 }

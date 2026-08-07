@@ -14,6 +14,15 @@
  * `attribute="class"` matches the `@custom-variant dark (&:is(.dark *))` rule in
  * `globals.css`. Changing one without the other silently disables dark mode.
  *
+ * WHY THE OS SETTING IS IGNORED
+ * The site is dark by default, so `enableSystem` is off rather than the default
+ * `true`. With it on, `defaultTheme` only decides what happens when the OS
+ * expresses no preference, which in practice is never: `prefers-color-scheme`
+ * resolves to light or dark on every current browser, so a visitor on a light
+ * desktop would still land on the light theme. Turning it off makes dark the
+ * first paint for everyone. The toggle in the header still writes an explicit
+ * `light` or `dark` to `localStorage`, and that choice survives reloads.
+ *
  * The blog block ships no theme provider of its own. It reads whatever tokens
  * the host app defines, which is the point of section 4.3.
  */
@@ -25,8 +34,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   return (
     <NextThemesProvider
       attribute="class"
-      defaultTheme="system"
-      enableSystem
+      defaultTheme="dark"
+      enableSystem={false}
       disableTransitionOnChange
     >
       {children}

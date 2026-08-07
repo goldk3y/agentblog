@@ -127,17 +127,26 @@ tags describe several unrelated things instead of one thing.
       "@type": "BreadcrumbList",
       "@id": "https://example.com/blog/my-post#breadcrumb",
       "itemListElement": [
-        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://example.com" },
-        { "@type": "ListItem", "position": 2, "name": "Blog", "item": "https://example.com/blog" },
-        { "@type": "ListItem", "position": 3, "name": "My Post" }
+        { "@type": "ListItem", "position": 1, "name": "Blog", "item": "https://example.com/blog" },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Content Strategy",
+          "item": "https://example.com/blog/category/content-strategy"
+        }
       ]
     }
   ]
 }
 ```
 
-The last breadcrumb item has no `item` property. That is correct for the current
-page, not an omission.
+The trail starts at `/blog` and ends at the category hub, matching the visible
+breadcrumb on the page exactly, because the route builds one array and passes it
+to both. Google requires neither end: "It is not required to include a
+breadcrumb ListItem for the top level path", and a trail may stop above the
+current page. On a list page, where the last crumb is the page the reader is on,
+that crumb has no `item` property, which is the documented shape rather than an
+omission.
 
 ## 3. The other graph shapes
 

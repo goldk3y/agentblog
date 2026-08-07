@@ -5,4 +5,4 @@
  *
  * @see https://docs.agentblog.dev/reference/cli
  */
-export { default, alt, size, contentType } from '@/app/opengraph-image'
+export { default, alt, size, contentType } from '@/app/blog/opengraph-image'

@@ -137,6 +137,48 @@
   --agentblog-article: 60rem;
   --agentblog-rail: 64rem;
   --agentblog-gutter: 1.5rem;
+
+  /*
+   * The reading size, declared here rather than on `prose` below because two
+   * elements need it and only one of them is inside `.prose`.
+   *
+   * The plugin's own default is 16px, which is a UI size rather than a reading
+   * size: at the measure above it produces a line that is technically legible
+   * and tiring over 1,500 words. 17px from the `sm` breakpoint up is the step
+   * that long-form publishers converge on, and it is a step rather than a flat
+   * bump because 17px on a 375px phone costs more in wrapping than it returns in
+   * comfort. The override sits in the media query below.
+   *
+   * Every other space in an article is proportional to this number. The
+   * typography plugin expresses its margins in `em`, so raising the font size
+   * raises paragraph spacing, list indents, and heading leading by the same
+   * ratio, and the rhythm survives. That is why this is a font-size change and
+   * not a stack of margin overrides.
+   *
+   * The other element is the answer capsule, which is a paragraph of body text
+   * sitting in the article `<header>`, outside `.prose` and therefore outside
+   * the cascade that would have given it these values for free. It reads them
+   * back with `text-(length:--agentblog-reading-size)`. One reading size for the
+   * page: change it here and the capsule and the body move together, which is
+   * the whole reason the number left `@utility prose`.
+   */
+  --agentblog-reading-size: 1rem;
+  --agentblog-reading-leading: 1.75;
+}
+
+/*
+ * Unlayered on purpose, and it has to stay that way to work.
+ *
+ * `@theme` emits its variables inside `@layer theme`, and an unlayered rule beats
+ * a layered one in the cascade no matter which came first in the file. So this
+ * plain `:root` wins at `sm` and above. Wrapping it in `@layer theme` to make it
+ * match the block above would silently restore 16px at every width, and the only
+ * visible symptom would be an article that reads slightly small.
+ */
+@media (width >= 40rem) {
+  :root {
+    --agentblog-reading-size: 1.0625rem;
+  }
 }
 
 @theme inline {
@@ -165,27 +207,13 @@
   max-width: calc(var(--agentblog-measure) - 2 * var(--agentblog-gutter));
 
   /*
-   * The reading size, and the one place it is set.
-   *
-   * The plugin's own default is 16px, which is a UI size rather than a reading
-   * size: at the measure above it produces a line that is technically legible
-   * and tiring over 1,500 words. 17px from the `sm` breakpoint up is the step
-   * that long-form publishers converge on, and it is a step rather than a flat
-   * bump because 17px on a 375px phone costs more in wrapping than it returns
-   * in comfort.
-   *
-   * Every other space in an article is proportional to this number. The plugin
-   * expresses its margins in `em`, so raising the font size raises paragraph
-   * spacing, list indents, and heading leading by the same ratio, and the
-   * rhythm survives. That is why this is a font-size change and not a stack of
-   * margin overrides.
+   * The reading size and its leading, both read from the `@theme` block at the
+   * top of this file. See the comment on `--agentblog-reading-size` there for
+   * why 16px steps to 17px at `sm`, and for the second element that reads the
+   * same two values.
    */
-  font-size: 1rem;
-  line-height: 1.75;
-
-  @media (width >= 40rem) {
-    font-size: 1.0625rem;
-  }
+  font-size: var(--agentblog-reading-size);
+  line-height: var(--agentblog-reading-leading);
 
   --tw-prose-body: var(--foreground);
   --tw-prose-headings: var(--foreground);

@@ -19,12 +19,21 @@ interface PanelProps {
   /** Optional dot before the label. Used only where the state carries meaning. */
   readonly tone?: 'neutral' | 'ok' | 'bad'
   readonly children: React.ReactNode
+  /** Pushed to the right of the header bar. A count, or a second short fact. */
+  readonly trailing?: React.ReactNode
   readonly className?: string
   /** Applied to the body, so callers can set their own padding or grid. */
   readonly bodyClassName?: string
 }
 
-export function Panel({ label, tone = 'neutral', children, className, bodyClassName }: PanelProps) {
+export function Panel({
+  label,
+  tone = 'neutral',
+  children,
+  trailing,
+  className,
+  bodyClassName,
+}: PanelProps) {
   return (
     <div
       className={cn(
@@ -46,6 +55,11 @@ export function Panel({ label, tone = 'neutral', children, className, bodyClassN
         <code className="text-muted-foreground text-mono-12 min-w-0 truncate font-mono">
           {label}
         </code>
+        {trailing !== undefined && (
+          <span className="text-muted-foreground text-mono-12 ml-auto shrink-0 font-mono">
+            {trailing}
+          </span>
+        )}
       </div>
       <div className={cn('min-w-0 flex-1', bodyClassName)}>{children}</div>
     </div>

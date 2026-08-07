@@ -134,6 +134,12 @@ jobs:
       - name: Catalog meets the registry-directory rules
         run: node scripts/assert-catalog-shape.mjs
 
+      # The catalog can be perfect while the directory points somewhere else.
+      # That listing lives in shadcn-ui/ui, so nothing here goes red when the two
+      # disagree, and the symptom is a stranger's `shadcn add` 404ing once.
+      - name: The directory entry still describes this registry
+        run: node scripts/assert-directory-entry.mjs
+
       # Necessary and not sufficient: neither published schema sets
       # additionalProperties: false, so a misspelled key validates while doing
       # nothing. That is why `registry validate` above is not optional.

@@ -36,6 +36,29 @@ interface DocPageProps {
 
 export const dynamicParams = false
 
+/**
+ * The static brand card at `app/opengraph-image.png`, with the dimensions and alt
+ * text Next.js would have emitted had the file convention been left to merge
+ * itself.
+ *
+ * A scraper lays out against `og:image:width` and `og:image:height` before it
+ * fetches the image, and several decline a large card without them. Keep the
+ * numbers equal to the real pixel size of the file.
+ *
+ * `alt` is the same sentence as `app/opengraph-image.alt.txt`, which is what the
+ * file convention reads for every route that does not set `images`. Naming the
+ * image by hand skips the sidecar, so the two have to be written out separately.
+ * They describe one image and must not disagree.
+ */
+const SITE_CARD = [
+  {
+    url: '/opengraph-image.png',
+    width: 1200,
+    height: 630,
+    alt: 'The AgentBlog globe mark above the AgentBlog Docs wordmark, on a dark card.',
+  },
+]
+
 export function generateStaticParams(): { slug?: string[] }[] {
   return source.generateParams()
 }
@@ -65,7 +88,19 @@ export async function generateMetadata({ params }: DocPageProps): Promise<Metada
       title: page.data.title,
       description: page.data.description,
       url: absoluteUrl(page.url),
-      images: ogImageUrl(page),
+      /*
+       * The index gets the designed brand card, everything below it gets a
+       * generated one carrying its own title.
+       *
+       * `app/opengraph-image.png` is named here rather than left to the file
+       * convention, and it has to be. Next.js only merges a file-based image
+       * into a segment that does not already own `openGraph.images`, and it
+       * merges the image belonging to THAT segment. This is a nested segment
+       * that sets `images` for every other page, so the root's card would be
+       * dropped rather than inherited. The static file still covers any route
+       * that sets no `openGraph` at all, such as the 404.
+       */
+      images: page.url === '/' ? SITE_CARD : ogImageUrl(page),
     },
   }
 }

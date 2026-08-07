@@ -169,8 +169,9 @@ export default async function AuthorPage(props: PageProps<'/authors/[slug]'>) {
 
   const posts = await getPostsByAuthor(author.slug)
 
+  // No Home crumb. See `breadcrumbs.tsx` for why the trail starts at the first
+  // level that tells a reader something they cannot get from the address bar.
   const trail: { name: string; url?: string }[] = [
-    { name: 'Home', url: absoluteUrl('/') },
     { name: 'Blog', url: absoluteUrl('/blog') },
     { name: author.name },
   ]

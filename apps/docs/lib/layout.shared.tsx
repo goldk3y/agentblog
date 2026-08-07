@@ -33,9 +33,9 @@ export function baseOptions(): BaseLayoutProps {
           <img
             src="/logos/agentblog-icon-logo.svg"
             alt=""
-            width={32}
-            height={32}
-            className="size-8 translate-y-[5.5%]"
+            width={28}
+            height={28}
+            className="size-7 translate-y-[5.5%]"
           />
           {/*
             The two words are one text run separated by an ordinary space, not

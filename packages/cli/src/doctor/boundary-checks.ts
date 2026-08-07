@@ -120,8 +120,12 @@ const THEME_RULES: readonly { readonly id: string; readonly pattern: RegExp }[] 
  * `ImageResponse` renders in a Satori runtime with no CSS cascade, so it cannot
  * read a custom property: `var(--card)` there resolves to nothing and the image
  * comes out transparent. Same exemption list as the CI script.
+ *
+ * `og-card.tsx` holds the card body both `opengraph-image.tsx` routes render, so
+ * it renders through Satori too. The exemption follows the runtime rather than
+ * the route naming convention.
  */
-const COLOUR_EXEMPT_BASENAMES = new Set(['opengraph-image.tsx', 'twitter-image.tsx'])
+const COLOUR_EXEMPT_BASENAMES = new Set(['opengraph-image.tsx', 'twitter-image.tsx', 'og-card.tsx'])
 
 /** Blank comments and link fragments, keeping every offset. */
 function blankNonColourText(source: string): string {

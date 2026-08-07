@@ -51,11 +51,13 @@ export const metadata: Metadata = {
   },
 }
 
+/*
+ * One flat colour rather than a `prefers-color-scheme` pair, because the site
+ * defaults to dark for every visitor regardless of the OS setting. Same
+ * reasoning as the product site's root layout.
+ */
 export const viewport: Viewport = {
-  themeColor: [
-    { media: '(prefers-color-scheme: light)', color: 'white' },
-    { media: '(prefers-color-scheme: dark)', color: 'black' },
-  ],
+  themeColor: 'black',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -72,7 +74,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       className={`${geistSans.variable} ${geistMono.variable}`}
     >
       <body className="flex min-h-screen flex-col antialiased">
-        <RootProvider>{children}</RootProvider>
+        {/*
+          Fumadocs owns the `next-themes` provider, so the dark default is set
+          through its `theme` option rather than by mounting our own. Leaving
+          `enableSystem` on would hand the decision back to the OS, which is what
+          `defaultTheme` is trying to take away. The product site's provider
+          carries the long version of this reasoning.
+        */}
+        <RootProvider theme={{ defaultTheme: 'dark', enableSystem: false }}>
+          {children}
+        </RootProvider>
       </body>
     </html>
   )

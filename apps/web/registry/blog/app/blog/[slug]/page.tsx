@@ -36,7 +36,7 @@ import { notFound } from 'next/navigation'
 import { AnswerCapsule } from '@/components/blog/answer-capsule'
 import { AuthorBio } from '@/components/blog/author-bio'
 import { Breadcrumbs } from '@/components/blog/breadcrumbs'
-import { Byline } from '@/components/blog/byline'
+import { Byline, PostDates } from '@/components/blog/byline'
 import { JsonLd } from '@/components/blog/json-ld'
 import { Faq, FAQ_HEADING } from '@/components/mdx/faq'
 import { Prose } from '@/components/blog/prose'
@@ -51,7 +51,7 @@ import {
   SECTION_HEADING,
   TITLE_CLUSTER,
 } from '@/components/blog/type-scale'
-import { absoluteUrl, categoryPath, postUrl } from '@/lib/config'
+import { absoluteUrl, categoryUrl, postUrl } from '@/lib/config'
 import { buildPostMetadata } from '@/lib/metadata'
 import { renderMdx } from '@/lib/render-mdx'
 import { getAllPosts, getPost, getRelatedPosts } from '@/lib/posts'
@@ -206,6 +206,32 @@ export default async function PostPage(props: PageProps<'/blog/[slug]'>) {
       ? [...toc, { id: faqHeadingId, text: FAQ_HEADING, depth: 2 } satisfies TocEntry]
       : toc
 
+  /*
+   * ONE trail, rendered by `<Breadcrumbs>` below and emitted as the
+   * `BreadcrumbList` by `buildArticleGraph`. Building it twice is how the page
+   * came to display Home, Blog, Category, Post while the markup claimed Home,
+   * Blog, Post, which is marked-up navigation no reader can see.
+   *
+   * It ends at the category hub, not at this post. Google does not require the
+   * trail to reach the current page, and a crumb naming the post repeats the H1
+   * directly beneath it. The hub is a real destination, so it stays a link;
+   * `<Breadcrumbs>` reserves `aria-current="page"` for a crumb with no `href`,
+   * and there is none here.
+   *
+   * There is no Home crumb for the same reason there is none anywhere else in
+   * the block. Google: "It is not required to include a breadcrumb ListItem for
+   * the top level path (your site's domain or host name)."
+   *
+   * Typed explicitly rather than inferred so `crumb.url` is a legal property
+   * access on every element and the shape matches `buildBreadcrumb`. Note the
+   * `?:` rather than `| undefined`: this block compiles with
+   * `exactOptionalPropertyTypes`, so an absent crumb URL is an absent key.
+   */
+  const trail: { name: string; url?: string }[] = [
+    { name: 'Blog', url: absoluteUrl('/blog') },
+    { name: post.category.name, url: categoryUrl(post.category.slug) },
+  ]
+
   return (
     /*
      * ---------------------------------------------------------------------
@@ -250,23 +276,24 @@ export default async function PostPage(props: PageProps<'/blog/[slug]'>) {
         <header className={cn(PAGE_HEADER, 'w-full', showToc && 'xl:max-w-(--agentblog-measure)')}>
           {/* Breadcrumb hrefs are composed by the config URL helpers, same as
               every canonical, so the visible trail and the BreadcrumbList JSON-LD
-              built by `buildArticleGraph` can never disagree about a URL. The last
-              crumb has no href because it is the current page. */}
+              built by `buildArticleGraph` can never disagree about a URL: both
+              read the `trail` array above. */}
           <Breadcrumbs
-            trail={[
-              { name: 'Home', href: absoluteUrl('/') },
-              { name: 'Blog', href: absoluteUrl('/blog') },
-              { name: post.category.name, href: categoryPath(post.category.slug) },
-              { name: post.title },
-            ]}
+            trail={trail.map((crumb) =>
+              crumb.url ? { name: crumb.name, href: crumb.url } : { name: crumb.name },
+            )}
           />
 
           {/*
-           * Headline and capsule are one cluster at the tighter rhythm, because
-           * the capsule is now typeset as the standfirst of the headline rather
-           * than as a panel underneath it. The byline sits outside the cluster,
-           * at the wider gap, which is what separates "what this article says"
-           * from "who is accountable for it".
+           * Headline, byline, capsule: one cluster at the tighter rhythm, in the
+           * order a reader asks the questions. What is this, who says so, and
+           * what does it say.
+           *
+           * The byline goes between the H1 and the capsule rather than after it
+           * because it is one line and the capsule is a paragraph. Attribution
+           * sitting under a 60-word block reads as a footnote to that block
+           * instead of as the article's byline, and the H1 is left with nothing
+           * under it but prose it is not the title of.
            */}
           <div className={cn(TITLE_CLUSTER, 'w-full')}>
             {/* Exactly one <h1> on this page, and it is the article headline. Every
@@ -274,22 +301,20 @@ export default async function PostPage(props: PageProps<'/blog/[slug]'>) {
                 emits <h2>/<h3> with stable ids for the body. */}
             <h1 className={DISPLAY}>{post.title}</h1>
 
-            {/* The answer capsule sits directly under the H1: 40 to 60 words, the
-                complete answer, no links inside it. This is the highest value block
-                on the page for retrieval, because it is what survives chunk
-                truncation, which is why it goes above the byline rather than below
-                it. Passed as `children` rather than through the `text` prop so an
-                MDX author and this route reach the component the same way. */}
+            {/* Byline owns `rel="author"` on the author link, and that value must
+                match the JSON-LD exactly, which it does because both read the
+                same `post` object. The dates are not here: they render as
+                `<PostDates>` at the foot of the article. See `byline.tsx`. */}
+            <Byline post={post} />
+
+            {/* The answer capsule: 40 to 60 words, the complete answer, no links
+                inside it. This is the highest value block on the page for
+                retrieval, because it is what survives chunk truncation, and the
+                single line of byline above it does not push it out of the opening
+                chunk. Passed as `children` rather than through the `text` prop so
+                an MDX author and this route reach the component the same way. */}
             {post.answerCapsule ? <AnswerCapsule>{post.answerCapsule}</AnswerCapsule> : null}
           </div>
-
-          {/* Byline owns `rel="author"` on the author link and `<time dateTime>`
-              on both dates. Those values must match the JSON-LD exactly, which
-              they do because both read the same `post` object.
-
-              The hairline above it is the header's floor. Before it, the byline
-              ran straight into the contents list at a measured zero pixels. */}
-          <Byline className="border-border w-full border-t pt-6" post={post} />
         </header>
 
         {/* `PostSchema` already refuses a hero image without alt text, so this
@@ -420,13 +445,31 @@ export default async function PostPage(props: PageProps<'/blog/[slug]'>) {
             ) : null}
 
             {/*
-             * Everything past the article body is one cluster behind a rule:
-             * share, attribution, and where to read next. They are the same kind
-             * of thing (what to do now that you have finished) and they used to
-             * be three sections at three different margins, one of which was
-             * zero.
+             * The colophon, and the rule that ends the article.
+             *
+             * The hairline belongs above this line rather than below it, which
+             * is what makes the dates read as provenance for what was just read
+             * instead of as the first item in the list of things to do next. It
+             * is the same single rule the header used to carry, moved to the one
+             * place on the page where a horizontal line is stating something:
+             * the article stops here.
+             *
+             * `<PostDates>` owns `<time dateTime>` on both dates, carrying the
+             * raw ISO values with their UTC offsets. They must stay
+             * byte-identical to `datePublished` and `dateModified` in the
+             * JSON-LD, which they are because both read the same `post` object.
+             * A site that publishes to Google News wants these in the header
+             * instead; see `byline.tsx`.
              */}
-            <div className="border-border flex flex-col gap-10 border-t pt-10">
+            <PostDates className="border-border w-full border-t pt-6" post={post} />
+
+            {/*
+             * Everything past that is one cluster: share, attribution, and where
+             * to read next. They are the same kind of thing (what to do now that
+             * you have finished) and they used to be three sections at three
+             * different margins, one of which was zero.
+             */}
+            <div className="flex flex-col gap-10">
               {/*
                * Share controls, at the foot of the article body and above the
                * author box. The URL is composed on the server by `postUrl`,
@@ -464,7 +507,7 @@ export default async function PostPage(props: PageProps<'/blog/[slug]'>) {
        * the most common way a valid-looking blog produces unusable structured
        * data.
        */}
-      <JsonLd nodes={buildArticleGraph(post)} />
+      <JsonLd nodes={buildArticleGraph(post, trail)} />
     </div>
   )
 }

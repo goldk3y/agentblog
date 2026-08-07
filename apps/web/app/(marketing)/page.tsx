@@ -19,10 +19,12 @@ import Link from 'next/link'
 
 import { CodePanel, type CodeLine } from '@/components/site/code-panel'
 import { CopyCommand } from '@/components/site/copy-command'
+import { FileBrowser } from '@/components/site/file-browser'
 import { Braces, FileCode, Palette, Quote, Rss, Stethoscope } from '@/components/site/icons'
 import { InstallSwitch } from '@/components/site/install-switch'
 import { Panel } from '@/components/site/panel'
 import { Button } from '@/components/ui/button'
+import { getInstalledFiles } from '@/lib/installed-files'
 import { cn } from '@/lib/utils'
 
 export const metadata: Metadata = {
@@ -147,6 +149,8 @@ const AGENTBLOG_RENDERED: readonly CodeLine[] = [
 /* -------------------------------------------------------------------------- */
 
 export default function LandingPage() {
+  const installedFiles = getInstalledFiles()
+
   return (
     <>
       {/* ---------------------------------------------------------------- */}
@@ -237,30 +241,18 @@ export default function LandingPage() {
       {/*  `scripts/assert-file-count.mjs` parses the digits in this        */}
       {/*  section's lead and fails the build when they stop matching what  */}
       {/*  `@agentblog/blog` actually resolves to. Reword it freely, but    */}
-      {/*  keep the count in the form `72 files,`.                          */}
+      {/*  keep the count in the form `73 files,`.                          */}
       {/* ---------------------------------------------------------------- */}
       <Section
         id="what-you-get"
         title="One command installs the whole blog"
-        lead="72 files, and you own every one of them. No runtime package to depend on, and nothing of ours to upgrade around."
+        lead="73 files, and you own every one of them. No runtime package to depend on, and nothing of ours to upgrade around."
       >
-        <Panel
-          label="your-app/"
-          bodyClassName="grid grid-cols-1 gap-x-10 gap-y-8 p-6 sm:grid-cols-2 lg:grid-cols-3"
-        >
-          {MANIFEST.map((group) => (
-            <div key={group.heading} className="min-w-0">
-              <h3 className="text-foreground text-mono-12 font-mono">{group.heading}</h3>
-              <ul className="text-muted-foreground text-mono-12 mt-3 space-y-1.5 font-mono">
-                {group.files.map((file) => (
-                  <li key={file} className="truncate">
-                    {file}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </Panel>
+        <FileBrowser files={installedFiles} initialPath="app/blog/[slug]/page.tsx" />
+
+        <p className="text-muted-foreground text-copy-13 mt-8 text-center">
+          Open any file to read the source it installs. Each preview is the first sixteen lines.
+        </p>
 
         <p className="text-muted-foreground text-copy-14 mx-auto mt-8 max-w-2xl text-center">
           Already on shadcn? <C>npx shadcn@latest add @agentblog/blog</C> installs the same files,
@@ -346,65 +338,6 @@ export default function LandingPage() {
 /* -------------------------------------------------------------------------- */
 /*  Content                                                                   */
 /* -------------------------------------------------------------------------- */
-
-const MANIFEST = [
-  {
-    heading: 'app/blog/',
-    files: [
-      'page.tsx',
-      '[slug]/page.tsx',
-      '[slug]/opengraph-image.tsx',
-      'category/[slug]/page.tsx',
-      'tag/[slug]/page.tsx',
-    ],
-  },
-  {
-    heading: 'app/',
-    files: [
-      'sitemap.ts',
-      'robots.ts',
-      'feed.xml/route.ts',
-      'opengraph-image.tsx',
-      'api/publish/route.ts',
-      'authors/[slug]/page.tsx',
-      'editorial-policy/page.tsx',
-    ],
-  },
-  {
-    heading: 'components/',
-    files: [
-      'blog/answer-capsule.tsx',
-      'blog/breadcrumbs.tsx',
-      'blog/byline.tsx',
-      'blog/json-ld.tsx',
-      'blog/table-of-contents.tsx',
-      'mdx/callout.tsx',
-      'mdx/faq.tsx',
-      'mdx/table.tsx',
-    ],
-  },
-  {
-    heading: 'lib/',
-    files: [
-      'config.ts',
-      'posts.ts',
-      'schema.ts',
-      'metadata.ts',
-      'render-mdx.tsx',
-      'indexnow.ts',
-      'preflight.ts',
-      'ai-referrers.ts',
-    ],
-  },
-  {
-    heading: 'content/',
-    files: ['blog/*.mdx', 'authors.json', 'categories.json'],
-  },
-  {
-    heading: './',
-    files: ['agentblog.config.ts', 'styles/agentblog.css', '.claude/skills/', 'AGENTS.md'],
-  },
-] as const
 
 const SKILLS = [
   {

@@ -30,6 +30,14 @@ export default defineConfig({
 
   brand: {
     name: 'AgentBlog',
+    /*
+     * `public/logo.png`, a 512x512 transparent raster of
+     * `public/logos/agentblog-icon-logo.svg`. Two consumers need it and they
+     * want different things: `Organization.logo` in the JSON-LD graph needs the
+     * declared width and height to match real pixels, and `lib/og-card.tsx`
+     * inlines it into every generated Open Graph card. Point this at the SVG and
+     * the card still renders, but the dimensions above stop describing the file.
+     */
     logo: { url: '/logo.png', width: 512, height: 512 },
     sameAs: ['https://github.com/agentblog', 'https://www.npmjs.com/package/agentblog'],
   },

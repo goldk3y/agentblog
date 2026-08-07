@@ -275,6 +275,11 @@
           "target": "app/blog/page.tsx"
         },
         {
+          "path": "app/blog/opengraph-image.tsx",
+          "type": "registry:page",
+          "target": "app/blog/opengraph-image.tsx"
+        },
+        {
           "path": "app/blog/[slug]/page.tsx",
           "type": "registry:page",
           "target": "app/blog/[slug]/page.tsx"
@@ -303,15 +308,20 @@
           "path": "app/authors/[slug]/page.tsx",
           "type": "registry:page",
           "target": "app/authors/[slug]/page.tsx"
+        },
+        {
+          "path": "lib/og-card.tsx",
+          "type": "registry:lib",
+          "target": "lib/og-card.tsx"
         }
       ],
-      "docs": "Routes installed. If app/blog/page.tsx is not on disk, shadcn did not detect your framework and silently installed nothing. Run `npx agentblog@latest doctor` to confirm. This item also installs @agentblog/seo-routes and @agentblog/eeat-pages, because the blog layout links /feed.xml and /editorial-policy and every list page points og:image at /opengraph-image. Without them the routes render links and cards that 404."
+      "docs": "Routes installed. If app/blog/page.tsx is not on disk, shadcn did not detect your framework and silently installed nothing. Run `npx agentblog@latest doctor` to confirm. This item also installs @agentblog/seo-routes and @agentblog/eeat-pages, because the blog layout links /feed.xml and /editorial-policy. Without them the routes render links that 404. The Open Graph cards live under app/blog/, so nothing here overwrites an app/opengraph-image.* of your own."
     },
     {
       "name": "seo-routes",
       "type": "registry:block",
       "title": "AgentBlog SEO routes",
-      "description": "sitemap.xml built from real content dates rather than the build clock, an environment-guarded robots.txt that declares your AI access preferences, an RSS 2.0 feed, a site-level Open Graph image, and a 404 that returns a real 404.",
+      "description": "sitemap.xml built from real content dates rather than the build clock, an environment-guarded robots.txt that declares your AI access preferences, an RSS 2.0 feed, and a 404 that returns a real 404.",
       "categories": ["blog", "seo"],
       "registryDependencies": ["@agentblog/blog-core"],
       "files": [
@@ -334,11 +344,6 @@
           "path": "app/llms.txt/route.ts",
           "type": "registry:page",
           "target": "app/llms.txt/route.ts"
-        },
-        {
-          "path": "app/opengraph-image.tsx",
-          "type": "registry:page",
-          "target": "app/opengraph-image.tsx"
         },
         {
           "path": "app/not-found.tsx",

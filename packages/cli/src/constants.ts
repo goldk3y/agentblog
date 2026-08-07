@@ -82,6 +82,7 @@ export const REQUIRED_ROUTE_FILES = [
 export const AGENTBLOG_BLOG_FILES = [
   'app/blog/layout.tsx',
   'app/blog/page.tsx',
+  'app/blog/opengraph-image.tsx',
   'app/blog/[slug]/page.tsx',
   'app/blog/[slug]/opengraph-image.tsx',
   'app/blog/category/[slug]/page.tsx',

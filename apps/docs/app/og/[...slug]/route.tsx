@@ -4,12 +4,20 @@
  * The last path segment is a filename (`image.png`) rather than part of the
  * slug, because some social scrapers still refuse a URL that does not look like
  * a file.
+ *
+ * The index page is deliberately not served from here. It uses the static
+ * `app/opengraph-image.png`, which is the designed brand card for the site as a
+ * whole; see the `images` branch in `app/(docs)/[[...slug]]/page.tsx`. This route
+ * still generates a card for `/` so that the URL resolves if anything references
+ * it, but nothing on the site does.
+ *
+ * The layout lives in `lib/og-card.tsx`, which explains why it is not
+ * `fumadocs-ui/og`.
  */
 import { ImageResponse } from 'next/og'
 import { notFound } from 'next/navigation'
 
-import { generate as OGImage } from 'fumadocs-ui/og'
-
+import { docsOgCard } from '@/lib/og-card'
 import { ogImageSegments } from '@/lib/page-urls'
 import { SITE_NAME } from '@/lib/site'
 import { source } from '@/lib/source'
@@ -26,16 +34,10 @@ export async function GET(_request: Request, { params }: RouteParams): Promise<R
   const page = source.getPage(slug.slice(0, -1))
   if (page === undefined) notFound()
 
-  return new ImageResponse(
-    <OGImage
-      title={page.data.title}
-      description={page.data.description}
-      site={SITE_NAME}
-      primaryColor="#0064e2"
-      primaryTextColor="#ffffff"
-    />,
-    { width: 1200, height: 630 },
-  )
+  return new ImageResponse(docsOgCard({ eyebrow: SITE_NAME, title: page.data.title }), {
+    width: 1200,
+    height: 630,
+  })
 }
 
 export function generateStaticParams(): { slug: string[] }[] {

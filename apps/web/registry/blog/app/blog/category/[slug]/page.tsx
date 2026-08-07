@@ -128,8 +128,10 @@ export default async function CategoryPage(props: PageProps<'/blog/category/[slu
 
   const posts = await getPostsByCategory(category.slug)
 
+  // No Home crumb, here or anywhere else in the block. Google does not require
+  // one ("It is not required to include a breadcrumb ListItem for the top level
+  // path"), and the SERP prefixes the domain regardless. See `breadcrumbs.tsx`.
   const trail: { name: string; url?: string }[] = [
-    { name: 'Home', url: absoluteUrl('/') },
     { name: 'Blog', url: absoluteUrl('/blog') },
     { name: category.name },
   ]

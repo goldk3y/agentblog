@@ -5,7 +5,15 @@ import { cn } from '@/lib/utils'
 import { ChevronRightIcon } from './icons'
 
 /**
- * The visible breadcrumb trail: Home, Blog, Post.
+ * The visible breadcrumb trail: Blog, then where in the blog you are.
+ *
+ * THERE IS NO "HOME" CRUMB, AND THAT IS A DECISION RATHER THAN AN OVERSIGHT.
+ * Google's breadcrumb documentation states it outright: "It is not required to
+ * include a breadcrumb ListItem for the top level path (your site's domain or
+ * host name)." Every SERP breadcrumb is already prefixed with the domain, so a
+ * "Home" crumb spends the first item of the trail restating the thing the reader
+ * can see in the address bar. The trail starts at the first level that tells
+ * somebody something.
  *
  * WHERE IT RENDERS
  * Above the H1 on the post route, on category hubs, on tag pages, and on author
@@ -29,9 +37,15 @@ import { ChevronRightIcon } from './icons'
  *     one.
  *   - An ordered list, because the order is the meaning. An unordered list says
  *     these items are interchangeable, and they are not.
- *   - The last crumb is the current page, so it is text rather than a link and
- *     carries `aria-current="page"`. A link to the page you are already on is
- *     noise for a reader and a self-referential edge in the link graph.
+ *   - THE CURRENT PAGE IS THE CRUMB WITH NO `href`, NOT THE LAST ONE. That crumb
+ *     is text rather than a link and carries `aria-current="page"`, because a
+ *     link to the page you are already on is noise for a reader and a
+ *     self-referential edge in the link graph. The two are not the same test: a
+ *     post's trail ends at its category hub, which is a real destination and has
+ *     to stay clickable, and marking it `aria-current="page"` would tell a screen
+ *     reader user they were on the hub. Give the current page a crumb with no
+ *     `href` when you want one, and leave it off when the page above is the
+ *     honest end of the trail.
  *   - The chevrons are `aria-hidden` and live in their own element, so the
  *     accessible name of each crumb stays clean.
  *
@@ -39,15 +53,17 @@ import { ChevronRightIcon } from './icons'
  * - Dropping the trail from the page while leaving the `BreadcrumbList` in the
  *   JSON-LD is the exact "markup for invisible content" case that gets
  *   structured data ignored or penalized.
- * - Making the last crumb a link removes `aria-current="page"`, which is the
- *   only signal telling assistive tech where in the trail the reader is.
+ * - Giving the current page an `href` renders it as a link and removes
+ *   `aria-current="page"`, which is the only signal telling assistive tech where
+ *   in the trail the reader is.
  *
  * @see https://docs.agentblog.dev/concepts/geo-playbook
  */
 export interface BreadcrumbTrailItem {
   readonly name: string
   /**
-   * Destination. Omit on the final crumb, which is the current page.
+   * Destination. Omit it to mark this crumb as the current page, which is what
+   * renders it as plain text with `aria-current="page"`.
    *
    * Use the URL helpers from `@/lib/config` (`postUrl`, `categoryUrl`, and so
    * on) to build this. They are the only place the block decides URL shape, so
@@ -72,14 +88,13 @@ export function Breadcrumbs({ trail, className }: BreadcrumbsProps) {
       <ol className="text-muted-foreground flex list-none flex-wrap items-center gap-1.5 p-0 text-sm">
         {trail.map((item, index) => {
           const isLast = index === lastIndex
+          // No destination means this crumb is the page the reader is on.
+          const isCurrent = item.href === undefined
 
           return (
             <li key={`${item.name}-${index}`} className="inline-flex items-center gap-1.5">
-              {isLast || item.href === undefined ? (
-                <span
-                  {...(isLast ? { 'aria-current': 'page' as const } : {})}
-                  className={cn(isLast && 'text-foreground font-medium')}
-                >
+              {isCurrent ? (
+                <span aria-current="page" className="text-foreground font-medium">
                   {item.name}
                 </span>
               ) : (

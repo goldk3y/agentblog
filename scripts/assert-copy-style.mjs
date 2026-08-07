@@ -58,6 +58,9 @@ const TARGETS = [
   { path: 'docs', extensions: TEXT_EXTENSIONS },
   { path: 'README.md', extensions: TEXT_EXTENSIONS },
   { path: 'CONTRIBUTING.md', extensions: TEXT_EXTENSIONS },
+  // One sentence, in a directory of several hundred registries, next to every
+  // competitor a reader is comparing us against. Same rules as the seed posts.
+  { path: 'shadcn-directory-entry.json', extensions: ['.json'] },
   { path: 'packages', extensions: TEXT_EXTENSIONS, only: `${sep}src${sep}` },
   { path: 'scripts', extensions: TEXT_EXTENSIONS },
   { path: '.claude-plugin', extensions: TEXT_EXTENSIONS },

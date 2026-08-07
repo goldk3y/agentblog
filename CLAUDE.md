@@ -124,8 +124,10 @@ Banned: any palette utility (`text-zinc-500`), any colour literal (`#hex`,
 `oklch()`), and **any `dark:` colour variant**. The tokens already flip under
 `.dark`, so `dark:text-white` re-hardcodes what the token was abstracting. A
 component that seems to need a `dark:` colour picked the wrong token. The one
-documented exception is `opengraph-image.tsx`, because `ImageResponse` cannot
-read CSS variables.
+documented exception is anything `ImageResponse` renders, because Satori cannot
+read CSS variables: the `opengraph-image.tsx` routes and `lib/og-card.tsx`. The
+exempt basenames are listed twice, in `scripts/assert-theme-conformance.mjs` and
+in `packages/cli/src/doctor/boundary-checks.ts`, and the two must agree.
 
 ### 6. Domain types are inferred, never authored
 
@@ -150,14 +152,15 @@ Markdown files.
 Match the check to what you touched. Every script's header comment has its exact
 invocation.
 
-| Changed                                   | Run                                                                            |
-| ----------------------------------------- | ------------------------------------------------------------------------------ |
-| `packages/schema` or `packages/checks`    | `pnpm codegen && pnpm typecheck && pnpm test`                                  |
-| `apps/web/registry/**`                    | `pnpm check:static`, then `registry:build && pnpm check:registry`              |
-| `apps/docs/content/**`                    | `pnpm check:copy-style && pnpm check:docs-links`                               |
-| `packages/cli/src/patchers/**`            | `pnpm check:patcher` and `pnpm check:init-refuses`                             |
-| the `next.config` patcher or the bot list | `node scripts/assert-htmlbots-superset.mjs <path/to/next.config.ts>`           |
-| anything affecting rendered HTML          | `assert-crawler-visible.mjs`, `assert-og-defaults.mjs`, `assert-cold-slug.mjs` |
+| Changed                                            | Run                                                                            |
+| -------------------------------------------------- | ------------------------------------------------------------------------------ |
+| `packages/schema` or `packages/checks`             | `pnpm codegen && pnpm typecheck && pnpm test`                                  |
+| `apps/web/registry/**`                             | `pnpm check:static`, then `registry:build && pnpm check:registry`              |
+| `apps/docs/content/**`                             | `pnpm check:copy-style && pnpm check:docs-links`                               |
+| `packages/cli/src/patchers/**`                     | `pnpm check:patcher` and `pnpm check:init-refuses`                             |
+| the `next.config` patcher or the bot list          | `node scripts/assert-htmlbots-superset.mjs <path/to/next.config.ts>`           |
+| `shadcn-directory-entry.json` or the deploy domain | `node scripts/assert-directory-entry.mjs --live`                               |
+| anything affecting rendered HTML                   | `assert-crawler-visible.mjs`, `assert-og-defaults.mjs`, `assert-cold-slug.mjs` |
 
 IMPORTANT: `htmlLimitedBots` in `next.config.ts` **overrides** the Next.js
 default bot list rather than extending it. A patch that writes only the AI

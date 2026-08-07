@@ -99,9 +99,12 @@ The `dark:` ban catches people. The tokens already flip under `.dark`, so
 it breaks the moment a user's dark theme is not near-black. If a component seems
 to need a `dark:` colour, it picked the wrong token.
 
-The one documented exception is `opengraph-image.tsx`, because `ImageResponse`
-cannot read CSS variables. `scripts/assert-theme-conformance.mjs` encodes the
-exception explicitly.
+The one documented exception is anything rendered by `ImageResponse`, which
+cannot read CSS variables: the `opengraph-image.tsx` routes and `lib/og-card.tsx`,
+where they keep the card layout they share.
+`scripts/assert-theme-conformance.mjs` encodes the exception explicitly, as a
+list of basenames, and `packages/cli/src/doctor/boundary-checks.ts` carries the
+same list because `doctor` runs the same rule against an installed project.
 
 The product reason these rules are absolute is on the
 [Theming](https://docs.agentblog.dev/guides/match-your-design) page.
@@ -225,6 +228,7 @@ pnpm check:theme           # node scripts/assert-theme-conformance.mjs
 pnpm check:client-imports  # node scripts/assert-no-server-only-in-client.mjs
 pnpm check:html-bots       # assert-html-bots-current.mjs + the docs app's own config
 pnpm check:docs-links      # node scripts/assert-docs-links.mjs
+pnpm check:directory-entry # node scripts/assert-directory-entry.mjs
 node scripts/assert-file-count.mjs
 ```
 
@@ -289,6 +293,38 @@ the exact invocation.
    require the user to supply a rebuild trigger, which is the compile-time
    version of a failure that is otherwise a silent staleness bug.
 4. Add a registry item and a docs page.
+
+## The shadcn registry directory
+
+`@agentblog` resolves for a stranger only because the namespace is listed in the
+[open source registry index](https://ui.shadcn.com/docs/registry/registry-index).
+Without the listing, `shadcn add @agentblog/blog` fails with "Unknown registry"
+unless the user has already written the URL into their own `components.json`, so
+the listing is what every discovery claim in the README rests on.
+
+`shadcn-directory-entry.json` is the exact object submitted, kept in this
+repository so it can be diffed and tested rather than remembered. To submit or
+update it:
+
+1. `node scripts/assert-directory-entry.mjs --live`, which checks the entry
+   against the directory's own schema, against `registry.json`, and against the
+   deployment it advertises.
+2. Paste the object into
+   [`apps/v4/registry/directory.json`](https://github.com/shadcn-ui/ui/blob/main/apps/v4/registry/directory.json)
+   in a fork of `shadcn-ui/ui`, in alphabetical order by `name`.
+3. `pnpm validate:registries` there, then open the pull request.
+
+Their validator reads five fields and nothing else, so an extra key is a field
+that never arrives. The requirements it does not check are the ones worth
+re-reading before submitting: the registry has to be open source and publicly
+reachable, conform to the registry schema, and be flat, meaning `/registry.json`
+and every `/item-name.json` sit at the same root. `assert-catalog-shape.mjs` and
+`assert-schema-valid.mjs` cover those against the built output.
+
+Anything that changes where the registry is served, the deploy domain or the
+`shadcn build` output path, means editing the entry and opening a second pull
+request. Nothing upstream notices on its own, and the failure is a 404 on
+somebody else's machine.
 
 ## Wanted
 

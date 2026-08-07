@@ -159,18 +159,27 @@ export default async function BlogIndexPage(props: PageProps<'/blog'>) {
   // unlimited thin URLs from the query string.
   if (requested > 1 && requested > totalPages) notFound()
 
-  // Typed explicitly rather than inferred, so that `crumb.url` below is a legal
-  // property access on every element and so the shape matches `buildBreadcrumb`
-  // exactly. Note the `?:` rather than `| undefined`: this repo compiles with
-  // `exactOptionalPropertyTypes`, so an absent crumb URL is an absent key.
+  /*
+   * PAGE ONE HAS NO BREADCRUMB, AND THAT IS THE CORRECT OUTPUT RATHER THAN A
+   * MISSING FEATURE.
+   *
+   * With no Home crumb (see `breadcrumbs.tsx`) this route is the top of its own
+   * trail, so page one's trail is the single word "Blog" sitting above an H1
+   * that already says it. A one-item `BreadcrumbList` tells a search engine
+   * nothing it cannot read off the URL, and a one-item nav is a nav announcing
+   * itself to a screen reader in order to say where the reader already is.
+   * `<Breadcrumbs>` renders nothing for an empty trail, and the JSON-LD below
+   * omits the node entirely rather than emitting an empty `itemListElement`.
+   *
+   * Page two and beyond do have somewhere to go back to, so they get one.
+   *
+   * Typed explicitly rather than inferred, so that `crumb.url` below is a legal
+   * property access on every element and so the shape matches `buildBreadcrumb`
+   * exactly. Note the `?:` rather than `| undefined`: this repo compiles with
+   * `exactOptionalPropertyTypes`, so an absent crumb URL is an absent key.
+   */
   const trail: { name: string; url?: string }[] =
-    page > 1
-      ? [
-          { name: 'Home', url: absoluteUrl('/') },
-          { name: 'Blog', url: absoluteUrl('/blog') },
-          { name: `Page ${page}` },
-        ]
-      : [{ name: 'Home', url: absoluteUrl('/') }, { name: 'Blog' }]
+    page > 1 ? [{ name: 'Blog', url: absoluteUrl('/blog') }, { name: `Page ${page}` }] : []
 
   return (
     <>
@@ -267,7 +276,12 @@ export default async function BlogIndexPage(props: PageProps<'/blog'>) {
           incompatible ways, and whichever page a crawler fetched last would
           win. */}
       <JsonLd
-        nodes={[buildBlogGraph(posts, pagePath(page)), buildBreadcrumb(trail, pagePath(page))]}
+        nodes={[
+          buildBlogGraph(posts, pagePath(page)),
+          // Nothing on page one, where the trail is empty. An `itemListElement`
+          // with no items is a node claiming a breadcrumb that does not exist.
+          ...(trail.length === 0 ? [] : [buildBreadcrumb(trail, pagePath(page))]),
+        ]}
       />
     </>
   )

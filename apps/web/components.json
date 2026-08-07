@@ -18,6 +18,7 @@
     "hooks": "@/hooks"
   },
   "registries": {
-    "@agentblog": "https://agentblog.dev/r/{name}.json"
+    "@agentblog": "https://agentblog.dev/r/{name}.json",
+    "@ai-elements": "https://elements.ai-sdk.dev/api/registry/{name}"
   }
 }

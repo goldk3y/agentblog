@@ -32,9 +32,17 @@
  *   eyebrow   The small capitalised label above or beside something else.
  *   meta      Bylines, dates, reading times, counts.
  *
- * Weights are 400 for body, 500 for meta emphasis, and 600 for headings. There
- * is no 700 in the block. Tones are `text-foreground`, `text-muted-foreground`,
- * and `text-primary` for links inside prose, and there is no fourth.
+ * Weights are 400 for body, 500 for meta emphasis and the display headline, and
+ * 600 for the smaller headings. There is no 700 in the block. Tones are
+ * `text-foreground`, `text-muted-foreground`, and `text-primary` for links
+ * inside prose, and there is no fourth.
+ *
+ * The display weight is the one that looks inconsistent written down and is not.
+ * Weight and size both carry emphasis, so they trade against each other: at 48px
+ * a 500 already reads as the heaviest thing on the page, while a 600 at that
+ * size reads as a headline shouting over the sentence it introduces. At 24px the
+ * section headings have no such size advantage and need the 600 to hold their
+ * place above body text. Same optical weight, two different numbers.
  *
  * ---------------------------------------------------------------------------
  * WHY THE TRACKING IS `tracking-tight` AND NEVER TIGHTER
@@ -69,7 +77,7 @@
 
 /** Page H1. One per route, and it never changes on page 2 of a paginated list. */
 export const DISPLAY =
-  'text-foreground text-4xl font-semibold tracking-tight text-balance sm:text-5xl'
+  'text-foreground text-4xl font-medium tracking-tight text-balance sm:text-5xl'
 
 /**
  * The sentence under the H1. Capped at the reading measure so it stays readable
@@ -96,5 +104,8 @@ export const CLUSTER_GAP = 'flex flex-col gap-6'
 /** The header block on every route: breadcrumb, then the title cluster. */
 export const PAGE_HEADER = 'flex flex-col items-start gap-6'
 
-/** Inside the title cluster: H1, lede, and any count line. */
+/**
+ * Inside the title cluster: H1, then whatever belongs to it. A lede and a count
+ * line on a list page, the byline and the answer capsule on a post.
+ */
 export const TITLE_CLUSTER = 'flex flex-col gap-4'

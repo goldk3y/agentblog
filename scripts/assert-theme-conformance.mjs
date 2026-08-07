@@ -65,8 +65,14 @@ const SKIP_DIRS = new Set(['node_modules', '.next', 'dist', '.turbo'])
  *
  * This is the only category of exemption. Keep it that way. If a second reason
  * appears, argue about it in review rather than adding a basename here.
+ *
+ * `og-card.tsx` is not a route file and is on the list anyway, because it is
+ * where the two `opengraph-image.tsx` routes now keep the card body they used to
+ * hold a copy of each. The exemption follows the Satori runtime, not the file
+ * naming convention, so extracting the shared layout must not silently withdraw
+ * it. Anything else that renders through `ImageResponse` needs the same entry.
  */
-const COLOUR_EXEMPT_BASENAMES = new Set(['opengraph-image.tsx', 'twitter-image.tsx'])
+const COLOUR_EXEMPT_BASENAMES = new Set(['opengraph-image.tsx', 'twitter-image.tsx', 'og-card.tsx'])
 
 /* ========================================================================== */
 /*  Rules                                                                     */

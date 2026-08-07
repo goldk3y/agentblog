@@ -84,6 +84,7 @@ project, and the reading theme is a `shadcn add` away.
 
 ```
 app/blog/page.tsx                     paginated index, Blog schema, real <a href> pagination
+app/blog/opengraph-image.tsx          social card for every list surface
 app/blog/[slug]/page.tsx              the post route, every slug prerendered
 app/blog/[slug]/opengraph-image.tsx   per-post social card
 app/blog/category/[slug]/page.tsx     indexable hub pages
@@ -97,13 +98,14 @@ app/editorial-policy/page.tsx         the Trust surface almost no blog has
 lib/schema.ts                         typed JSON-LD @graph builders
 lib/posts.ts                          the storage adapter facade
 lib/preflight.ts                      build-time config lint
+lib/og-card.tsx                       the social card layout, in one place
 components/blog/*                     the reading experience
 components/mdx/*                      callouts, stats, tables, FAQ, code blocks
 .claude/skills/*                      the agent layer
 agentblog.config.ts                   one file to configure all of it
 ```
 
-Resolving `@agentblog/blog` through its dependency graph writes 72 files. All of
+Resolving `@agentblog/blog` through its dependency graph writes 73 files. All of
 them yours after install, none of them a dependency you have to keep upgrading.
 
 ## What makes it correct

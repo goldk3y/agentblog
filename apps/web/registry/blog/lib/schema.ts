@@ -119,7 +119,6 @@ type Person = Exclude<PersonOrText, string>
  * on purpose: route shape belongs to the app, not to the schema layer.
  */
 const routes = {
-  blog: '/blog',
   post: (slug: string): string => `/blog/${slug}`,
 } as const
 
@@ -349,12 +348,20 @@ export function buildPersonGraph(author: Author): Person {
 /**
  * The breadcrumb trail as a `BreadcrumbList`.
  *
- * The final entry carries no `item`, which is Google's documented shape for the
- * current page rather than an omission. Pass it with `url` undefined.
+ * An entry with no `url` emits no `item`, which is Google's documented shape for
+ * the current page rather than an omission: "If `item` isn't included for the
+ * last item, Google uses the URL of the containing page." It is also legitimate
+ * for every entry to have a `url`, which is what a post's trail looks like now
+ * that it ends at the category hub rather than at the post itself. Google does
+ * not require the trail to reach the current page, and it does not require it to
+ * start at the site root either: "It is not required to include a breadcrumb
+ * ListItem for the top level path (your site's domain or host name)."
+ * @see https://developers.google.com/search/docs/appearance/structured-data/breadcrumb
  *
- * The trail here must match the trail the page renders through `<Breadcrumbs>`.
- * Marked-up navigation that a reader cannot see is the same policy violation as
- * an invisible FAQ.
+ * The trail here must match the trail the page renders through `<Breadcrumbs>`,
+ * which is why every caller builds one array and passes it to both. Marked-up
+ * navigation that a reader cannot see is the same policy violation as an
+ * invisible FAQ.
  */
 export function buildBreadcrumb(
   trail: readonly { name: string; url?: string }[],
@@ -417,6 +424,13 @@ export function buildFaq(post: Post): FAQPage | null {
  * the `BreadcrumbList`, the author `Person`, the hero `ImageObject` when the
  * post has one, and the `FAQPage` when and only when the post has FAQ entries.
  *
+ * `trail` is the same array the route hands to `<Breadcrumbs>`, and it is a
+ * required argument rather than something this function assembles. It used to
+ * assemble one, and the two drifted exactly as you would expect: the page
+ * rendered Home, Blog, Category, Post while the markup claimed Home, Blog, Post,
+ * so the site shipped a `BreadcrumbList` describing a trail no reader could see.
+ * Nothing catches that. Both are valid, both validate, and they disagree.
+ *
  * | `Post.title`                | `BlogPosting.headline`        |                                    |
  * | `Post.description`          | `BlogPosting.description`     | Matches the meta description       |
  * | `Post.datePublished`        | `BlogPosting.datePublished`   | Verbatim, ISO 8601 with offset     |
@@ -448,7 +462,10 @@ export function buildFaq(post: Post): FAQPage | null {
  * JSON-LD block on a page into one graph, so the references resolve even though
  * the nodes arrive in a different `<script>`.
  */
-export function buildArticleGraph(post: Post): GraphNode[] {
+export function buildArticleGraph(
+  post: Post,
+  trail: readonly { name: string; url?: string }[],
+): GraphNode[] {
   const path = routes.post(post.slug)
   const canonical = postUrl(post.slug)
   const webpageId = ids.webpage(path)
@@ -494,21 +511,12 @@ export function buildArticleGraph(post: Post): GraphNode[] {
     ...(hero === null ? {} : { primaryImageOfPage: { '@id': ids.image(canonical) } }),
   }
 
-  // Home > Blog > this post, matching the trail the post route renders. The
-  // category hub is deliberately not a crumb here: adding a level to the markup
-  // that the page does not display is the policy violation, while showing a
-  // level the markup omits is merely incomplete. If the visible breadcrumb grows
-  // a category crumb, add it in both places in the same commit.
-  const breadcrumb = buildBreadcrumb(
-    [
-      { name: 'Home', url: homeUrl() },
-      { name: 'Blog', url: absoluteUrl(routes.blog) },
-      { name: post.title },
-    ],
-    path,
-  )
-
-  const nodes: GraphNode[] = [article, webpage, breadcrumb, buildPersonGraph(post.author)]
+  const nodes: GraphNode[] = [
+    article,
+    webpage,
+    buildBreadcrumb(trail, path),
+    buildPersonGraph(post.author),
+  ]
   if (hero !== null) nodes.push(hero)
 
   const faq = buildFaq(post)

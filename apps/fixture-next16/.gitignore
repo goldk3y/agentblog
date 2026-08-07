@@ -47,8 +47,8 @@ app/authors/
 app/blog/
 app/editorial-policy/
 app/feed.xml/
+app/llms.txt/
 app/not-found.tsx
-app/opengraph-image.tsx
 app/robots.ts
 app/sitemap.ts
 components/
