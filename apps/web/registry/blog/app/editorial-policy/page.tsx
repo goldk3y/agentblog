@@ -27,6 +27,7 @@
 import Link from 'next/link'
 import type { ReactNode } from 'react'
 
+import { DISPLAY, SECTION_HEADING } from '@/components/blog/type-scale'
 import { blogPath, config } from '@/lib/config'
 import { buildListMetadata } from '@/lib/metadata'
 
@@ -50,12 +51,12 @@ interface SectionProps {
 
 function Section({ id, title, children }: SectionProps) {
   return (
-    <section className="border-border mt-12 border-t pt-8">
+    <section className="border-border mt-14 border-t pt-8">
       {/* Stable id on every H2, same rule as every other page in this block. */}
-      <h2 id={id} className="text-foreground text-xl font-semibold tracking-tight">
+      <h2 id={id} className={SECTION_HEADING}>
         {title}
       </h2>
-      <div className="text-muted-foreground mt-4 flex flex-col gap-4 text-base leading-relaxed">
+      <div className="text-muted-foreground mt-5 flex flex-col gap-4 text-base leading-relaxed text-pretty">
         {children}
       </div>
     </section>
@@ -72,12 +73,10 @@ export default function EditorialPolicyPage() {
      * your root layout owes in return, is written at the top of
      * `app/blog/layout.tsx`.
      */
-    <div className="mx-auto w-full max-w-2xl px-6 py-16">
-      <h1 className="text-foreground text-3xl font-semibold tracking-tight sm:text-4xl">
-        Editorial policy
-      </h1>
+    <div className="mx-auto w-full max-w-(--agentblog-measure) px-6 py-12 lg:py-20">
+      <h1 className={DISPLAY}>Editorial policy</h1>
 
-      <p className="text-muted-foreground mt-4 text-base leading-relaxed">
+      <p className="text-muted-foreground mt-5 text-lg leading-relaxed text-pretty">
         This page describes how {config.brand.name} decides what to publish, who checks it, and what
         happens when we get something wrong. It is deliberately specific, because a policy that
         cannot be checked against our actual output is not a policy.
@@ -94,7 +93,7 @@ export default function EditorialPolicyPage() {
       */}
       <aside
         role="note"
-        className="border-border bg-muted text-foreground mt-8 rounded-lg border p-4 text-sm leading-relaxed"
+        className="border-border bg-muted text-foreground mt-10 rounded-xl border p-5 text-sm leading-relaxed text-pretty"
       >
         <strong className="font-semibold">Template notice.</strong> This policy is the default
         shipped with the blog and has not been reviewed by anyone at {config.brand.name} yet.

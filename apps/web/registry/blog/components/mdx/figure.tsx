@@ -58,7 +58,7 @@ export function Figure({ src, alt, caption, width, height, preload }: FigureProp
         width={width ?? FALLBACK_WIDTH}
         height={height ?? FALLBACK_HEIGHT}
         sizes={SIZES}
-        className="border-border h-auto w-full rounded-lg border"
+        className="border-border h-auto w-full rounded-xl border"
         {...(preload === true ? { preload: true } : {})}
       />
       {caption !== undefined && (

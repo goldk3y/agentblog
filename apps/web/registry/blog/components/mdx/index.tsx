@@ -86,7 +86,7 @@ function H2({ className, ...props }: ComponentPropsWithoutRef<'h2'>) {
     <h2
       {...props}
       className={mergeClasses(
-        'agentblog-heading text-foreground mt-12 mb-4 scroll-mt-24 text-2xl font-semibold tracking-tight',
+        'agentblog-heading text-foreground mt-12 mb-4 scroll-mt-24 text-2xl font-semibold tracking-tight first:mt-0',
         className,
       )}
     />
@@ -98,7 +98,7 @@ function H3({ className, ...props }: ComponentPropsWithoutRef<'h3'>) {
     <h3
       {...props}
       className={mergeClasses(
-        'agentblog-heading text-foreground mt-8 mb-3 scroll-mt-24 text-xl font-semibold tracking-tight',
+        'agentblog-heading text-foreground mt-8 mb-3 scroll-mt-24 text-xl font-semibold tracking-tight first:mt-0',
         className,
       )}
     />
@@ -110,7 +110,7 @@ function H4({ className, ...props }: ComponentPropsWithoutRef<'h4'>) {
     <h4
       {...props}
       className={mergeClasses(
-        'agentblog-heading text-foreground mt-6 mb-2 scroll-mt-24 text-base font-semibold',
+        'agentblog-heading text-foreground mt-6 mb-2 scroll-mt-24 text-base font-semibold first:mt-0',
         className,
       )}
     />

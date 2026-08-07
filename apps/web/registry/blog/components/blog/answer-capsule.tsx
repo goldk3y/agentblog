@@ -1,7 +1,5 @@
 import type { ReactNode } from 'react'
 
-import { cn } from '@/lib/utils'
-
 /**
  * The 40 to 60 word direct answer that sits immediately under the H1.
  *
@@ -65,11 +63,33 @@ export function AnswerCapsule({ text, children, className }: AnswerCapsuleProps)
   if (content === undefined || content === null || content === '') return null
 
   return (
-    <div
-      data-agentblog="answer-capsule"
-      className={cn('border-border bg-muted my-6 rounded-lg border p-5', className)}
-    >
-      <p className="text-foreground text-base leading-relaxed sm:text-lg">{content}</p>
+    /*
+     * A standfirst, not a box.
+     *
+     * This used to be a filled, bordered, rounded panel, which put it in exactly
+     * the same visual class as the table of contents directly beneath it, the
+     * FAQ further down, and every callout in the article. Six identical grey
+     * boxes on one page is six things of equal weight, and the whole argument
+     * for this component is that its sentence is the most important on the page.
+     *
+     * Type size says it instead, and says it without adding a fifth surface.
+     * At 20px between a 48px headline and a 14px byline this reads as the
+     * standfirst of an article, which is exactly what it is, and the contents
+     * list below is then the only card in the header, so it stops competing.
+     *
+     * There is deliberately no left rule and no indent either, although both
+     * were tried. Any indent puts the most important sentence on the page 24px
+     * to the right of the headline above it, the byline below it, and every
+     * paragraph after it. One left edge down the whole article is worth more
+     * than a decorative rule.
+     *
+     * The markup is unchanged and must stay unchanged: one `<div>` carrying the
+     * `data-agentblog` hook, wrapping exactly one `<p>`. Everything in the
+     * comment above about extractability is about that shape, not about the
+     * classes on it.
+     */
+    <div data-agentblog="answer-capsule" className={className}>
+      <p className="text-foreground text-lg leading-relaxed text-pretty sm:text-xl">{content}</p>
     </div>
   )
 }

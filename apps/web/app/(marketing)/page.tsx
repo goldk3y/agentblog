@@ -237,12 +237,12 @@ export default function LandingPage() {
       {/*  `scripts/assert-file-count.mjs` parses the digits in this        */}
       {/*  section's lead and fails the build when they stop matching what  */}
       {/*  `@agentblog/blog` actually resolves to. Reword it freely, but    */}
-      {/*  keep the count in the form `70 files,`.                          */}
+      {/*  keep the count in the form `71 files,`.                          */}
       {/* ---------------------------------------------------------------- */}
       <Section
         id="what-you-get"
         title="One command writes the whole blog"
-        lead="70 files, and you own every one of them. No runtime package to depend on, and nothing of ours to upgrade around."
+        lead="71 files, and you own every one of them. No runtime package to depend on, and nothing of ours to upgrade around."
       >
         <Panel
           label="your-app/"

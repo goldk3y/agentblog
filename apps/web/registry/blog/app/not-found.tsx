@@ -76,10 +76,12 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 import { formatPostDate } from '@/components/blog/byline'
+import { DISPLAY, EYEBROW, SECTION_HEADING } from '@/components/blog/type-scale'
 import { blogPath, postPath, sitePath } from '@/lib/config'
 import { googleBotDefaults } from '@/lib/metadata'
 import { getAllPosts } from '@/lib/posts'
 import type { PublishedPost } from '@/lib/types'
+import { cn } from '@/lib/utils'
 
 export const metadata: Metadata = {
   title: 'Page not found',
@@ -111,14 +113,12 @@ export default async function NotFound() {
 
   return (
     // A `<div>`, and it must stay one. See "WHY THE PAGE BODY IS A `<div>`" above.
-    <div className="mx-auto w-full max-w-2xl px-6 py-24">
-      <p className="text-muted-foreground text-sm font-medium tracking-wide uppercase">Error 404</p>
+    <div className="mx-auto w-full max-w-(--agentblog-measure) px-6 py-20 lg:py-28">
+      <p className={EYEBROW}>Error 404</p>
 
-      <h1 className="text-foreground mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
-        We could not find that page
-      </h1>
+      <h1 className={cn(DISPLAY, 'mt-4')}>We could not find that page</h1>
 
-      <p className="text-muted-foreground mt-4 text-base leading-relaxed">
+      <p className="text-muted-foreground mt-5 text-lg leading-relaxed text-pretty">
         The link may be out of date, or the page may have moved. Everything below still works.
       </p>
 
@@ -134,7 +134,7 @@ export default async function NotFound() {
        * in final form. `/editorial-policy` has no helper of its own, so it is the
        * one href here that a `trailingSlash: true` site has to fix by hand.
        */}
-      <nav aria-label="Primary recovery links" className="mt-8 flex flex-wrap gap-3">
+      <nav aria-label="Primary recovery links" className="mt-10 flex flex-wrap gap-3">
         <Link
           href={blogPath()}
           className="bg-primary text-primary-foreground focus-visible:ring-ring inline-flex items-center rounded-md px-4 py-2 text-sm font-medium focus-visible:ring-2 focus-visible:outline-none"
@@ -150,9 +150,9 @@ export default async function NotFound() {
       </nav>
 
       {posts.length > 0 ? (
-        <section className="border-border mt-12 border-t pt-8">
-          <h2 className="text-foreground text-lg font-semibold">Recent posts</h2>
-          <ul className="mt-4 flex flex-col gap-4">
+        <section className="border-border mt-14 border-t pt-8">
+          <h2 className={SECTION_HEADING}>Recent posts</h2>
+          <ul className="mt-6 flex flex-col gap-5">
             {posts.map((post) => (
               <li key={post.slug}>
                 <Link
@@ -183,9 +183,9 @@ export default async function NotFound() {
         </section>
       ) : null}
 
-      <section className="border-border mt-12 border-t pt-8">
-        <h2 className="text-foreground text-lg font-semibold">Other places to look</h2>
-        <ul className="text-muted-foreground mt-4 flex flex-col gap-2 text-sm">
+      <section className="border-border mt-14 border-t pt-8">
+        <h2 className={SECTION_HEADING}>Other places to look</h2>
+        <ul className="text-muted-foreground mt-6 flex flex-col gap-3 text-sm">
           <li>
             <Link href="/feed.xml" className="hover:text-foreground underline underline-offset-4">
               Subscribe to the RSS feed

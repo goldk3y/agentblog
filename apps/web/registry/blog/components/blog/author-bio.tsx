@@ -60,6 +60,16 @@ export interface AuthorBioProps {
    * `/authors/[slug]` so the page does not link to itself.
    */
   readonly linkName?: boolean | undefined
+  /**
+   * Render the topic badges and the profile links inside the card.
+   *
+   * Defaults to true, which is right at the foot of an article where this card
+   * is the only thing on the page describing the author. The author page passes
+   * `false`, because it renders both as their own labelled sections below, and
+   * a page that lists someone's expertise twice and their GitHub profile twice
+   * reads as a template that was never looked at.
+   */
+  readonly showDetails?: boolean | undefined
   readonly className?: string | undefined
 }
 
@@ -82,14 +92,15 @@ function hostLabel(url: string): string {
   }
 }
 
-export function AuthorBio({ author, postCount, linkName, className }: AuthorBioProps) {
+export function AuthorBio({ author, postCount, linkName, showDetails, className }: AuthorBioProps) {
   const shouldLink = linkName !== false
+  const withDetails = showDetails !== false
   const href = authorPath(author.slug)
 
   return (
     <section
       className={cn(
-        'not-prose border-border bg-card text-card-foreground rounded-lg border p-6',
+        'not-prose border-border bg-card text-card-foreground rounded-xl border p-6',
         className,
       )}
     >
@@ -137,7 +148,7 @@ export function AuthorBio({ author, postCount, linkName, className }: AuthorBioP
 
           <p className="text-foreground mt-3 text-sm leading-relaxed">{author.bio}</p>
 
-          {author.knowsAbout.length > 0 ? (
+          {withDetails && author.knowsAbout.length > 0 ? (
             <>
               <Separator className="my-4" />
               <ul
@@ -153,7 +164,7 @@ export function AuthorBio({ author, postCount, linkName, className }: AuthorBioP
             </>
           ) : null}
 
-          {author.sameAs.length > 0 ? (
+          {withDetails && author.sameAs.length > 0 ? (
             <ul className="mt-4 flex list-none flex-wrap gap-x-4 gap-y-2 p-0 text-sm">
               {author.sameAs.map((profile) => (
                 <li key={profile}>

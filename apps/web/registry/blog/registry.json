@@ -122,6 +122,11 @@
           "target": "components/blog/icons.tsx"
         },
         {
+          "path": "components/blog/type-scale.ts",
+          "type": "registry:component",
+          "target": "components/blog/type-scale.ts"
+        },
+        {
           "path": "components/blog/prose.tsx",
           "type": "registry:component",
           "target": "components/blog/prose.tsx"

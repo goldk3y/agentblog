@@ -53,11 +53,93 @@
 /**
  * AgentBlog's own tokens: namespaced, and each one derived from a token the
  * consumer already owns. No new colours enter the design system here.
- * `--agentblog-measure` is the only value with no upstream token, because line
- * length is a typographic decision rather than a colour.
+ *
+ * ---------------------------------------------------------------------------
+ * THE THREE RAILS
+ * ---------------------------------------------------------------------------
+ * Every page in the block is laid out on one of three widths, and nothing else
+ * is allowed to invent a fourth. Changing one of these three values restyles
+ * the whole blog, which is the point.
+ *
+ *   --agentblog-measure  The reading column. Article text, and everything that
+ *                        sits beside article text: the H1, the lede, the byline,
+ *                        the FAQ, the sources. One edge down the whole page.
+ *   --agentblog-aside    The table-of-contents rail, used only at `xl` and up.
+ *   --agentblog-article  measure + aside + the 3rem column gap. The outer bound
+ *                        of an article page once the contents list moves out of
+ *                        the flow and into the margin. Derived, so change the
+ *                        two values it derives from rather than this one.
+ *   --agentblog-rail     Index, category, tag, and author pages, where a card
+ *                        grid needs room that a reading column would deny it.
+ *                        64rem is `max-w-5xl`, which is the width most
+ *                        application shells already use for their own header and
+ *                        footer, so the block lines up with its host out of the
+ *                        box. If yours is wider, this is the one value to change.
+ *   --agentblog-gutter   The horizontal page gutter, 1.5rem, which is `px-6`.
+ *
+ * ---------------------------------------------------------------------------
+ * EACH RAIL INCLUDES ITS OWN GUTTER
+ * ---------------------------------------------------------------------------
+ * Every container in the block is written `mx-auto w-full max-w-(--rail) px-6`,
+ * one element carrying both the cap and the padding, so the number above is the
+ * width of the element and the content inside it is 3rem narrower.
+ *
+ * That is the shadcn and Tailwind convention, and matching it is the whole
+ * reason for the choice. The alternative, padding on a parent and the cap on a
+ * child, gives a content column exactly one gutter wider, so a blog written
+ * that way sits 24px outboard of the header and footer of any host that wrote
+ * theirs the ordinary way. It is small enough that nobody files it and large
+ * enough that everybody sees it.
+ *
+ * So `--agentblog-measure` at 42rem is a 39rem reading column between two
+ * 1.5rem gutters, and 39rem measures 68 characters at the 17px reading size set
+ * on `prose` below.
+ *
+ * ---------------------------------------------------------------------------
+ * WHY THE MEASURE IS IN `rem` AND NOT IN `ch`
+ * ---------------------------------------------------------------------------
+ * `ch` is the advance width of the digit zero, which in most UI typefaces is
+ * substantially wider than the average character. This block shipped `68ch` for
+ * exactly that reason and it measured 84 characters per line, well outside the
+ * 45 to 75 that every readability study since Bringhurst converges on. `ch`
+ * reads like a character count and is not one.
+ *
+ * The reading column is 39rem, or 624px, which measures 68 characters at the
+ * 17px reading size set on `prose` below. If you change the reading size,
+ * re-measure rather than re-derive: the ratio depends on the consumer's
+ * typeface.
+ *
+ * A `rem` value has a second, structural advantage. `ch` resolves against the
+ * font size of the element it is written on, so a `ch` measure on the article
+ * wrapper (16px) and the same `ch` measure on `.prose` (17px) produce two
+ * different widths and the page loses its left edge. `rem` cannot drift.
  */
+/*
+ * THE RAILS ARE IN A PLAIN `@theme`, NOT IN `@theme inline`, AND THE DIFFERENCE
+ * IS NOT COSMETIC.
+ *
+ * `@theme inline` substitutes a variable's value into the utilities it
+ * generates and never emits the variable itself. That is correct for the colour
+ * aliases below, which exist only to name a token. It is wrong for these four,
+ * because they are read back at runtime by arbitrary-property utilities like
+ * `max-w-(--agentblog-measure)` and `grid-cols-[...var(--agentblog-aside)]`.
+ *
+ * They were declared `inline` here for as long as the block existed, so
+ * `var(--agentblog-measure)` resolved to nothing and every `max-w-` referencing
+ * it silently fell back to full width. It was invisible because `.prose` also
+ * sets its own `max-width` from the same value, inlined at build time, so the
+ * article body was the right width while every element around it was not.
+ * A plain `@theme` emits them to `:root`, where a `var()` can find them.
+ */
+@theme {
+  --agentblog-measure: 42rem;
+  --agentblog-aside: 15rem;
+  --agentblog-article: 60rem;
+  --agentblog-rail: 64rem;
+  --agentblog-gutter: 1.5rem;
+}
+
 @theme inline {
-  --agentblog-measure: 68ch;
   --color-agentblog-prose-body: var(--foreground);
   --color-agentblog-prose-muted: var(--muted-foreground);
   --color-agentblog-prose-rule: var(--border);
@@ -75,7 +157,35 @@
  * (`pre-code`, `kbd`, `kbd-shadows`) kept the plugin's greys in both themes.
  */
 @utility prose {
-  max-width: var(--agentblog-measure);
+  /*
+   * A ceiling, not the layout. The article column is already the reading width
+   * because its container is, so this only matters if you drop `<Prose>` into
+   * something wider. The gutter comes off because the rails include theirs.
+   */
+  max-width: calc(var(--agentblog-measure) - 2 * var(--agentblog-gutter));
+
+  /*
+   * The reading size, and the one place it is set.
+   *
+   * The plugin's own default is 16px, which is a UI size rather than a reading
+   * size: at the measure above it produces a line that is technically legible
+   * and tiring over 1,500 words. 17px from the `sm` breakpoint up is the step
+   * that long-form publishers converge on, and it is a step rather than a flat
+   * bump because 17px on a 375px phone costs more in wrapping than it returns
+   * in comfort.
+   *
+   * Every other space in an article is proportional to this number. The plugin
+   * expresses its margins in `em`, so raising the font size raises paragraph
+   * spacing, list indents, and heading leading by the same ratio, and the
+   * rhythm survives. That is why this is a font-size change and not a stack of
+   * margin overrides.
+   */
+  font-size: 1rem;
+  line-height: 1.75;
+
+  @media (width >= 40rem) {
+    font-size: 1.0625rem;
+  }
 
   --tw-prose-body: var(--foreground);
   --tw-prose-headings: var(--foreground);
@@ -121,6 +231,48 @@
   --tw-prose-kbd-shadows: var(--border);
   --tw-prose-th-borders: var(--border);
   --tw-prose-td-borders: var(--border);
+}
+
+/**
+ * Line-breaking, which is the difference between typesetting and text.
+ *
+ * `balance` on headings spreads a two-line heading evenly instead of leaving one
+ * word on the second line. It is capped by the browser at a handful of lines,
+ * which is why it is scoped to headings rather than applied to everything.
+ *
+ * `pretty` on body copy asks the browser to avoid a single-word last line. It
+ * costs nothing where it is unsupported, because the property is ignored.
+ *
+ * Both are written against `:is()` rather than `:where()` deliberately: these
+ * should outrank the plugin's defaults, and a caller who wants a different
+ * behaviour on one element still wins with a Tailwind utility.
+ */
+.prose :is(h1, h2, h3, h4) {
+  text-wrap: balance;
+}
+
+.prose :is(p, li, blockquote, figcaption) {
+  text-wrap: pretty;
+}
+
+/**
+ * Delete the typography plugin's backticks around inline code.
+ *
+ * `@tailwindcss/typography` renders `content: "\`"` in a `::before` and an
+ * `::after` on every inline `<code>`. That is a reasonable default for raw
+ * markdown output with no other styling, and it is wrong here: `InlineCode` in
+ * `components/mdx/code-block.tsx` already gives the element a border, a fill,
+ * and padding, so the plugin's quotes render as two literal backtick glyphs
+ * INSIDE a chip that already says "this is code". Every inline code span in
+ * every post read as `` `curl` `` rather than as `curl`.
+ *
+ * `:is()` rather than `:where()`, because the plugin's own rule is zero
+ * specificity and this has to outrank it. The `pre` case is included and costs
+ * nothing: the plugin already excludes it, so there is no content to remove.
+ */
+.prose :is(code)::before,
+.prose :is(code)::after {
+  content: none;
 }
 
 /**

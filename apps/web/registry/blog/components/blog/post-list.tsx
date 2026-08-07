@@ -58,17 +58,36 @@ export function PostList({
   className,
 }: PostListProps) {
   if (posts.length === 0) {
+    // A bare sentence on an empty page reads as a rendering failure. A dashed
+    // panel reads as a state the design anticipated, which is the difference
+    // between "this is broken" and "there is nothing here yet".
     return (
-      <p className={cn('text-muted-foreground', className)}>
+      <div
+        className={cn(
+          'border-border text-muted-foreground rounded-xl border border-dashed px-6 py-16 text-center text-sm',
+          className,
+        )}
+      >
         {emptyMessage ?? 'No posts published yet.'}
-      </p>
+      </div>
     )
   }
 
   return (
+    /*
+     * `auto-rows-fr` is what makes every card in a row the same height. Without
+     * it each grid row sizes to its tallest card and the shorter ones sit at the
+     * top of their track, so the meta line at the foot of each card lands at a
+     * different height and the grid stops reading as a grid. `h-full` on the
+     * card is the other half of the same fix.
+     *
+     * Three columns need the wide rail to be worth having. On
+     * `--agentblog-measure` this same grid produced 224px columns, which is
+     * narrower than the title inside them.
+     */
     <ul
       className={cn(
-        'grid list-none grid-cols-1 gap-6 p-0 sm:grid-cols-2 lg:grid-cols-3',
+        'grid list-none auto-rows-fr grid-cols-1 gap-6 p-0 sm:grid-cols-2 lg:grid-cols-3 lg:gap-8',
         className,
       )}
     >

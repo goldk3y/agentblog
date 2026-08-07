@@ -37,10 +37,18 @@ import { AuthorBio } from '@/components/blog/author-bio'
 import { Breadcrumbs } from '@/components/blog/breadcrumbs'
 import { JsonLd } from '@/components/blog/json-ld'
 import { PostList } from '@/components/blog/post-list'
+import {
+  CLUSTER_GAP,
+  DISPLAY,
+  PAGE_HEADER,
+  SECTION_GAP,
+  SECTION_HEADING,
+} from '@/components/blog/type-scale'
 import { absoluteUrl, authorUrl } from '@/lib/config'
 import { buildListMetadata, googleBotDefaults } from '@/lib/metadata'
 import { getAllAuthors, getAuthor, getPostsByAuthor } from '@/lib/posts'
 import { buildBreadcrumb, buildPersonGraph } from '@/lib/schema'
+import { cn } from '@/lib/utils'
 
 /*
  * ISR window in seconds. THIS MUST STAY A NUMERIC LITERAL.
@@ -168,82 +176,99 @@ export default async function AuthorPage(props: PageProps<'/authors/[slug]'>) {
   ]
 
   return (
-    <div className="bg-background text-foreground mx-auto w-full max-w-3xl px-4 py-10 sm:px-6 lg:py-16">
-      {/* Breadcrumb hrefs come from the config URL helpers, so the visible trail
-          and the BreadcrumbList built from the same array below cannot drift. */}
-      <Breadcrumbs
-        trail={trail.map((crumb) =>
-          crumb.url ? { name: crumb.name, href: crumb.url } : { name: crumb.name },
-        )}
-      />
+    /*
+     * This route lives under `/authors`, whose layout is a JSON-LD wrapper and
+     * nothing else, so unlike the blog routes this page supplies its own gutter
+     * and vertical padding. The values match `app/blog/layout.tsx` exactly: an
+     * author page that is 32px narrower than the blog it belongs to is the kind
+     * of thing nobody reports and everybody notices.
+     */
+    <div className="bg-background text-foreground py-12 lg:py-20">
+      <div className={cn('mx-auto w-full max-w-(--agentblog-rail) px-6', SECTION_GAP)}>
+        <header className={PAGE_HEADER}>
+          {/* Breadcrumb hrefs come from the config URL helpers, so the visible trail
+              and the BreadcrumbList built from the same array below cannot drift. */}
+          <Breadcrumbs
+            trail={trail.map((crumb) =>
+              crumb.url ? { name: crumb.name, href: crumb.url } : { name: crumb.name },
+            )}
+          />
 
-      {/* Exactly one <h1>, and it is the person's name and nothing else. Job
-          titles, honorifics, and the publisher name belong in `jobTitle` and
-          `worksFor`, which is why `AuthorSchema` splits them out. */}
-      <h1 className="text-foreground mt-6 text-4xl font-semibold tracking-tight text-balance">
-        {author.name}
-      </h1>
+          {/* Exactly one <h1>, and it is the person's name and nothing else. Job
+              titles, honorifics, and the publisher name belong in `jobTitle` and
+              `worksFor`, which is why `AuthorSchema` splits them out. */}
+          <h1 className={DISPLAY}>{author.name}</h1>
+        </header>
 
-      {/* `postCount` is filled here and omitted on the post page. The query is
-          already being made on this route, so it is free; on the post page it
-          would mean one extra source call per post at build time.
+        {/* `postCount` is filled here and omitted on the post page. The query is
+            already being made on this route, so it is free; on the post page it
+            would mean one extra source call per post at build time.
 
-          `linkName={false}` because this IS the author page. Left on, the box
-          renders `<h2><a rel="author" href="/authors/...">Name</a></h2>`
-          directly below the `<h1>Name</h1>` above: a link to the page you are
-          already on, and the person's name as two consecutive headings. */}
-      <AuthorBio author={author} className="mt-6" linkName={false} postCount={posts.length} />
+            `linkName={false}` because this IS the author page. Left on, the box
+            renders `<h2><a rel="author" href="/authors/...">Name</a></h2>`
+            directly below the `<h1>Name</h1>` above: a link to the page you are
+            already on, and the person's name as two consecutive headings. */}
+        <AuthorBio
+          author={author}
+          className="max-w-(--agentblog-measure)"
+          linkName={false}
+          postCount={posts.length}
+          showDetails={false}
+        />
 
-      {author.knowsAbout.length > 0 ? (
-        <section aria-labelledby="expertise" className="mt-10">
-          <h2 className="text-foreground text-2xl font-semibold tracking-tight" id="expertise">
-            Areas of expertise
+        {author.knowsAbout.length > 0 ? (
+          <section aria-labelledby="expertise" className={CLUSTER_GAP}>
+            <h2 className={SECTION_HEADING} id="expertise">
+              Areas of expertise
+            </h2>
+            {/* Rendered visibly as well as in the graph. `knowsAbout` in JSON-LD
+                that corresponds to nothing on the page is markup for invisible
+                content, which is the same policy problem as an invisible FAQ. */}
+            <ul className="text-muted-foreground flex flex-wrap gap-2 text-sm">
+              {author.knowsAbout.map((topic) => (
+                <li className="border-border rounded-full border px-3 py-1" key={topic}>
+                  {topic}
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
+
+        {author.sameAs.length > 0 ? (
+          <section aria-labelledby="elsewhere" className={CLUSTER_GAP}>
+            <h2 className={SECTION_HEADING} id="elsewhere">
+              Elsewhere
+            </h2>
+            {/* Same rule as above: these are the `sameAs` entries, rendered as
+                real links so the entity claim is verifiable by a reader too.
+                The card above is passed `showDetails={false}` so this section is
+                the only place they appear. */}
+            <ul className="text-muted-foreground space-y-2 text-sm">
+              {author.sameAs.map((profile) => (
+                <li key={profile}>
+                  <a
+                    className="hover:text-foreground underline underline-offset-4 transition-colors"
+                    href={profile}
+                    rel="me noopener"
+                  >
+                    {profile}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
+
+        <section aria-labelledby="posts" className={CLUSTER_GAP}>
+          <h2 className={SECTION_HEADING} id="posts">
+            {`Posts by ${author.name}`}
           </h2>
-          {/* Rendered visibly as well as in the graph. `knowsAbout` in JSON-LD
-              that corresponds to nothing on the page is markup for invisible
-              content, which is the same policy problem as an invisible FAQ. */}
-          <ul className="text-muted-foreground mt-4 flex flex-wrap gap-2 text-sm">
-            {author.knowsAbout.map((topic) => (
-              <li className="bg-muted rounded-full px-3 py-1" key={topic}>
-                {topic}
-              </li>
-            ))}
-          </ul>
+          {/* `headingLevel={3}` because this list sits under the `<h2 id="posts">`
+              above. Card titles at H2 would make each post a sibling of the
+              section that contains them and flatten the outline. */}
+          <PostList headingLevel={3} posts={posts} />
         </section>
-      ) : null}
-
-      {author.sameAs.length > 0 ? (
-        <section aria-labelledby="elsewhere" className="mt-10">
-          <h2 className="text-foreground text-2xl font-semibold tracking-tight" id="elsewhere">
-            Elsewhere
-          </h2>
-          {/* Same rule as above: these are the `sameAs` entries, rendered as
-              real links so the entity claim is verifiable by a reader too. */}
-          <ul className="text-muted-foreground mt-4 space-y-1 text-sm">
-            {author.sameAs.map((profile) => (
-              <li key={profile}>
-                <a
-                  className="hover:text-foreground underline underline-offset-4"
-                  href={profile}
-                  rel="me noopener"
-                >
-                  {profile}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </section>
-      ) : null}
-
-      <section aria-labelledby="posts" className="mt-10">
-        <h2 className="text-foreground text-2xl font-semibold tracking-tight" id="posts">
-          {`Posts by ${author.name}`}
-        </h2>
-        {/* `headingLevel={3}` because this list sits under the `<h2 id="posts">`
-            above. Card titles at H2 would make each post a sibling of the
-            section that contains them and flatten the outline. */}
-        <PostList className="mt-6" headingLevel={3} posts={posts} />
-      </section>
+      </div>
 
       {/* One serialization point. The `Person` node is the whole reason this
           route exists; the breadcrumb comes from the same array the visible

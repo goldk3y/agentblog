@@ -4,7 +4,8 @@ import { postPath } from '@/lib/config'
 import type { PublishedPost } from '@/lib/types'
 import { cn } from '@/lib/utils'
 
-import { formatPostDate } from './byline'
+import { formatPostDateShort } from './byline'
+import { CLUSTER_GAP, SECTION_HEADING } from './type-scale'
 
 /**
  * The internal-link block at the foot of a post.
@@ -53,26 +54,34 @@ export function RelatedPosts({ posts, title, className }: RelatedPostsProps) {
   const headingId = 'related-posts'
 
   return (
-    <section aria-labelledby={headingId} className={cn('not-prose', className)}>
-      <h2 id={headingId} className="text-foreground text-xl font-semibold">
+    /*
+     * A list, not a second card grid. The cards on the index are the primary
+     * presentation of a post and this is a footnote to the article you just
+     * finished, so it gets the tertiary treatment: rules instead of borders,
+     * a body-size title instead of a heading-size one, and no surface at all.
+     * Repeating `PostCard` here would give the foot of every article three more
+     * objects with exactly the weight of the thing a reader came for.
+     */
+    <section aria-labelledby={headingId} className={cn('not-prose', CLUSTER_GAP, className)}>
+      <h2 id={headingId} className={SECTION_HEADING}>
         {title ?? 'Related posts'}
       </h2>
 
-      <ul className="mt-4 list-none space-y-4 p-0">
+      <ul className="border-border list-none border-t p-0">
         {posts.map((post) => (
-          <li key={post.slug} className="border-border border-b pb-4 last:border-b-0 last:pb-0">
-            <h3 className="text-base font-medium">
-              <Link
-                href={postPath(post.slug)}
-                className="text-foreground focus-visible:ring-ring rounded-sm underline-offset-4 hover:underline focus-visible:ring-2 focus-visible:outline-none"
-              >
-                {post.title}
-              </Link>
-            </h3>
-            <p className="text-muted-foreground mt-1 text-sm">{post.description}</p>
-            <p className="text-muted-foreground mt-1 text-xs">
-              <time dateTime={post.datePublished}>{formatPostDate(post.datePublished)}</time>
-            </p>
+          <li key={post.slug} className="border-border border-b">
+            <Link
+              href={postPath(post.slug)}
+              className="hover:bg-accent/50 focus-visible:ring-ring group -mx-3 block rounded-lg px-3 py-4 transition-colors focus-visible:ring-2 focus-visible:outline-none"
+            >
+              <h3 className="text-foreground text-base font-medium text-pretty">{post.title}</h3>
+              <p className="text-muted-foreground mt-1.5 line-clamp-2 text-sm leading-relaxed text-pretty">
+                {post.description}
+              </p>
+              <p className="text-muted-foreground mt-2 text-xs">
+                <time dateTime={post.datePublished}>{formatPostDateShort(post.datePublished)}</time>
+              </p>
+            </Link>
           </li>
         ))}
       </ul>

@@ -88,8 +88,20 @@ function TocLink({ entry, isActive }: { entry: TocEntry; isActive: boolean }) {
       // target is a section of the current document, not a different page.
       {...(isActive ? { 'aria-current': 'location' as const } : {})}
       className={cn(
-        'focus-visible:ring-ring block rounded-sm py-0.5 underline-offset-4 hover:underline focus-visible:ring-2 focus-visible:outline-none',
-        isActive ? 'text-foreground font-medium' : 'text-muted-foreground',
+        'focus-visible:ring-ring block rounded-sm py-1 transition-colors focus-visible:ring-2 focus-visible:outline-none',
+        /*
+         * At `xl` the list gains a rail and each link becomes a segment of it.
+         * `-ml-px` pulls the link's 2px border over the list's 1px one, so the
+         * active marker replaces the rule instead of sitting beside it. Without
+         * that the text shifts sideways by a pixel every time the active
+         * section changes on scroll, which is the kind of movement you notice
+         * without being able to say what moved.
+         */
+        'xl:-ml-px xl:rounded-none xl:border-l-2 xl:border-transparent',
+        entry.depth === 3 ? 'xl:pl-7' : 'xl:pl-4',
+        isActive
+          ? 'text-foreground xl:border-foreground font-medium'
+          : 'text-muted-foreground hover:text-foreground',
       )}
     >
       {entry.text}
@@ -107,26 +119,56 @@ export function TableOfContents({ entries, title, defaultOpen, className }: Tabl
   if (entries.length === 0) return null
 
   return (
+    /*
+     * ONE COMPONENT, TWO PRESENTATIONS, AND DELIBERATELY ONE DOM NODE
+     *
+     * Below `xl` this is a collapsible card sitting in the flow under the
+     * byline. At `xl` and above the page moves it into a margin rail, where it
+     * drops the card entirely and becomes a bare list against a hairline, with
+     * the summary demoted to an eyebrow and the chevron hidden. `app/blog/[slug]`
+     * owns the `sticky` and the column placement; this file owns what it looks
+     * like once it gets there.
+     *
+     * The obvious alternative is two instances behind `hidden xl:block` and
+     * `xl:hidden`, and it is wrong on this page specifically. It would put two
+     * navigation landmarks named "Table of contents" in the accessibility tree,
+     * duplicate every heading link in the HTML that answer engines read, and
+     * double the anchor count on a page whose entire purpose is being cleanly
+     * chunked. One node, styled twice, costs a handful of `xl:` prefixes and
+     * none of that.
+     *
+     * The `<details>` element stays at every width. At `xl` it is always open,
+     * because it renders open by default and the summary is made
+     * non-interactive there rather than removed: a `<summary>` is what gives
+     * the list its accessible heading, and taking it away to hide a chevron
+     * would cost more than it saves.
+     */
     <nav aria-label="Table of contents" className={cn('not-prose', className)}>
       <details
-        className="group border-border bg-card rounded-lg border p-4"
+        className="group border-border bg-card rounded-lg border p-4 xl:rounded-none xl:border-0 xl:bg-transparent xl:p-0"
         open={defaultOpen !== false}
       >
-        <summary className="text-card-foreground focus-visible:ring-ring flex cursor-pointer items-center justify-between gap-2 rounded-sm text-sm font-semibold focus-visible:ring-2 focus-visible:outline-none">
+        <summary className="text-card-foreground focus-visible:ring-ring xl:text-muted-foreground flex cursor-pointer items-center justify-between gap-2 rounded-sm text-sm font-semibold focus-visible:ring-2 focus-visible:outline-none xl:pointer-events-none xl:cursor-default xl:text-xs xl:font-medium xl:tracking-wider xl:uppercase">
           {title ?? 'On this page'}
           <ChevronDownIcon
-            className="size-4 shrink-0 transition-transform group-open:rotate-180"
+            className="size-4 shrink-0 transition-transform group-open:rotate-180 xl:hidden"
             aria-hidden="true"
           />
         </summary>
 
-        <ol className="mt-3 list-none space-y-1 p-0 text-sm">
+        {/*
+         * The rail. It only exists at `xl`, where the links carry the active
+         * marker that replaces a segment of it. Below `xl` the card border is
+         * already doing the job of containing the list, and a second vertical
+         * rule inside it would be one line too many.
+         */}
+        <ol className="border-border mt-3 list-none space-y-0.5 p-0 text-sm xl:mt-4 xl:border-l">
           {groups.map((group) => (
             <li key={group.entry.id}>
               <TocLink entry={group.entry} isActive={group.entry.id === activeId} />
 
               {group.children.length > 0 ? (
-                <ol className="border-border mt-1 ml-4 list-none space-y-1 border-l pl-3">
+                <ol className="border-border mt-0.5 ml-4 list-none space-y-0.5 border-l pl-3 xl:mt-0 xl:ml-0 xl:border-l-0 xl:pl-0">
                   {group.children.map((child) => (
                     <li key={child.id}>
                       <TocLink entry={child} isActive={child.id === activeId} />

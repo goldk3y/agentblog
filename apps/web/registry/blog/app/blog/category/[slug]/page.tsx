@@ -28,10 +28,20 @@ import { Breadcrumbs } from '@/components/blog/breadcrumbs'
 import { CategoryPills } from '@/components/blog/category-pills'
 import { JsonLd } from '@/components/blog/json-ld'
 import { PostList } from '@/components/blog/post-list'
+import {
+  CLUSTER_GAP,
+  DISPLAY,
+  LEDE,
+  META,
+  PAGE_HEADER,
+  SECTION_GAP,
+  TITLE_CLUSTER,
+} from '@/components/blog/type-scale'
 import { absoluteUrl, categoryUrl } from '@/lib/config'
 import { buildListMetadata } from '@/lib/metadata'
 import { getAllCategories, getCategory, getPostsByCategory } from '@/lib/posts'
 import { buildBreadcrumb } from '@/lib/schema'
+import { cn } from '@/lib/utils'
 
 /*
  * ISR window in seconds. THIS MUST STAY A NUMERIC LITERAL.
@@ -125,38 +135,42 @@ export default async function CategoryPage(props: PageProps<'/blog/category/[slu
   ]
 
   return (
-    <div>
-      {/* Breadcrumb hrefs come from the config URL helpers, so the visible trail
-          and the BreadcrumbList built from the same array below cannot drift. */}
-      <Breadcrumbs
-        trail={trail.map((crumb) =>
-          crumb.url ? { name: crumb.name, href: crumb.url } : { name: crumb.name },
-        )}
-      />
+    <>
+      <div className={cn('mx-auto w-full max-w-(--agentblog-rail) px-6', SECTION_GAP)}>
+        <header className={PAGE_HEADER}>
+          {/* Breadcrumb hrefs come from the config URL helpers, so the visible trail
+              and the BreadcrumbList built from the same array below cannot drift. */}
+          <Breadcrumbs
+            trail={trail.map((crumb) =>
+              crumb.url ? { name: crumb.name, href: crumb.url } : { name: crumb.name },
+            )}
+          />
 
-      {/* Exactly one <h1> on this page. */}
-      <h1 className="text-foreground mt-6 text-4xl font-semibold tracking-tight text-balance">
-        {category.name}
-      </h1>
+          <div className={TITLE_CLUSTER}>
+            {/* Exactly one <h1> on this page. */}
+            <h1 className={DISPLAY}>{category.name}</h1>
 
-      {/* THE HUB'S OWN CONTENT. Keep it. See the header block for why a category
-          page that is only a list of links is a crawl liability. */}
-      <p className="text-muted-foreground mt-4 text-lg">{category.description}</p>
+            {/* THE HUB'S OWN CONTENT. Keep it. See the header block for why a category
+                page that is only a list of links is a crawl liability. */}
+            <p className={LEDE}>{category.description}</p>
 
-      <p className="text-muted-foreground mt-2 text-sm">
-        {posts.length === 1 ? '1 post' : `${posts.length} posts`}
-      </p>
+            <p className={META}>{posts.length === 1 ? '1 post' : `${posts.length} posts`}</p>
+          </div>
+        </header>
 
-      {/* Sibling hubs, so a crawler that lands here has a path to the rest of
-          the taxonomy without going back through the site navigation. */}
-      <CategoryPills activeSlug={category.slug} categories={categories} />
+        <div className={CLUSTER_GAP}>
+          {/* Sibling hubs, so a crawler that lands here has a path to the rest of
+              the taxonomy without going back through the site navigation. */}
+          <CategoryPills activeSlug={category.slug} categories={categories} />
 
-      <PostList posts={posts} />
+          <PostList posts={posts} />
+        </div>
+      </div>
 
       {/* One serialization point. The breadcrumb is the only graph this page
           owns: the posts it links to emit their own Article nodes, and claiming
           a `Blog` node at this URL would duplicate the `@id` that `/blog` uses. */}
       <JsonLd nodes={[buildBreadcrumb(trail, `/blog/category/${category.slug}`)]} />
-    </div>
+    </>
   )
 }

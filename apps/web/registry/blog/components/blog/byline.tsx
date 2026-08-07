@@ -70,6 +70,30 @@ export function formatPostDate(iso: string): string {
   return dateFormatter.format(new Date(iso))
 }
 
+/**
+ * The same date, abbreviated, for places where it shares a line with other
+ * metadata: post cards and the related-posts list.
+ *
+ * Both formatters exist because the choice is about space, not about locale.
+ * `timeZone: 'UTC'` is repeated here for the same reason it appears above: an
+ * ISO date with no time component is parsed as midnight UTC, and formatting
+ * that in a negative-offset local zone renders the previous day. A card and its
+ * article would then print different dates for the same post.
+ *
+ * The `dateTime` attribute on the `<time>` element is never abbreviated. That is
+ * the value a crawler reads, and it stays the full ISO string in both places.
+ */
+const shortDateFormatter = new Intl.DateTimeFormat('en-US', {
+  year: 'numeric',
+  month: 'short',
+  day: 'numeric',
+  timeZone: 'UTC',
+})
+
+export function formatPostDateShort(iso: string): string {
+  return shortDateFormatter.format(new Date(iso))
+}
+
 export interface BylineProps {
   readonly post: Post
   readonly className?: string | undefined

@@ -64,12 +64,23 @@ const LABEL_TONE: Record<CalloutVariant, string> = {
 export function Callout({ variant = 'note', title, children }: CalloutProps) {
   return (
     <aside
-      className={`border-border bg-muted my-6 rounded-md border border-l-4 px-5 py-4 ${ACCENTS[variant]}`}
+      className={`border-border bg-muted my-8 rounded-xl border border-l-4 px-5 py-4 ${ACCENTS[variant]}`}
     >
-      <p className={`mb-2 text-xs font-semibold tracking-wide uppercase ${LABEL_TONE[variant]}`}>
+      <p
+        className={`mt-0 mb-2 text-xs font-medium tracking-wider uppercase ${LABEL_TONE[variant]}`}
+      >
         {title ?? LABELS[variant]}
       </p>
-      <div className="text-foreground text-sm leading-relaxed [&>*:last-child]:mb-0 [&>p]:mb-3">
+      {/*
+       * `[&>*]:my-0` then `[&>*+*]:mt-3`, rather than a bottom margin on
+       * paragraphs. Everything in here is inside `.prose`, so the typography
+       * plugin has already given every `<p>` and `<ul>` a 1.25em margin on
+       * BOTH sides; overriding only the bottom leaves the first child pushed
+       * 21px down from the label above it. Zero them and re-space between
+       * siblings instead. Lists and links keep their prose styling, which is
+       * why this is not `not-prose`.
+       */}
+      <div className="text-foreground text-sm leading-relaxed [&>*]:my-0 [&>*+*]:mt-3">
         {children}
       </div>
     </aside>

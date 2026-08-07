@@ -55,6 +55,18 @@ export function CategoryPills({ categories, activeSlug, label, className }: Cate
   if (categories.length === 0) return null
 
   return (
+    /*
+     * These are filter controls, and the card badges below them are static
+     * labels. Before this they were the same `secondary` badge, so a reader had
+     * no way to tell which of the two rows of pills on the index page did
+     * anything when clicked.
+     *
+     * `outline` is the resting state now: an unfilled chip reads as a control,
+     * and it also stops a row of eight categories from becoming eight filled
+     * blocks competing with the post grid for attention. The active one takes
+     * the solid `default` fill, so exactly one pill is filled at a time and it
+     * is always the one describing what you are looking at.
+     */
     <nav aria-label={label ?? 'Categories'} className={cn('not-prose', className)}>
       <ul className="flex list-none flex-wrap gap-2 p-0">
         {categories.map((category) => {
@@ -65,9 +77,24 @@ export function CategoryPills({ categories, activeSlug, label, className }: Cate
               <Link
                 href={categoryPath(category.slug)}
                 {...(isActive ? { 'aria-current': 'page' as const } : {})}
-                className="focus-visible:ring-ring inline-block rounded-md focus-visible:ring-2 focus-visible:outline-none"
+                className="focus-visible:ring-ring group inline-block rounded-full focus-visible:ring-2 focus-visible:outline-none"
               >
-                <Badge variant={isActive ? 'default' : 'secondary'}>{category.name}</Badge>
+                {/*
+                 * The hover lives on the parent `<Link>` through `group`, not on
+                 * the badge. shadcn's own `outline` variant hovers via `[a&]`,
+                 * which matches only when the badge itself is the anchor, and
+                 * here it is a `<span>` inside one. Relying on the built-in
+                 * would give these pills no hover state at all.
+                 */}
+                <Badge
+                  className={cn(
+                    'px-3 py-1 text-sm font-normal transition-colors',
+                    !isActive && 'group-hover:bg-accent group-hover:text-accent-foreground',
+                  )}
+                  variant={isActive ? 'default' : 'outline'}
+                >
+                  {category.name}
+                </Badge>
               </Link>
             </li>
           )

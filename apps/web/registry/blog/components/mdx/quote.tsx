@@ -50,7 +50,7 @@ export function Quote({ children, source, context, cite }: QuoteProps) {
     <figure className="my-8">
       <blockquote
         {...(cite !== undefined ? { cite } : {})}
-        className="border-border text-foreground border-l-4 pl-6 text-lg leading-relaxed italic [&>*:last-child]:mb-0"
+        className="border-border text-foreground border-l-2 pl-6 text-xl leading-relaxed text-pretty italic [&>*:last-child]:mb-0"
       >
         {children}
       </blockquote>

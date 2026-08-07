@@ -103,7 +103,7 @@ components/mdx/*                      callouts, stats, tables, FAQ, code blocks
 agentblog.config.ts                   one file to configure all of it
 ```
 
-Resolving `@agentblog/blog` through its dependency graph writes 70 files. All of
+Resolving `@agentblog/blog` through its dependency graph writes 71 files. All of
 them yours after install, none of them a dependency you have to keep upgrading.
 
 ## What makes it correct

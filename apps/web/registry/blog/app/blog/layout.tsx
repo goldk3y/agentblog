@@ -13,11 +13,38 @@
  *      still cheap to act on. Do not move the call inside the component: a
  *      prerendered route renders once and then never again, so the warning
  *      would disappear the moment the page was cached.
- *   2. It wraps the blog in a single content column so the post route does not
- *      have to know anything about the host application's shell.
+ *   2. It supplies the vertical padding, and nothing at all about width. See
+ *      the layout contract below.
  *   3. It renders the footer link to `/editorial-policy`. That page is the
  *      Trust surface in E-E-A-T, and a link from every blog page is what makes
  *      it discoverable to a crawler that only ever fetches one article.
+ *
+ * ---------------------------------------------------------------------------
+ * THE LAYOUT CONTRACT: EVERY PAGE OWNS ITS OWN CONTAINER
+ * ---------------------------------------------------------------------------
+ * This layout used to centre every route in one `max-w-3xl` column, and that is
+ * the wrong shape for half of what it wraps. A reading column and a card grid
+ * want different widths, and forcing both into 768px gave the index a
+ * three-column grid of 224px cards, which is narrower than the text inside
+ * them needs.
+ *
+ * So the rule is: this file sets the vertical padding, and each page writes its
+ * own `mx-auto w-full max-w-(--agentblog-…) px-6` against one of the rails
+ * declared in `styles/agentblog.css`. Index, category, tag, and author pages
+ * take `--agentblog-rail`. Article pages take `--agentblog-measure`. Nothing
+ * takes an arbitrary width.
+ *
+ * The gutter is on the same element as the cap rather than on this one, which
+ * is the ordinary Tailwind container and is what makes the block line up with a
+ * host shell that wrote theirs the same way. `styles/agentblog.css` has the
+ * long version of why the other nesting is off by exactly one gutter.
+ *
+ * There is no `min-h-screen` here, and adding one back is a regression. This
+ * block is a set of routes inside somebody else's application, not an
+ * application shell. When the host already renders a footer under a flexed
+ * `min-h-dvh` body, a `min-h-screen` on this element reserves a full viewport
+ * for content that does not fill it and leaves several hundred pixels of dead
+ * space between the blog footer and the site footer.
  *
  * ---------------------------------------------------------------------------
  * THE TRAP: DO NOT ADD `title.template` HERE
@@ -76,6 +103,7 @@
  */
 import Link from 'next/link'
 
+import { RssIcon } from '@/components/blog/icons'
 import { JsonLd } from '@/components/blog/json-ld'
 import { blogPath, sitePath } from '@/lib/config'
 import { preflight } from '@/lib/preflight'
@@ -84,9 +112,12 @@ import { buildOrgGraph } from '@/lib/schema'
 // Module scope on purpose. See the header block above.
 preflight()
 
+const FOOTER_LINK =
+  'text-muted-foreground hover:text-foreground focus-visible:ring-ring inline-flex items-center gap-1.5 rounded-sm transition-colors focus-visible:ring-2 focus-visible:outline-none'
+
 export default function BlogLayout({ children }: LayoutProps<'/blog'>) {
   return (
-    <div className="bg-background text-foreground min-h-screen">
+    <div className="bg-background text-foreground">
       {/*
        * The Organization and WebSite nodes are emitted here, from the blog
        * layout, and this placement is deliberate.
@@ -107,7 +138,11 @@ export default function BlogLayout({ children }: LayoutProps<'/blog'>) {
        */}
       <JsonLd nodes={buildOrgGraph()} />
 
-      <div className="mx-auto w-full max-w-3xl px-4 py-10 sm:px-6 lg:py-16">{children}</div>
+      {/*
+       * Gutter and vertical padding only. The width belongs to the page. See
+       * the layout contract at the top of this file.
+       */}
+      <div className="py-12 lg:py-20">{children}</div>
 
       {/*
        * The editorial policy link ships from every blog page on purpose. An AI
@@ -143,17 +178,28 @@ export default function BlogLayout({ children }: LayoutProps<'/blog'>) {
          * is the one href on this page that a `trailingSlash: true` site has to
          * fix by hand.
          */}
-        <div className="text-muted-foreground mx-auto flex w-full max-w-3xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-6 text-sm sm:px-6">
-          <Link className="hover:text-foreground underline underline-offset-4" href={blogPath()}>
+        {/*
+         * The footer aligns to `--agentblog-rail` on every route, including the
+         * article routes whose content column is narrower. That is deliberate:
+         * a footer is chrome, and chrome that changes width per page reads as a
+         * layout bug rather than as a response to the content above it.
+         *
+         * The padding is on the OUTER element and the rail is on the inner one,
+         * which is the same nesting the content above uses. Written the other
+         * way round, as one element carrying both, `max-width` would include the
+         * padding and the footer links would land 32px inboard of the page
+         * content they sit under. That is small enough to look like nothing and
+         * large enough to see.
+         */}
+        <div className="mx-auto flex w-full max-w-(--agentblog-rail) flex-wrap items-center gap-x-8 gap-y-3 px-6 py-8 text-sm">
+          <Link className={FOOTER_LINK} href={blogPath()}>
             All posts
           </Link>
-          <Link
-            className="hover:text-foreground underline underline-offset-4"
-            href={sitePath('/editorial-policy')}
-          >
+          <Link className={FOOTER_LINK} href={sitePath('/editorial-policy')}>
             Editorial policy
           </Link>
-          <Link className="hover:text-foreground underline underline-offset-4" href="/feed.xml">
+          <Link className={FOOTER_LINK} href="/feed.xml">
+            <RssIcon aria-hidden="true" className="size-3.5" />
             RSS
           </Link>
         </div>

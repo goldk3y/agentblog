@@ -43,11 +43,20 @@ import { Prose } from '@/components/blog/prose'
 import { RelatedPosts } from '@/components/blog/related-posts'
 import { ShareButtons } from '@/components/blog/share-buttons'
 import { TableOfContents } from '@/components/blog/table-of-contents'
+import {
+  CLUSTER_GAP,
+  DISPLAY,
+  PAGE_HEADER,
+  SECTION_GAP,
+  SECTION_HEADING,
+  TITLE_CLUSTER,
+} from '@/components/blog/type-scale'
 import { absoluteUrl, categoryPath, postUrl } from '@/lib/config'
 import { buildPostMetadata } from '@/lib/metadata'
 import { renderMdx } from '@/lib/render-mdx'
 import { getAllPosts, getPost, getRelatedPosts } from '@/lib/posts'
 import { buildArticleGraph } from '@/lib/schema'
+import { cn } from '@/lib/utils'
 import type { TocEntry } from '@/lib/toc'
 
 /*
@@ -198,168 +207,248 @@ export default async function PostPage(props: PageProps<'/blog/[slug]'>) {
       : toc
 
   return (
-    <article>
-      {/*
-       * A real `<header>` for the article's title block.
-       *
-       * It is not decoration: `<header>` scoped inside `<article>` is a banner
-       * landmark for the article itself, which is what groups the headline, the
-       * answer capsule, the byline, and the breadcrumb trail into one unit for
-       * a screen reader and for anything reconstructing the document outline.
-       * `components/blog/byline.tsx` and `components/blog/prose.tsx` both
-       * document this element by name, so do not unwrap it.
-       */}
-      <header>
-        {/* Breadcrumb hrefs are composed by the config URL helpers, same as
-            every canonical, so the visible trail and the BreadcrumbList JSON-LD
-            built by `buildArticleGraph` can never disagree about a URL. The last
-            crumb has no href because it is the current page. */}
-        <Breadcrumbs
-          trail={[
-            { name: 'Home', href: absoluteUrl('/') },
-            { name: 'Blog', href: absoluteUrl('/blog') },
-            { name: post.category.name, href: categoryPath(post.category.slug) },
-            { name: post.title },
-          ]}
-        />
-
-        {/* Exactly one <h1> on this page, and it is the article headline. Every
-            other heading in this file is an <h2>, and the MDX component map
-            emits <h2>/<h3> with stable ids for the body. */}
-        <h1 className="text-foreground mt-6 text-4xl font-semibold tracking-tight text-balance">
-          {post.title}
-        </h1>
-
-        {/* The answer capsule sits directly under the H1: 40 to 60 words, the
-            complete answer, no links inside it. This is the highest value block
-            on the page for retrieval, because it is what survives chunk
-            truncation, which is why it goes above the byline rather than below
-            it. Passed as `children` rather than through the `text` prop so an
-            MDX author and this route reach the component the same way. */}
-        {post.answerCapsule ? <AnswerCapsule>{post.answerCapsule}</AnswerCapsule> : null}
-
-        {/* Byline owns `rel="author"` on the author link and `<time dateTime>`
-            on both dates. Those values must match the JSON-LD exactly, which
-            they do because both read the same `post` object. */}
-        <Byline post={post} />
-      </header>
-
-      {/* `PostSchema` already refuses a hero image without alt text, so this
-          double guard is for the type checker rather than for the data. */}
-      {post.heroImage && post.heroAlt ? (
-        <figure className="mt-8">
-          {/*
-           * `preload` is deliberately NOT set here, and `priority` is deprecated
-           * in Next.js 16 so it must never come back.
-           *
-           * The rule is that `preload` goes on an image only when that image is
-           * definitively the LCP element. On this layout it is not: breadcrumbs,
-           * the H1, the answer capsule, and the byline all sit above the hero, so
-           * on a narrow viewport the H1 text block is usually LCP and preloading
-           * the hero would compete with it for bandwidth. The Next.js docs make
-           * the same point: `loading="eager"` with `fetchPriority="high"` is the
-           * appropriate choice when LCP depends on viewport.
-           *
-           * If you measure the hero as LCP on your own layout, change
-           * `loading="eager"` to `preload` and change nothing else. At most one
-           * image per route may carry it.
-           */}
-          <Image
-            alt={post.heroAlt}
-            className="border-border w-full rounded-lg border"
-            fetchPriority="high"
-            height={630}
-            loading="eager"
-            sizes="(min-width: 768px) 768px, 100vw"
-            src={post.heroImage}
-            width={1200}
+    /*
+     * ---------------------------------------------------------------------
+     * THE ARTICLE LAYOUT
+     * ---------------------------------------------------------------------
+     * Below `xl` this is one column at `--agentblog-measure`, with the contents
+     * list in the flow under the byline. That is the whole layout on a phone, a
+     * tablet, and a laptop.
+     *
+     * At `xl` the page widens to `--agentblog-article` and becomes a two column
+     * grid, and the contents list moves into the right rail and sticks. The
+     * header stays clamped to the measure so it keeps the same left edge and
+     * the same right edge as the prose underneath it: the outer container grew,
+     * but the reading column did not, and that is the point.
+     *
+     * The grid only appears when there IS a contents list. A post with two
+     * headings would otherwise sit in a 912px container as a 624px column
+     * pushed to the left of it, off centre for no visible reason.
+     *
+     * The aside comes BEFORE the body in source order and is placed into column
+     * two explicitly. Written the other way round it reads correctly at `xl`
+     * and puts the contents list below the entire article at every width under
+     * it, which is where a contents list is useless.
+     */
+    <div
+      className={cn(
+        'mx-auto w-full max-w-(--agentblog-measure) px-6',
+        showToc && 'xl:max-w-(--agentblog-article)',
+      )}
+    >
+      <article className={SECTION_GAP}>
+        {/*
+         * A real `<header>` for the article's title block.
+         *
+         * It is not decoration: `<header>` scoped inside `<article>` is a banner
+         * landmark for the article itself, which is what groups the headline, the
+         * answer capsule, the byline, and the breadcrumb trail into one unit for
+         * a screen reader and for anything reconstructing the document outline.
+         * `components/blog/byline.tsx` and `components/blog/prose.tsx` both
+         * document this element by name, so do not unwrap it.
+         */}
+        <header className={cn(PAGE_HEADER, 'w-full', showToc && 'xl:max-w-(--agentblog-measure)')}>
+          {/* Breadcrumb hrefs are composed by the config URL helpers, same as
+              every canonical, so the visible trail and the BreadcrumbList JSON-LD
+              built by `buildArticleGraph` can never disagree about a URL. The last
+              crumb has no href because it is the current page. */}
+          <Breadcrumbs
+            trail={[
+              { name: 'Home', href: absoluteUrl('/') },
+              { name: 'Blog', href: absoluteUrl('/blog') },
+              { name: post.category.name, href: categoryPath(post.category.slug) },
+              { name: post.title },
+            ]}
           />
-          <figcaption className="text-muted-foreground mt-2 text-sm">{post.heroAlt}</figcaption>
-        </figure>
-      ) : null}
 
-      {/* TableOfContents is a client component for scroll spy only. It renders
-          the full list of links on the server first, so the anchors exist in the
-          HTML whether or not JavaScript ever runs. */}
-      {showToc ? <TableOfContents entries={tocEntries} /> : null}
+          {/*
+           * Headline and capsule are one cluster at the tighter rhythm, because
+           * the capsule is now typeset as the standfirst of the headline rather
+           * than as a panel underneath it. The byline sits outside the cluster,
+           * at the wider gap, which is what separates "what this article says"
+           * from "who is accountable for it".
+           */}
+          <div className={cn(TITLE_CLUSTER, 'w-full')}>
+            {/* Exactly one <h1> on this page, and it is the article headline. Every
+                other heading in this file is an <h2>, and the MDX component map
+                emits <h2>/<h3> with stable ids for the body. */}
+            <h1 className={DISPLAY}>{post.title}</h1>
 
-      {/* The compiled MDX. `renderMdx` is the only place MDX is compiled in the
-          whole block, which is what keeps the article render path free of client
-          components and free of the Turbopack MDX loader restrictions. */}
-      <Prose>{content}</Prose>
+            {/* The answer capsule sits directly under the H1: 40 to 60 words, the
+                complete answer, no links inside it. This is the highest value block
+                on the page for retrieval, because it is what survives chunk
+                truncation, which is why it goes above the byline rather than below
+                it. Passed as `children` rather than through the `text` prop so an
+                MDX author and this route reach the component the same way. */}
+            {post.answerCapsule ? <AnswerCapsule>{post.answerCapsule}</AnswerCapsule> : null}
+          </div>
 
-      {/*
-       * VISIBLE FAQ. This block must stay in the rendered output.
-       *
-       * The FAQPage JSON-LD emitted at the bottom of this component describes
-       * exactly these question and answer pairs. Google's structured data
-       * policies forbid marking up content that is not visible to readers, so
-       * deleting or conditionally mounting this section while leaving the schema
-       * in place turns a working page into a guidelines violation.
-       *
-       * That is also why this is plain markup rather than an accordion that
-       * mounts its children on click. CSS-hidden content is fine for crawlers;
-       * JavaScript-mounted content is not.
-       */}
-      <Faq headingId={faqHeadingId} items={post.faq} />
+          {/* Byline owns `rel="author"` on the author link and `<time dateTime>`
+              on both dates. Those values must match the JSON-LD exactly, which
+              they do because both read the same `post` object.
 
-      {/*
-       * The FAQ is rendered from frontmatter, here, once. Do not also place a
-       * `<Faq />` tag in the body of a post: the schema and the visible section
-       * both read `post.faq`, and a second copy in the MDX would duplicate the
-       * questions on the page while the JSON-LD still described only one set.
-       */}
+              The hairline above it is the header's floor. Before it, the byline
+              ran straight into the contents list at a measured zero pixels. */}
+          <Byline className="border-border w-full border-t pt-6" post={post} />
+        </header>
 
-      {/* Outbound citations to named sources. The GEO paper measured citing
-          sources as one of the few interventions with a peer-reviewed effect on
-          how often a page is cited back, so these are content, not decoration. */}
-      {post.citations.length > 0 ? (
-        <section aria-labelledby="sources" className="mt-12">
-          <h2 className="text-foreground text-2xl font-semibold tracking-tight" id="sources">
-            Sources
-          </h2>
-          <ol className="text-muted-foreground mt-6 list-decimal space-y-2 pl-5 text-sm">
-            {post.citations.map((citation) => (
-              <li key={citation.url}>
-                <a
-                  className="hover:text-foreground underline underline-offset-4"
-                  href={citation.url}
-                  rel="noopener"
-                >
-                  {citation.name}
-                </a>
-                {citation.author ? <span>{`, ${citation.author}`}</span> : null}
-                {citation.datePublished ? (
-                  <span>
-                    {', '}
-                    <time dateTime={citation.datePublished}>
-                      {citation.datePublished.slice(0, 10)}
-                    </time>
-                  </span>
-                ) : null}
-              </li>
-            ))}
-          </ol>
-        </section>
-      ) : null}
+        {/* `PostSchema` already refuses a hero image without alt text, so this
+            double guard is for the type checker rather than for the data. */}
+        {post.heroImage && post.heroAlt ? (
+          <figure className={cn('w-full', showToc && 'xl:max-w-(--agentblog-measure)')}>
+            {/*
+             * `preload` is deliberately NOT set here, and `priority` is deprecated
+             * in Next.js 16 so it must never come back.
+             *
+             * The rule is that `preload` goes on an image only when that image is
+             * definitively the LCP element. On this layout it is not: breadcrumbs,
+             * the H1, the answer capsule, and the byline all sit above the hero, so
+             * on a narrow viewport the H1 text block is usually LCP and preloading
+             * the hero would compete with it for bandwidth. The Next.js docs make
+             * the same point: `loading="eager"` with `fetchPriority="high"` is the
+             * appropriate choice when LCP depends on viewport.
+             *
+             * If you measure the hero as LCP on your own layout, change
+             * `loading="eager"` to `preload` and change nothing else. At most one
+             * image per route may carry it.
+             */}
+            <Image
+              alt={post.heroAlt}
+              className="border-border w-full rounded-xl border"
+              fetchPriority="high"
+              height={630}
+              loading="eager"
+              sizes="(min-width: 768px) 768px, 100vw"
+              src={post.heroImage}
+              width={1200}
+            />
+            <figcaption className="text-muted-foreground mt-3 text-sm leading-relaxed">
+              {post.heroAlt}
+            </figcaption>
+          </figure>
+        ) : null}
 
-      {/*
-       * Share controls, at the foot of the article body and above the author
-       * box. The URL is composed on the server by `postUrl`, never read from
-       * `window.location`: a client-side read produces a different string on
-       * `localhost` and in a preview deployment, and it would leave the anchors
-       * empty in the server HTML. Every target here is a real `<a href>`, so
-       * this stays true with JavaScript disabled.
-       */}
-      <ShareButtons className="mt-12" title={post.title} url={postUrl(post.slug)} />
+        {/*
+         * The body. `flex flex-col gap-12` below `xl` puts the contents list a
+         * full section above the prose; at `xl` the same element becomes the two
+         * column grid and that gap turns into the gutter between them.
+         */}
+        <div
+          className={cn(
+            'flex w-full flex-col gap-12',
+            showToc &&
+              'xl:grid xl:grid-cols-[minmax(0,1fr)_var(--agentblog-aside)] xl:gap-x-12 xl:gap-y-0',
+          )}
+        >
+          {/* TableOfContents is a client component for scroll spy only. It renders
+              the full list of links on the server first, so the anchors exist in the
+              HTML whether or not JavaScript ever runs.
 
-      {/* `postCount` is intentionally omitted here. Filling it would mean one
-          `getPostsByAuthor` call per post at build time, which scales with post
-          count for no reader benefit. The author page shows the count instead,
-          where the query is already being made. */}
-      <AuthorBio author={post.author} className="mt-8" />
+              `top-24` clears a sticky site header. If yours is taller, this and
+              `scroll-padding-top` in your global stylesheet are the two numbers
+              that have to move together. */}
+          {showToc ? (
+            <aside className="xl:col-start-2 xl:row-start-1">
+              <div className="xl:sticky xl:top-24 xl:max-h-[calc(100dvh-8rem)] xl:overflow-y-auto">
+                <TableOfContents entries={tocEntries} />
+              </div>
+            </aside>
+          ) : null}
 
-      <RelatedPosts posts={related} />
+          <div className={cn(SECTION_GAP, 'min-w-0 xl:col-start-1 xl:row-start-1')}>
+            {/* The compiled MDX. `renderMdx` is the only place MDX is compiled in
+                the whole block, which is what keeps the article render path free
+                of client components and free of the Turbopack MDX loader
+                restrictions. */}
+            <Prose>{content}</Prose>
+
+            {/*
+             * VISIBLE FAQ. This block must stay in the rendered output.
+             *
+             * The FAQPage JSON-LD emitted at the bottom of this component describes
+             * exactly these question and answer pairs. Google's structured data
+             * policies forbid marking up content that is not visible to readers, so
+             * deleting or conditionally mounting this section while leaving the schema
+             * in place turns a working page into a guidelines violation.
+             *
+             * That is also why this is plain markup rather than an accordion that
+             * mounts its children on click. CSS-hidden content is fine for crawlers;
+             * JavaScript-mounted content is not.
+             */}
+            <Faq headingId={faqHeadingId} items={post.faq} />
+
+            {/*
+             * The FAQ is rendered from frontmatter, here, once. Do not also place
+             * a `<Faq />` tag in the body of a post: the schema and the visible
+             * section both read `post.faq`, and a second copy in the MDX would
+             * duplicate the questions on the page while the JSON-LD still
+             * described only one set.
+             */}
+
+            {/* Outbound citations to named sources. The GEO paper measured citing
+                sources as one of the few interventions with a peer-reviewed effect
+                on how often a page is cited back, so these are content, not
+                decoration. */}
+            {post.citations.length > 0 ? (
+              <section aria-labelledby="sources" className={CLUSTER_GAP}>
+                <h2 className={SECTION_HEADING} id="sources">
+                  Sources
+                </h2>
+                <ol className="text-muted-foreground marker:text-muted-foreground list-decimal space-y-3 pl-5 text-sm leading-relaxed">
+                  {post.citations.map((citation) => (
+                    <li key={citation.url}>
+                      <a
+                        className="text-foreground hover:text-muted-foreground underline decoration-1 underline-offset-4 transition-colors"
+                        href={citation.url}
+                        rel="noopener"
+                      >
+                        {citation.name}
+                      </a>
+                      {citation.author ? <span>{`, ${citation.author}`}</span> : null}
+                      {citation.datePublished ? (
+                        <span>
+                          {', '}
+                          <time dateTime={citation.datePublished}>
+                            {citation.datePublished.slice(0, 10)}
+                          </time>
+                        </span>
+                      ) : null}
+                    </li>
+                  ))}
+                </ol>
+              </section>
+            ) : null}
+
+            {/*
+             * Everything past the article body is one cluster behind a rule:
+             * share, attribution, and where to read next. They are the same kind
+             * of thing (what to do now that you have finished) and they used to
+             * be three sections at three different margins, one of which was
+             * zero.
+             */}
+            <div className="border-border flex flex-col gap-10 border-t pt-10">
+              {/*
+               * Share controls, at the foot of the article body and above the
+               * author box. The URL is composed on the server by `postUrl`,
+               * never read from `window.location`: a client-side read produces a
+               * different string on `localhost` and in a preview deployment, and
+               * it would leave the anchors empty in the server HTML. Every
+               * target here is a real `<a href>`, so this stays true with
+               * JavaScript disabled.
+               */}
+              <ShareButtons title={post.title} url={postUrl(post.slug)} />
+
+              {/* `postCount` is intentionally omitted here. Filling it would mean
+                  one `getPostsByAuthor` call per post at build time, which scales
+                  with post count for no reader benefit. The author page shows the
+                  count instead, where the query is already being made. */}
+              <AuthorBio author={post.author} />
+
+              <RelatedPosts posts={related} />
+            </div>
+          </div>
+        </div>
+      </article>
 
       {/*
        * ONE serialization point for this page's structured data, and it is
@@ -376,6 +465,6 @@ export default async function PostPage(props: PageProps<'/blog/[slug]'>) {
        * data.
        */}
       <JsonLd nodes={buildArticleGraph(post)} />
-    </article>
+    </div>
   )
 }

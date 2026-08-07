@@ -32,10 +32,18 @@ import { notFound } from 'next/navigation'
 import { Breadcrumbs } from '@/components/blog/breadcrumbs'
 import { JsonLd } from '@/components/blog/json-ld'
 import { PostList } from '@/components/blog/post-list'
+import {
+  DISPLAY,
+  META,
+  PAGE_HEADER,
+  SECTION_GAP,
+  TITLE_CLUSTER,
+} from '@/components/blog/type-scale'
 import { absoluteUrl, config, tagUrl } from '@/lib/config'
 import { buildListMetadata, googleBotDefaults } from '@/lib/metadata'
 import { getAllTags, getPostsByTag } from '@/lib/posts'
 import { buildBreadcrumb } from '@/lib/schema'
+import { cn } from '@/lib/utils'
 
 /*
  * ISR window in seconds. THIS MUST STAY A NUMERIC LITERAL.
@@ -172,28 +180,30 @@ export default async function TagPage(props: PageProps<'/blog/tag/[slug]'>) {
   ]
 
   return (
-    <div>
-      <Breadcrumbs
-        trail={trail.map((crumb) =>
-          crumb.url ? { name: crumb.name, href: crumb.url } : { name: crumb.name },
-        )}
-      />
+    <>
+      <div className={cn('mx-auto w-full max-w-(--agentblog-rail) px-6', SECTION_GAP)}>
+        <header className={PAGE_HEADER}>
+          <Breadcrumbs
+            trail={trail.map((crumb) =>
+              crumb.url ? { name: crumb.name, href: crumb.url } : { name: crumb.name },
+            )}
+          />
 
-      {/* Exactly one <h1> on this page. */}
-      <h1 className="text-foreground mt-6 text-4xl font-semibold tracking-tight text-balance">
-        {`Posts tagged ${label}`}
-      </h1>
+          <div className={TITLE_CLUSTER}>
+            {/* Exactly one <h1> on this page. */}
+            <h1 className={DISPLAY}>{`Posts tagged ${label}`}</h1>
 
-      <p className="text-muted-foreground mt-4 text-sm">
-        {posts.length === 1 ? '1 post' : `${posts.length} posts`}
-      </p>
+            <p className={META}>{posts.length === 1 ? '1 post' : `${posts.length} posts`}</p>
+          </div>
+        </header>
 
-      <PostList posts={posts} />
+        <PostList posts={posts} />
+      </div>
 
       {/* One serialization point. Only the breadcrumb: the listed posts emit
           their own Article nodes on their own routes, and a tag archive has no
           content of its own to describe. */}
       <JsonLd nodes={[buildBreadcrumb(trail, `/blog/tag/${slug}`)]} />
-    </div>
+    </>
   )
 }

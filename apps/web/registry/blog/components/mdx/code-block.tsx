@@ -81,7 +81,7 @@ export function CodeBlock({ className, ...props }: CodeBlockProps) {
       tabIndex={0}
       {...props}
       className={merge(
-        'border-border bg-muted focus-visible:ring-ring my-6 overflow-x-auto rounded-lg border p-4 text-sm leading-relaxed focus-visible:ring-2 focus-visible:outline-none [&_code]:bg-transparent [&_code]:p-0 [&_code]:font-normal [&_code]:text-inherit',
+        'border-border bg-muted focus-visible:ring-ring my-8 overflow-x-auto rounded-xl border p-4 text-sm leading-relaxed focus-visible:ring-2 focus-visible:outline-none [&_code]:bg-transparent [&_code]:p-0 [&_code]:font-normal [&_code]:text-inherit',
         className,
       )}
     />

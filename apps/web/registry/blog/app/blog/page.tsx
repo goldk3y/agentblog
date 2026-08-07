@@ -59,10 +59,20 @@ import { CategoryPills } from '@/components/blog/category-pills'
 import { JsonLd } from '@/components/blog/json-ld'
 import { Pagination } from '@/components/blog/pagination'
 import { PostList } from '@/components/blog/post-list'
+import {
+  CLUSTER_GAP,
+  DISPLAY,
+  LEDE,
+  META,
+  PAGE_HEADER,
+  SECTION_GAP,
+  TITLE_CLUSTER,
+} from '@/components/blog/type-scale'
 import { absoluteUrl, blogPath, config } from '@/lib/config'
 import { buildListMetadata } from '@/lib/metadata'
 import { getAllCategories, getPage } from '@/lib/posts'
 import { buildBlogGraph, buildBreadcrumb } from '@/lib/schema'
+import { cn } from '@/lib/utils'
 
 /*
  * ISR window in seconds. THIS MUST STAY A NUMERIC LITERAL.
@@ -163,7 +173,7 @@ export default async function BlogIndexPage(props: PageProps<'/blog'>) {
       : [{ name: 'Home', url: absoluteUrl('/') }, { name: 'Blog' }]
 
   return (
-    <div>
+    <>
       {/*
        * `rel="prev"` and `rel="next"` as real `<link>` elements. React hoists
        * `<link>` rendered anywhere in the tree into `<head>`, which is the only
@@ -171,51 +181,76 @@ export default async function BlogIndexPage(props: PageProps<'/blog'>) {
        * Google ignores them for indexing. Other engines and some readers do not,
        * and they cost nothing. The `<a rel>` attributes on the pagination
        * controls below carry the same relationship for assistive technology.
+       *
+       * These sit OUTSIDE the flex column below, and so does the `<JsonLd>` at
+       * the foot of this file. A `<link>` and a `<script>` render nothing, but
+       * they are still flex items, and a flex item with no height still takes a
+       * full `gap` on each side. Inside the column they would open 128px of
+       * blank page that no element accounts for and no inspector attributes to
+       * anything. Metadata goes outside the layout, always.
        */}
       {page > 1 ? <link href={absoluteUrl(pagePath(page - 1))} rel="prev" /> : null}
       {page < totalPages ? <link href={absoluteUrl(pagePath(page + 1))} rel="next" /> : null}
 
-      {/* Breadcrumb hrefs come from the config URL helpers, same as every
-          canonical, so the visible trail and the BreadcrumbList JSON-LD built
-          from the same array below can never disagree about a URL. */}
-      <Breadcrumbs
-        trail={trail.map((crumb) =>
-          crumb.url ? { name: crumb.name, href: crumb.url } : { name: crumb.name },
-        )}
-      />
-
-      {/* Exactly one <h1>, and it does not change on page 2. Paginated pages are
-          the same collection viewed further down, not a different topic. */}
-      <h1 className="text-foreground mt-6 text-4xl font-semibold tracking-tight text-balance">
-        {INDEX_TITLE}
-      </h1>
-      <p className="text-muted-foreground mt-4 text-lg">{INDEX_DESCRIPTION}</p>
-
-      {page > 1 ? (
-        <p className="text-muted-foreground mt-2 text-sm">{`Page ${page} of ${totalPages}`}</p>
-      ) : null}
-
-      {/* Category hubs are linked from the index so the hub and spoke graph has
-          a real entry point that does not depend on the host site navigation. */}
-      <CategoryPills categories={categories} />
-
-      <PostList posts={posts} />
-
       {/*
-       * Real `<a href>` pagination. `basePath` is the route that `<Pagination>`
-       * appends `?page=N` to.
-       *
-       * It comes from `blogPath()` rather than the literal `/blog`, because that
-       * helper is the only thing that applies `config.trailingSlash`. Pass a
-       * literal and every page-2-and-beyond link on a `trailingSlash: true` site
-       * points at a URL that 308s before it serves, on the one surface that is
-       * often the only crawl path to deep posts.
-       *
-       * If you switch this block to a `/blog/page/[page]` path segment, this
-       * value and the URL form inside `<Pagination>` must change together. They
-       * are the same decision expressed in two files.
+       * The wide rail, because this page is a card grid rather than a reading
+       * column. `SECTION_GAP` is the only vertical spacing here: no child below
+       * sets a margin of its own, which is what makes it impossible for one of
+       * them to sit flush against its neighbour, as the category pills and the
+       * post grid did at a measured zero pixels before this rule existed.
+       * See `components/blog/type-scale.ts`.
        */}
-      <Pagination basePath={blogPath()} page={page} totalPages={totalPages} />
+      <div className={cn('mx-auto w-full max-w-(--agentblog-rail) px-6', SECTION_GAP)}>
+        <header className={PAGE_HEADER}>
+          {/* Breadcrumb hrefs come from the config URL helpers, same as every
+              canonical, so the visible trail and the BreadcrumbList JSON-LD built
+              from the same array below can never disagree about a URL. */}
+          <Breadcrumbs
+            trail={trail.map((crumb) =>
+              crumb.url ? { name: crumb.name, href: crumb.url } : { name: crumb.name },
+            )}
+          />
+
+          <div className={TITLE_CLUSTER}>
+            {/* Exactly one <h1>, and it does not change on page 2. Paginated pages
+                are the same collection viewed further down, not a different topic. */}
+            <h1 className={DISPLAY}>{INDEX_TITLE}</h1>
+            <p className={LEDE}>{INDEX_DESCRIPTION}</p>
+
+            {page > 1 ? <p className={META}>{`Page ${page} of ${totalPages}`}</p> : null}
+          </div>
+        </header>
+
+        {/* Pills and grid are one cluster, at the tighter rhythm: the filters
+            belong to the results, not to the page header above them. */}
+        <div className={CLUSTER_GAP}>
+          {/* Category hubs are linked from the index so the hub and spoke graph
+              has a real entry point that does not depend on the host site
+              navigation. */}
+          <CategoryPills categories={categories} />
+
+          <PostList posts={posts} />
+        </div>
+
+        {/*
+         * Real `<a href>` pagination. `basePath` is the route that `<Pagination>`
+         * appends `?page=N` to.
+         *
+         * It comes from `blogPath()` rather than the literal `/blog`, because
+         * that helper is the only thing that applies `config.trailingSlash`.
+         * Pass a literal and every page-2-and-beyond link on a
+         * `trailingSlash: true` site points at a URL that 308s before it serves,
+         * on the one surface that is often the only crawl path to deep posts.
+         *
+         * If you switch this block to a `/blog/page/[page]` path segment, this
+         * value and the URL form inside `<Pagination>` must change together.
+         * They are the same decision expressed in two files.
+         *
+         * `<Pagination>` returns null on a single-page blog, and null is not a
+         * flex item, so the gap above it disappears with it.
+         */}
+        <Pagination basePath={blogPath()} page={page} totalPages={totalPages} />
+      </div>
 
       {/*
        * `Blog` JSON-LD listing the posts on THIS page, linked by `@id` to the
@@ -234,6 +269,6 @@ export default async function BlogIndexPage(props: PageProps<'/blog'>) {
       <JsonLd
         nodes={[buildBlogGraph(posts, pagePath(page)), buildBreadcrumb(trail, pagePath(page))]}
       />
-    </div>
+    </>
   )
 }

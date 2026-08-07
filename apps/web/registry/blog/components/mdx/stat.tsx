@@ -43,9 +43,9 @@ export interface StatProps {
 
 export function Stat({ value, label, source, href }: StatProps) {
   return (
-    <figure className="border-border bg-card text-card-foreground my-6 rounded-lg border px-6 py-5">
-      <p className="text-3xl font-semibold tracking-tight tabular-nums">{value}</p>
-      <figcaption className="text-muted-foreground mt-1 text-sm leading-relaxed">
+    <figure className="border-border my-8 border-y py-6">
+      <p className="text-foreground text-4xl font-semibold tracking-tight tabular-nums">{value}</p>
+      <figcaption className="text-muted-foreground mt-2 text-sm leading-relaxed text-pretty">
         {label}
         {source !== undefined && (
           <>

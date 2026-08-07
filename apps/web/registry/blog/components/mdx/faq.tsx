@@ -31,7 +31,9 @@
  * @see https://docs.agentblog.dev/concepts/geo-playbook
  * @see lib/schema.ts, `buildFaq`
  */
+import { CLUSTER_GAP, SECTION_HEADING } from '@/components/blog/type-scale'
 import type { FaqEntry } from '@/lib/types'
+import { cn } from '@/lib/utils'
 
 /**
  * The section heading text.
@@ -92,14 +94,17 @@ export function Faq({
   if (items.length === 0) return null
 
   return (
-    <section className="my-10">
-      <h2 className="text-foreground mb-4 scroll-mt-24 text-2xl font-semibold" id={headingId}>
+    // No outer margin. The post route composes this into a flex column with the
+    // rest of the article, and a margin here would add to that gap rather than
+    // replace it. See `components/blog/type-scale.ts`.
+    <section className={CLUSTER_GAP}>
+      <h2 className={cn(SECTION_HEADING, 'scroll-mt-24')} id={headingId}>
         {heading}
       </h2>
-      <div className="divide-border border-border divide-y overflow-hidden rounded-lg border">
+      <div className="divide-border border-border divide-y overflow-hidden rounded-xl border">
         {items.map((item) => (
           <details key={item.question} open={defaultOpen} className="agentblog-faq group">
-            <summary className="text-foreground hover:bg-muted flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 text-base font-medium">
+            <summary className="text-foreground hover:bg-muted flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 text-base font-medium transition-colors">
               {item.question}
               <span
                 aria-hidden="true"
@@ -108,7 +113,7 @@ export function Faq({
                 +
               </span>
             </summary>
-            <div className="text-muted-foreground px-5 pb-4 text-sm leading-relaxed">
+            <div className="text-muted-foreground px-5 pb-5 text-sm leading-relaxed text-pretty">
               {item.answer}
             </div>
           </details>

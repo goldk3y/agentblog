@@ -1,6 +1,6 @@
 ---
 title: What gets installed
-description: A file-by-file tour of the 70 files AgentBlog writes into your repository, and the rules each piece obeys.
+description: A file-by-file tour of the 71 files AgentBlog writes into your repository, and the rules each piece obeys.
 icon: FileText
 ---
 
@@ -73,6 +73,21 @@ post](/reference/mdx-components).
 `components/blog/icons.tsx` re-exports every icon used anywhere in the block, so
 swapping icon libraries costs one file rather than a search across twelve
 components.
+
+`components/blog/type-scale.ts` is the design system, and it is the file to open
+first if you want the blog to look like the rest of your product. It holds the
+heading, lede, section, eyebrow, and meta roles as class strings, plus the two
+gaps every page composes with. Editing one constant there restyles every route
+at once, which is the reason the routes import from it instead of spelling out
+their own headings. The layout widths it composes against live in
+`styles/agentblog.css` as `--agentblog-measure`, `--agentblog-aside`,
+`--agentblog-article`, and `--agentblog-rail`.
+
+One rule in that file is worth repeating here, because breaking it is how the
+spacing goes wrong: **no component sets its own outer margin.** Pages stack
+their children in a flex column with a `gap`, so a component that is missing
+from the layout is a component that is visibly missing, rather than one that
+silently renders flush against its neighbour.
 
 ## Library
 

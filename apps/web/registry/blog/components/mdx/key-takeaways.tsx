@@ -35,8 +35,8 @@ export function KeyTakeaways({ items, heading = 'Key takeaways' }: KeyTakeawaysP
   if (items.length === 0) return null
 
   return (
-    <aside className="border-border bg-muted my-8 rounded-lg border px-6 py-5">
-      <p className="text-muted-foreground mb-3 text-xs font-semibold tracking-wide uppercase">
+    <aside className="not-prose border-border my-8 rounded-xl border px-6 py-5">
+      <p className="text-muted-foreground mb-3 text-xs font-medium tracking-wider uppercase">
         {heading}
       </p>
       <ul className="text-foreground marker:text-muted-foreground list-disc space-y-2 pl-5 text-sm leading-relaxed">

@@ -91,7 +91,19 @@ export function Table({ label, className, children, ...props }: TableProps) {
 
   return (
     <div
-      className="border-border focus-visible:ring-ring my-6 w-full overflow-x-auto rounded-lg border focus-visible:ring-2 focus-visible:outline-none"
+      /*
+       * `not-prose` on the wrapper, not on the table.
+       *
+       * `@tailwindcss/typography` gives every `<table>` a 2em block margin. Ours
+       * is inside a bordered panel, so that margin rendered as an unexplained
+       * 40px strip between the panel's top border and the header row, on every
+       * table in every post. Overriding it with a `my-0` utility is a
+       * specificity race against a plugin-generated `:where()` rule, and it is
+       * the wrong fix anyway: `Thead`, `Tbody`, `Tr`, `Th`, and `Td` below all
+       * carry their own classes, so there is nothing in here the plugin should
+       * be styling at all.
+       */
+      className="not-prose border-border focus-visible:ring-ring my-8 w-full overflow-x-auto rounded-xl border focus-visible:ring-2 focus-visible:outline-none"
       // Both attributes or neither. See "WHY `role=\"region\"` IS CONDITIONAL".
       {...(name === undefined ? {} : { role: 'region', 'aria-label': name })}
       tabIndex={0}
