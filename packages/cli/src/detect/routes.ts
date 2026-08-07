@@ -110,27 +110,60 @@ export function blockFiles(project: ProjectContext): string[] {
 }
 
 /**
- * The content directory this project reads posts from, relative to the root.
- *
- * Read from `agentblog.config.ts` textually rather than by executing it, for the
- * same reason every other reader in this package does: running a user's config
- * means running their code, and the CLI has no business doing that.
- *
- * Returns `null` when there is no directory to declare, which is the correct
- * answer for a content source that reads nothing off disk. A database-backed
- * source has no files for Turbopack to trace.
+ * Defaults in `lib/sources/mdx.ts` for the two options a config usually omits.
+ * They are read here rather than imported: nothing in `packages/` may import the
+ * registry source, and a consumer's copy is theirs to edit. Keep them in step
+ * with `DEFAULT_AUTHORS_FILE` and `DEFAULT_CATEGORIES_FILE` in that file.
  */
-export function contentDirOf(project: ProjectContext): string | null {
-  const source = readFile(join(project.root, 'agentblog.config.ts'))
-  if (source === null) return null
+const DEFAULT_AUTHORS_FILE = 'content/authors.json'
+const DEFAULT_CATEGORIES_FILE = 'content/categories.json'
 
-  const match = /\bdir\s*:\s*['"`]([^'"`]+)['"`]/.exec(source)
-  const dir = match?.[1]?.trim()
-  if (!dir) return null
+/**
+ * One `key: 'value'` string option out of a config, or `null`.
+ *
+ * Read textually rather than by executing the config, for the same reason every
+ * other reader in this package does: running a user's config means running their
+ * code, and the CLI has no business doing that.
+ */
+function stringOption(source: string, key: string): string | null {
+  const match = new RegExp(`\\b${key}\\s*:\\s*['"\`]([^'"\`]+)['"\`]`).exec(source)
+  const value = match?.[1]?.trim()
+  if (!value) return null
 
   // A path that climbs out of the project cannot be declared safely, and one
   // that is absolute is not portable to the machine that runs the build.
-  if (dir.startsWith('..') || dir.startsWith('/')) return null
+  if (value.startsWith('..') || value.startsWith('/')) return null
 
-  return dir.replace(/^\.\//, '').replace(/\/+$/, '')
+  return value.replace(/^\.\//, '').replace(/\/+$/, '')
+}
+
+/**
+ * Every path the content source opens at runtime, as globs relative to the
+ * project root, ready to hand to `outputFileTracingIncludes`.
+ *
+ * ALL THREE, NOT JUST THE POSTS DIRECTORY. `mdxSource` reads `dir`,
+ * `authorsFile`, and `categoriesFile`, and the two roster files sit beside the
+ * posts directory rather than inside it. Declaring `content/blog/**` alone
+ * therefore ships the posts and leaves the authors behind, and the first route
+ * that renders on demand answers `ENOENT` for `content/authors.json` while every
+ * prerendered page carries on serving. Nothing about that is visible until it
+ * happens in production, which is why this returns a list rather than a
+ * directory.
+ *
+ * Empty when there is nothing to declare, which is the correct answer for a
+ * content source that reads nothing off disk: a database-backed source has no
+ * files for Turbopack to trace.
+ */
+export function contentPathsOf(project: ProjectContext): string[] {
+  const source = readFile(join(project.root, 'agentblog.config.ts'))
+  if (source === null) return []
+
+  const dir = stringOption(source, 'dir')
+  if (dir === null) return []
+
+  return [
+    `./${dir}/**/*`,
+    `./${stringOption(source, 'authorsFile') ?? DEFAULT_AUTHORS_FILE}`,
+    `./${stringOption(source, 'categoriesFile') ?? DEFAULT_CATEGORIES_FILE}`,
+  ]
 }

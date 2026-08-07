@@ -203,13 +203,50 @@ editing the installed files:
 
 ```ts
 outputFileTracingExcludes: {
-  '/blog/**': ['./public/**/*'],
+  '/**': ['./public/**/*'],
 }
 ```
 
-Exclude only what you are certain the route does not read. The MDX source
-genuinely does read `content/blog/**` at runtime when the publish webhook
-regenerates the sitemap and the feed, so that directory has to stay.
+Exclude only what you are certain no route reads. Everything `agentblog init`
+put in `outputFileTracingIncludes` has to stay: the MDX source really does read
+`content/blog/**`, `content/authors.json`, and `content/categories.json` at
+runtime, on `/blog` and whenever the publish webhook regenerates the sitemap and
+the feed. Dropping one of them is the section below.
+
+## `/blog` returns a 500 and the post pages do not
+
+The symptom is specific. Every post, category, and author page serves normally,
+`/blog` returns a server error, and the deployment logs carry:
+
+```text
+Error [AgentBlogSourceError]: [agentblog:mdx] getAllPosts failed
+  [cause]: Error: ENOENT: no such file or directory, open '/var/task/content/authors.json'
+```
+
+The post pages are prerendered at build time, when the whole repository is on
+disk. `/blog` reads `searchParams` for its `?page=N`, so it renders on demand,
+inside a function that only carries the files the build traced. The file named
+in the error was not one of them.
+
+Fix it by declaring every path your content source reads, not just the posts
+directory:
+
+```ts title="next.config.ts"
+outputFileTracingIncludes: {
+  '/**': [
+    './content/blog/**/*',
+    './content/authors.json',
+    './content/categories.json',
+  ],
+}
+```
+
+`npx agentblog doctor --fix` writes that for you, reading the paths out of your
+`agentblog.config.ts`. Two things about it are easy to get wrong by hand. The
+roster files sit beside the posts directory rather than inside it, so
+`./content/blog/**/*` alone ships the posts and leaves the authors behind. And
+the key is `/**` rather than `/blog/**`, because `sitemap.xml`, `feed.xml`,
+`/authors/[slug]`, and `/api/publish` read content too.
 
 ## The image optimizer returns 400
 

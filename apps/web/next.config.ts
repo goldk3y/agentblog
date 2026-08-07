@@ -36,11 +36,38 @@ const nextConfig: NextConfig = {
     remotePatterns: [],
   },
 
-  // The registry source is authored as if it were already in a consumer's
-  // project, so it lives outside the usual app directories and needs to be
-  // linted and type checked alongside them.
+  /**
+   * Every file `mdxSource` opens at runtime, declared so the deployment carries
+   * it. This is where the `turbopackIgnore` annotations in `lib/sources/mdx.ts`
+   * are paid for: those paths are computed from `agentblog.config.ts`, so no
+   * static analysis can find them, and an undeclared file is simply absent from
+   * the serverless bundle. The failure is a 500 on the first request that
+   * renders on demand, and nothing before that request can see it coming.
+   *
+   * ONE ENTRY PER PATH IN `agentblog.config.ts`. The list below is `source.dir`,
+   * `source.authorsFile`, and `source.categoriesFile`, in that order. Declaring
+   * only the posts directory is the easy mistake, because the roster files sit
+   * beside it rather than inside it: the posts arrive, the authors do not, and
+   * `getAllPosts` throws `ENOENT` while every prerendered page keeps serving.
+   *
+   * THE KEY IS `/**`, NOT `/blog/**`. Keys are route globs, and content is read
+   * from more routes than the blog ones: `sitemap.xml` and `feed.xml` reread it
+   * when the publish webhook revalidates them, `/authors/[slug]` rereads it on
+   * every ISR refresh, and `/api/publish` reads it on every call. Naming routes
+   * individually means the next route that reads a post is a 500 nobody wrote
+   * down. The whole content directory is a few files, so the narrower key buys
+   * nothing worth that.
+   *
+   * `agentblog init` writes this list and `agentblog doctor --fix` re-applies
+   * it. Prefer running those to hand-editing, so a consumer's config and this
+   * one stay the same shape.
+   */
   outputFileTracingIncludes: {
-    '/blog/**': ['./registry/blog/content/**/*'],
+    '/**': [
+      './registry/blog/content/blog/**/*',
+      './content/authors.json',
+      './content/categories.json',
+    ],
   },
 
   /*

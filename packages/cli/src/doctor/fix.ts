@@ -28,7 +28,7 @@ import { patchRootLayout } from '../patchers/root-layout.ts'
 import { envValue, removeEnvKeys, upsertEnv } from '../patchers/env.ts'
 import { addAgentBlogIgnore, isAgentBlogIgnored } from '../patchers/gitignore.ts'
 import { PatchSet } from '../patchers/patch-set.ts'
-import { blockFiles, contentDirOf, hasPublishRoute } from '../detect/routes.ts'
+import { blockFiles, contentPathsOf, hasPublishRoute } from '../detect/routes.ts'
 import { readFile, toPosixRelative, walk } from '../util/fs.ts'
 import { isGitIgnored } from '../util/exec.ts'
 import { isIndexNowKeyFile, isValidIndexNowKey } from '../util/indexnow.ts'
@@ -196,7 +196,7 @@ function fixNextConfig(
 
   const result = patchNextConfig(source, toPosixRelative(project.root, project.nextConfigPath), {
     qualities: qualitiesUsedBy(project),
-    ...(contentDirOf(project) ? { contentDir: contentDirOf(project)! } : {}),
+    contentPaths: contentPathsOf(project),
   })
   changes.push(...result.changes)
   declined.push(...result.declined)

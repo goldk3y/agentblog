@@ -18,7 +18,7 @@ import { basename } from 'node:path'
 
 import { buildAgentsBlock, INDEXNOW_KEY_COMMENT, REVALIDATE_SECRET_COMMENT } from '../constants.ts'
 import { appPathLabel, type ProjectContext } from '../detect/project.ts'
-import { contentDirOf } from '../detect/routes.ts'
+import { contentPathsOf } from '../detect/routes.ts'
 import { patchAgentblogConfig } from '../patchers/agentblog-config.ts'
 import { placeBlock } from '../patchers/agents-md.ts'
 import { patchComponentsJson } from '../patchers/components-json.ts'
@@ -128,8 +128,7 @@ export function patchConfigFiles(
     const source = readFile(project.nextConfigPath)
     if (source !== null) {
       const label = toPosixRelative(project.root, project.nextConfigPath)
-      const dir = contentDirOf(project)
-      const result = patchNextConfig(source, label, dir ? { contentDir: dir } : {})
+      const result = patchNextConfig(source, label, { contentPaths: contentPathsOf(project) })
       changes.push(...result.changes)
       declined.push(...result.declined)
       patches.add({

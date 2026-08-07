@@ -58,11 +58,12 @@ export interface NextConfigPatchOptions {
   /** Appended only when no structurally equal entry is already present. */
   readonly remotePatterns?: readonly RemotePattern[]
   /**
-   * Content directory to declare in `outputFileTracingIncludes`, relative to the
-   * project root, for example `content/blog`. Omitted when the project uses a
-   * content source that reads nothing off disk.
+   * Every path the content source opens at runtime, as globs relative to the
+   * project root, for example `['./content/blog/**\/*', './content/authors.json',
+   * './content/categories.json']`. Empty or omitted when the project uses a
+   * content source that reads nothing off disk. Build it with `contentPathsOf`.
    */
-  readonly contentDir?: string
+  readonly contentPaths?: readonly string[]
 }
 
 export interface PatchResult {
@@ -386,19 +387,37 @@ export function hasAgentRulesDisabled(source: string): boolean {
 }
 
 /**
- * Declare the content directory in `outputFileTracingIncludes`.
+ * The route glob every content path is declared under.
  *
- * `lib/sources/mdx.ts` reads post files at runtime, not only at build time: the
- * publish webhook regenerates `sitemap.xml` and `feed.xml`, and both read the
- * content directory. Turbopack cannot see that dependency, because the path is
- * computed from the user's config rather than written as a literal.
+ * `/**` rather than `/blog/**`, because content is read from more routes than
+ * the blog ones. `sitemap.xml` and `feed.xml` reread it whenever the publish
+ * webhook revalidates them, `/authors/[slug]` rereads it on every ISR refresh,
+ * and `/api/publish` reads it on every call. Naming routes one at a time means
+ * the next route that reads a post is a 500 nobody wrote down, and a content
+ * directory is small enough that the narrower key buys nothing worth that.
+ */
+const TRACING_ROUTE_KEY = '/**'
+
+/** What the pre-1.0 patcher wrote. Reported when found, never rewritten. */
+const LEGACY_ROUTE_KEY = '/blog/**'
+
+/**
+ * Declare the files the content source reads in `outputFileTracingIncludes`.
+ *
+ * `lib/sources/mdx.ts` reads posts and rosters at runtime, not only at build
+ * time: the blog index renders on demand because it reads `searchParams`, and
+ * the publish webhook regenerates `sitemap.xml` and `feed.xml`. Turbopack cannot
+ * see those reads, because the paths are computed from the user's config rather
+ * than written as literals.
  *
  * Left undeclared, there are two bad outcomes and no good one. Either Turbopack
  * traces the whole project, which copies the entire source tree and `public/`
  * next to the server bundle and can trip a platform size limit, or the files are
- * missing at runtime and the webhook regenerates a sitemap with no posts in it.
+ * missing at runtime and every on-demand render is a 500 while the prerendered
+ * pages keep serving, which is a half-broken blog that looks fine on the home
+ * page.
  *
- * Declaring it explicitly is what earns the `turbopackIgnore` annotations in
+ * Declaring them explicitly is what earns the `turbopackIgnore` annotations in
  * `lib/sources/mdx.ts`. The annotation says "we take responsibility for this
  * dependency"; this is where the responsibility is discharged.
  */
@@ -408,8 +427,10 @@ function patchFileTracing(
   changes: string[],
   declined: string[],
 ): void {
-  const contentDir = options.contentDir
-  if (!contentDir) return
+  const contentPaths = options.contentPaths ?? []
+  if (contentPaths.length === 0) return
+
+  const literal = `[${contentPaths.map((p) => `'${p}'`).join(', ')}]`
 
   const duplicate = duplicateKeyRisk(config, 'outputFileTracingIncludes')
   if (duplicate) {
@@ -426,29 +447,39 @@ function patchFileTracing(
   const includes = getOrCreateObject(config, 'outputFileTracingIncludes')
   if (!includes) {
     declined.push(
-      "next.config: `outputFileTracingIncludes` is set to something this tool cannot read, so the content directory was not declared. Add `'/blog/**': ['./" +
-        contentDir +
-        "/**/*']` by hand.",
+      'next.config: `outputFileTracingIncludes` is set to something this tool cannot read, so the content files were not declared. Add `' +
+        `'${TRACING_ROUTE_KEY}': ${literal}` +
+        '` by hand.',
     )
     return
   }
 
-  // A user who already declared something for `/blog/**` knows more about their
+  // A user who already declared something for this key knows more about their
   // deployment than we do. Report rather than merge: a wrong trace list is a
   // deploy that is missing files at runtime, which is worse than a large one.
-  const existing = getProperty(includes, "'/blog/**'") ?? getProperty(includes, '/blog/**')
+  // This is also what makes a second `agentblog init` a no-op.
+  const existing =
+    getProperty(includes, `'${TRACING_ROUTE_KEY}'`) ?? getProperty(includes, TRACING_ROUTE_KEY)
   if (existing) {
     declined.push(
-      'next.config: `outputFileTracingIncludes` already has an entry for /blog/**, so it was left alone. Confirm it covers your content directory.',
+      `next.config: \`outputFileTracingIncludes\` already has an entry for /**, so it was left alone. Confirm it covers ${contentPaths.join(', ')}.`,
     )
     return
   }
 
-  includes.addPropertyAssignment({
-    name: "'/blog/**'",
-    initializer: `['./${contentDir}/**/*']`,
-  })
+  includes.addPropertyAssignment({ name: `'${TRACING_ROUTE_KEY}'`, initializer: literal })
   changes.push(
-    `next.config: declared ${contentDir} in outputFileTracingIncludes, so the publish webhook can read posts at runtime`,
+    `next.config: declared ${contentPaths.join(', ')} in outputFileTracingIncludes, so routes that render on demand can read posts at runtime`,
   )
+
+  // An install from before the key widened still carries the old entry. Both
+  // apply, so the deployment is correct either way and deleting someone's config
+  // to tidy up is not worth the risk. Say it is redundant and leave it to them.
+  const legacy =
+    getProperty(includes, `'${LEGACY_ROUTE_KEY}'`) ?? getProperty(includes, LEGACY_ROUTE_KEY)
+  if (legacy) {
+    declined.push(
+      `next.config: the older ${LEGACY_ROUTE_KEY} entry in \`outputFileTracingIncludes\` is now covered by ${TRACING_ROUTE_KEY} and can be deleted.`,
+    )
+  }
 }
