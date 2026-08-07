@@ -36,7 +36,7 @@
  * identity and a fresh `{ includeDrafts: false }` literal would miss on every
  * call.
  *
- * @see https://agentblog.dev/docs/content-sources
+ * @see https://docs.agentblog.dev/reference/content-sources
  */
 import 'server-only'
 

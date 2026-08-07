@@ -19,7 +19,7 @@
  *    agent's context twice, and `next dev` may rewrite the file underneath us.
  *    A hand-authored `CLAUDE.md` is the user's, and we leave it alone.
  *
- * @see https://agentblog.dev/docs/agent-layer
+ * @see https://docs.agentblog.dev/guides/write-with-your-agent
  */
 import {
   AGENTBLOG_BLOCK_BEGIN,

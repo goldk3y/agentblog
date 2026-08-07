@@ -34,7 +34,7 @@
  *    possible, so keep the copied block short and keep the comment pointing at
  *    the file it mirrors.
  *
- * @see https://agentblog.dev/docs/cli-reference
+ * @see https://docs.agentblog.dev/reference/cli
  */
 export { default, generateMetadata, generateStaticParams } from '@/app/blog/[slug]/page'
 

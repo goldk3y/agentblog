@@ -2,22 +2,27 @@
 
 This is the maintainer runbook for the two things this repository publishes. It
 is not consumer documentation. If you are installing AgentBlog into your own
-project, you want [the installation guide](https://agentblog.dev/docs/installation).
+project, you want [the installation guide](https://docs.agentblog.dev/installation).
 
-Two artifacts ship, from two places, on two schedules:
+Three artifacts ship, from three places, on three schedules:
 
-| Artifact            | Where it comes from                           | When                        |
-| ------------------- | --------------------------------------------- | --------------------------- |
-| The registry JSON   | `apps/web` on Vercel, at `/r/{name}.json`     | Every push to `main`        |
-| The `agentblog` CLI | npm, published by changesets in `release.yml` | When a version PR is merged |
+| Artifact            | Where it comes from                            | When                        |
+| ------------------- | ---------------------------------------------- | --------------------------- |
+| The registry JSON   | `apps/web` on Vercel, at `/r/{name}.json`      | Every push to `main`        |
+| The documentation   | `apps/docs` on Vercel, at `docs.agentblog.dev` | Every push to `main`        |
+| The `agentblog` CLI | npm, published by changesets in `release.yml`  | When a version PR is merged |
 
-Neither is live until the steps below are done. Until the registry is served,
+None of them is live until the steps below are done. Until the registry is served,
 nothing installs: every command in the docs resolves `@agentblog/*` against a
 host that has to answer.
 
 ## Vercel
 
-### Project settings
+Two projects, both importing this repository, distinguished only by their Root
+Directory. Vercel reads the `vercel.json` inside that directory, so each project
+gets its own build command without either one knowing about the other.
+
+### The agentblog.dev project
 
 Import the repository and set these. The first one is the only one that is not a
 default, and getting it wrong is the difference between a working install and a
@@ -33,8 +38,8 @@ site that 404s every registry URL.
 | Node.js Version  | 22.x              | Matches `.nvmrc`                                            |
 
 Leave Ignored Build Step on Automatic. `turbo query affected` would work here,
-but this repository has one deployable app and nearly every commit affects it,
-so the only thing skipping can buy is a docs site that silently did not update.
+but nearly every commit affects this app, so the only thing skipping can buy is
+a site that silently did not update.
 
 ### Why the build command is pinned
 
@@ -101,9 +106,39 @@ resolves against.
    ```
 
 3. Delete the "not serving yet" banner at the top of
-   `apps/web/content/docs/installation.md`, and the paragraph in the same page
+   `apps/docs/content/docs/installation.mdx`, and the same notice in
+   `apps/docs/content/docs/quickstart.mdx`, and the paragraph in the same page
    that explains the GitHub shorthand cannot resolve namespaced dependencies.
-   Both are true today and both become wrong the moment the host answers.
+   All of them are true today and all of them become wrong the moment the host
+   answers.
+
+### The docs.agentblog.dev project
+
+A second Vercel project, from the same repository.
+
+| Setting          | Value                | Notes                                                        |
+| ---------------- | -------------------- | ------------------------------------------------------------ |
+| Root Directory   | `apps/docs`          | Vercel reads `apps/docs/vercel.json` from here               |
+| Framework Preset | Next.js              | Detected                                                     |
+| Build Command    | `turbo run build`    | Pinned in `apps/docs/vercel.json`, do not override in the UI |
+| Output Directory | Framework default    | `.next`                                                      |
+| Node.js Version  | 22.x                 | Matches `.nvmrc`                                             |
+| Domain           | `docs.agentblog.dev` | Add it under Project Settings, Domains                       |
+
+It needs no environment variables. `AGENTBLOG_DOCS_URL` exists as an override
+for a host that is not Vercel and is not needed here.
+
+Two things to check after the first deploy:
+
+```bash
+curl -sf https://docs.agentblog.dev/llms.txt | head -3
+curl -sfI https://agentblog.dev/docs/installation | grep -i location
+```
+
+The first proves the docs are serving. The second proves the redirects in
+`apps/web/next.config.ts` are pointing every old documentation URL at its new
+home. Every page that ever existed under `agentblog.dev/docs` is mapped
+individually, so a blanket redirect appearing in that header is a regression.
 
 ## npm
 
@@ -162,4 +197,4 @@ Releases are not automatic. Merging to `main` publishes nothing on its own.
   repository there would shorten the GitHub install path from
   `goldk3y/agentblog/blog` back to `agentblog/agentblog/blog`. If you do it,
   update `repository` in every package manifest, the `repo` field in
-  `.changeset/config.json`, and the paths in `apps/web/content/docs/installation.md`.
+  `.changeset/config.json`, and the paths in `apps/docs/content/docs/installation.mdx`.

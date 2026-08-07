@@ -1,0 +1,189 @@
+---
+title: Write your first post
+description: Scaffold a post file, have your coding agent draft it in the format AI search engines can use, and check it before you publish.
+icon: FileText
+---
+
+A post is one MDX file in `content/blog/`. You create the file, your agent
+writes the body, and `agentblog audit` tells you whether it is ready. This page
+walks through all three.
+
+<Steps>
+
+<Step>
+
+### Create the file
+
+```bash
+npx agentblog@latest new "Do AI crawlers run JavaScript?" --author you --category ai-search
+```
+
+That writes `content/blog/do-ai-crawlers-run-javascript.mdx` with complete
+frontmatter, today's date with a UTC offset, and `draft: true`. It does not
+write the post.
+
+<Callout type="warn" title="Pass --author and --category">
+  `new` does not read `agentblog.config.ts`, so without those two flags it writes the placeholders
+  `author: your-name` and `category: general`. Neither names a real record, and `draft: true` does
+  not save you: drafts are validated like every other post, so the next build fails with `unknown
+  author slug`. Both values must exist in `content/authors.json` and `content/categories.json`.
+</Callout>
+
+The file name is the slug. `do-ai-crawlers-run-javascript.mdx` is served at
+`/blog/do-ai-crawlers-run-javascript`. Rename the file to change the URL.
+
+</Step>
+
+<Step>
+
+### Ask your agent to write it
+
+```text
+Write the post at content/blog/do-ai-crawlers-run-javascript.mdx.
+Follow the write-blog-post skill.
+```
+
+Your coding agent picks up the `write-blog-post` skill that AgentBlog installed
+into `.claude/skills/`, reads your existing posts to match your voice and link
+into them, and drafts the body in the format described below.
+
+Two rules are in that skill's always-loaded context rather than in a file it
+might not read: never invent a statistic, a quotation, or a source, and never
+use an em dash. Both are checked again by `agentblog audit`.
+
+You are still the editor. Read the draft, fix what is wrong, and cut what is
+padding.
+
+</Step>
+
+<Step>
+
+### Check it before publishing
+
+```bash
+npx agentblog@latest audit do-ai-crawlers-run-javascript
+```
+
+Every check reports pass or fail with the value it actually found, and the
+command never reports success on a failure. Run it until it is clean, then set
+`draft: false` and commit.
+
+</Step>
+
+</Steps>
+
+## What goes in the frontmatter
+
+Here is the top of a real post. Every field below `tags` is optional, and the
+ones you skip cost you specific things rather than breaking the build.
+
+```yaml title="content/blog/do-ai-crawlers-run-javascript.mdx"
+---
+title: Do AI Crawlers Run JavaScript?
+description: A description between 50 and 160 characters, because that is what fits in a search result.
+answerCapsule: >-
+  Forty to sixty words that answer the title directly, with no links and no
+  hedging. This is the paragraph an assistant lifts when it quotes you.
+datePublished: 2026-08-06T09:00:00Z
+dateModified: 2026-08-06T09:00:00Z
+author: editorial
+category: ai-search
+tags:
+  - AI crawlers
+  - GPTBot
+relatedPosts:
+  - what-makes-an-ai-engine-cite-your-post
+citations:
+  - name: The rise of the AI crawler
+    url: https://vercel.com/blog/the-rise-of-the-ai-crawler
+    author: Vercel and MERJ
+    datePublished: 2024-12-17
+    kind: industry
+faq:
+  - question: Do AI crawlers execute JavaScript?
+    answer: >-
+      No. Answer in two or three sentences, complete on its own.
+draft: true
+---
+```
+
+The full field list, with the rules on each one, is in the
+[post frontmatter reference](/reference/post-frontmatter).
+
+Three of these are worth understanding on the first post:
+
+**`answerCapsule`** is the direct answer that renders under the H1. It is the
+most valuable field in the file, because a retrieval system lifts a chunk of
+your page and quotes it, and this paragraph is written to be that chunk.
+
+**`author` and `category`** are references, not free text. Each must name a
+record in `content/authors.json` or `content/categories.json`. A typo is a build
+failure, which is the correct outcome: a post attributed to nobody has no
+credibility signal at all.
+
+**`datePublished` and `dateModified`** must carry a UTC offset, and the type
+system refuses a timestamp without one. Google falls back to Googlebot's
+timezone when the offset is missing, which quietly shifts every published date.
+
+## How the body is structured
+
+The two example posts that shipped with your install are the specification. When
+your agent writes post fifty, it imitates them, so it is worth reading one
+before you delete them.
+
+| Element                      | Why it is there                                                                                     |
+| ---------------------------- | --------------------------------------------------------------------------------------------------- |
+| Question-shaped H2 headings  | People and assistants both ask questions. A heading that matches the question is easier to retrieve |
+| A direct answer under each   | 40 to 60 words, no links, complete on its own, so it survives being lifted out of the page          |
+| Sections of 150 to 300 words | Long enough to stand alone as a chunk, short enough to be about one thing                           |
+| Real tables                  | A comparison written as prose cannot be extracted. A table can                                      |
+| Named entities, not pronouns | "GPTBot" retrieves. "It" does not                                                                   |
+| Citations in frontmatter     | They render as a source list and become part of the structured data                                 |
+| Internal links               | A post nothing links to is a post search engines treat as unimportant                               |
+
+The reasoning behind each of those, with the strength of the evidence attached,
+is in [the GEO playbook](/concepts/geo-playbook).
+
+## Components you can use in the body
+
+Beyond ordinary Markdown, posts can use a small set of components that the
+install writes into `components/mdx/`.
+
+```mdx
+<Callout variant="warning">A boxed aside for something that costs money to get wrong.</Callout>
+
+<Stat
+  value="2.5x"
+  label="more citations for pages that answer the question in the first paragraph"
+  source="Your source"
+  href="https://example.com/study"
+/>
+
+<KeyTakeaways items={['One sentence.', 'Another sentence.']} />
+```
+
+The FAQ section is not a component you write. It renders from the `faq:` block
+in your frontmatter, and only when there are entries, so the structured data
+never describes questions the page does not show.
+
+The full list with props is in the [MDX components
+reference](/reference/mdx-components).
+
+## Publish it
+
+Setting `draft: false` and deploying is enough for the post to appear. To have
+search engines find it the same day rather than the next crawl, see
+[publishing and pinging](/deploy#tell-search-engines-about-a-new-post).
+
+<Cards>
+  <Card
+    title="Plan what to write"
+    href="/guides/plan-your-content"
+    description="Choosing topics, clustering them, and deciding when to refresh."
+  />
+  <Card
+    title="The pre-publish checklist"
+    href="/guides/pre-publish-checklist"
+    description="What audit checks, and what only you can."
+  />
+</Cards>

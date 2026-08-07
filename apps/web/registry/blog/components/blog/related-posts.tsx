@@ -31,7 +31,7 @@ import { formatPostDate } from './byline'
  *     which removes them from the link graph for any crawler that does not run
  *     JavaScript. That is why the list is flat and complete.
  *
- * @see https://agentblog.dev/docs/geo-playbook*
+ * @see https://docs.agentblog.dev/concepts/geo-playbook*
  * WHAT BREAKS IF YOU CHANGE IT
  * - Adding `'use client'` or lazy-mounting the list drops these internal links
  *   out of the crawlable graph, and the whole cluster loses its interlinking.

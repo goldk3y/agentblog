@@ -59,7 +59,8 @@ const NOT_COUNTED = []
 const CLAIM_SITES = [
   { path: 'README.md', pattern: /(\d+)\s+files\b/g },
   { path: 'apps/web/app/(marketing)/page.tsx', pattern: /(\d+)\s+files,/g },
-  { path: 'apps/web/content/docs/introduction.md', pattern: /writes\s+(\d+)\s+files/g },
+  { path: 'apps/docs/content/docs/index.mdx', pattern: /writes\s+(\d+)\s+files/g },
+  { path: 'apps/docs/content/docs/reference/files.mdx', pattern: /the\s+(\d+)\s+files/g },
 ]
 
 function loadItems() {

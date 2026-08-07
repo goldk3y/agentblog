@@ -29,7 +29,7 @@
  * `doctor` and `audit` already exit non-zero on an error finding, and this is
  * the same contract.
  *
- * @see https://agentblog.dev/docs/agent-layer
+ * @see https://docs.agentblog.dev/guides/write-with-your-agent
  */
 import { join } from 'node:path'
 

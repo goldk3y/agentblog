@@ -19,7 +19,7 @@
  * the post's question in 40 to 60 words of prose. This lists what the reader
  * will know by the end.
  *
- * @see https://agentblog.dev/docs/geo-playbook*/
+ * @see https://docs.agentblog.dev/concepts/geo-playbook*/
 import type { ReactNode } from 'react'
 
 export interface KeyTakeawaysProps {

@@ -36,7 +36,7 @@
  * No `'use client'`, and no wrapper markup: the author page supplies its own
  * content column so this layout stays a pure structured-data carrier.
  *
- * @see https://agentblog.dev/docs/blog-block
+ * @see https://docs.agentblog.dev/reference/files
  * @see app/blog/layout.tsx, which makes the same decision for `/blog`
  */
 import { JsonLd } from '@/components/blog/json-ld'

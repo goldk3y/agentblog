@@ -6,7 +6,7 @@
  * comment, and counting the word rather than the JSX prop would report that
  * comment as three preloaded images.
  *
- * @see https://agentblog.dev/docs/cli-reference
+ * @see https://docs.agentblog.dev/reference/cli
  */
 import { stripComments } from '@agentblog/checks'
 

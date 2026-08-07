@@ -1,0 +1,104 @@
+---
+title: Take an update
+description: How to pull a fix into an install you have already edited, using shadcn add --diff and --overwrite, without losing your changes.
+icon: Wrench
+---
+
+The files are yours. That is the whole pitch, and it has one cost: there is no
+`npm update` that carries a fix from us into your repository, because there is
+no package of ours in your dependency tree. Updating is something you do
+deliberately, in three commands.
+
+```bash
+npx shadcn@latest add @agentblog/blog --diff              # see what changed
+npx shadcn@latest add @agentblog/blog-schema --overwrite  # take one part of it
+npx agentblog@latest doctor                               # confirm nothing broke
+```
+
+## Read the diff first
+
+```bash
+npx shadcn@latest add @agentblog/blog --diff
+```
+
+That fetches the current version of every file in the item and prints the
+difference against what is on your disk, without writing anything. Pass a path
+to narrow it to one file, or `--view <path>` to print the upstream file on its
+own.
+
+There are three cases, and only one of them needs thought:
+
+| What the diff shows                                   | What to do                                        |
+| ----------------------------------------------------- | ------------------------------------------------- |
+| A file you never touched, changed upstream            | Take it with `--overwrite`                        |
+| A file you edited, changed upstream somewhere else    | Copy the upstream change in by hand               |
+| A file you edited, changed upstream in the same place | Read both, decide, and leave a comment saying why |
+
+## Take the change
+
+```bash
+npx shadcn@latest add @agentblog/blog --overwrite         # everything
+npx shadcn@latest add @agentblog/blog-schema --overwrite  # one item
+```
+
+`--overwrite` replaces every file the item declares. There is no per-file flag,
+so narrow by item instead. The registry is split into `blog-schema`, `blog-ui`,
+`blog-routes`, `seo-routes`, `mdx-components`, `publish-webhook`, `eeat-pages`,
+`source-mdx`, and `agent-kit` exactly so you can take part of an update.
+
+Commit before you run this. `shadcn add --overwrite` backs nothing up, so your
+version control is what makes it reversible. `--dry-run` prints what it would
+write if you want one more look.
+
+## Four files are always safe to overwrite
+
+`lib/schemas.ts`, `lib/types.ts`, `lib/define-config.ts`, and
+`lib/preflight-checks.ts` carry a banner saying they are generated. Nobody
+should have edited them, and they are the files most likely to carry a real fix:
+a schema correction, a new configuration check, a new crawler in the bot list.
+
+If a diff on one of those shows local changes, that is the finding. Something
+edited a generated file, and the change will be lost anyway.
+
+## The config half comes from the CLI
+
+`shadcn add` only writes files. Your `next.config.ts` and your root layout live
+outside the block, so they update through the CLI:
+
+```bash
+npx agentblog@latest doctor --fix
+```
+
+This is how a new entry in the bot list reaches you. When Next.js adds a bot to
+its default list, the fix is a wider pattern in `next.config.ts` rather than a
+changed component, so no amount of `--overwrite` delivers it. `doctor` reports
+`html-limited-bots-incomplete` and `--fix` adds the missing names.
+
+Every file `doctor --fix` touches is copied to `.agentblog/backup/<timestamp>/`
+first, `--dry-run` prints the diff, and `agentblog revert` restores the last
+backup.
+
+## Then verify
+
+```bash
+npx agentblog@latest doctor
+npx agentblog@latest audit
+npx agentblog@latest doctor --url https://yoursite.com/blog/your-post
+```
+
+Run the third one after you deploy, from your own machine or from CI. See
+[verify the install](/installation#verify-the-install) for why the location of
+the request matters.
+
+## About pinning
+
+You can pin the GitHub install path to a ref, which gives you a reproducible
+fetch:
+
+```bash
+npx shadcn@latest add goldk3y/agentblog/blog#v1.2.0
+```
+
+It does not give you an upgrade path, because nothing records which ref you
+installed. If you want to know what you have, note the ref in a comment in
+`agentblog.config.ts` when you install.

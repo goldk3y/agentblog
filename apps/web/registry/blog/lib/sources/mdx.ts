@@ -38,7 +38,7 @@
  * does not require a `deployHook`. A database-backed source cannot say that,
  * which is why it declares `'deploy-hook'` instead.
  *
- * @see https://agentblog.dev/docs/content-sources
+ * @see https://docs.agentblog.dev/reference/content-sources
  */
 import { readFile, readdir, stat } from 'node:fs/promises'
 import path from 'node:path'

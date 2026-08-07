@@ -15,7 +15,7 @@
  * not "your version has a known vulnerability". Those are different claims and
  * only the first one is ours to make.
  *
- * @see https://agentblog.dev/docs/cli-reference check 9
+ * @see https://docs.agentblog.dev/reference/cli#what-it-checks
  */
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'

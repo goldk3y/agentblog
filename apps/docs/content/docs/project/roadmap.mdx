@@ -1,0 +1,102 @@
+---
+title: Roadmap and non-goals
+description: What is shipping, in what order, and the four things v1 deliberately does not do.
+icon: Scale
+---
+
+## What v1 does not do
+
+Each of these is a decision with a reason, stated so you can tell whether it
+matters to you before you install.
+
+### Multi-locale routing
+
+Full internationalisation means locale-prefixed routes, alternate language links
+in both the metadata and the sitemap, per-locale feeds, translation linking, and
+locale-filtered prerendering. That is a large surface, and it multiplies the
+number of pages the blog builds.
+
+What was taken is the cheap half. Retrofitting locale into the content source
+interface later would be a breaking change to the one interface that exists to
+stay stable, so four optional locale fields are reserved on the schema and the
+contract now, unused. Adding locale later is additive rather than breaking.
+
+### Tailwind v3
+
+Supporting it would mean a second colour format, a second prose bridge, and a
+second config shape. Decisively, v3 users have to pin an old shadcn CLI that
+predates namespaced registries, so half the install story does not function for
+them. Supporting v3 means shipping a second product against a CLI that cannot
+install it.
+
+`agentblog doctor` reports this as an error rather than a warning.
+
+### An `llms.txt` in the blog
+
+See [why the blog does not ship one](/concepts/why-no-llms-txt). Short version:
+Google is on record that Search does not use it, no major provider consumes it
+in production, and the best-instrumented measurement anyone here could retrieve
+logged 84 requests to `/llms.txt` out of 62,100 AI bot visits over 90 days.
+
+This documentation site serves one, because developer documentation with
+programmatic readers is the one place the token saving is real.
+
+### Certified monorepo support
+
+See [installing in a monorepo](/guides/monorepo), which states precisely what
+works, what is untested, and where each file lands. The mechanism works because
+shadcn already handles it. A fixture is not in CI yet.
+
+## Also not in v1
+
+- **A hosted CMS.** The content source interface is the seam. There is nothing
+  behind it yet.
+- **An analytics integration.** The referrer classifier ships as a pure function
+  with no dependency, and [measuring AI traffic](/guides/measure-ai-traffic)
+  shows the wiring for three tools. Shipping an integration would mean picking a
+  vendor for you.
+- **Comments.** Not a blog problem worth solving twice.
+- **A theme gallery.** The blog has no theme. That is the point.
+- **Search.** Your site probably already has one, and if it does not, that is a
+  site decision rather than a blog decision.
+
+## Order of work
+
+**Now.** The registry, the blog, the CLI, and the agent layer. The MDX source is
+the only content source.
+
+**Next.** Supabase and Convex sources, in that order, each passing the same
+eight contract assertions. A monorepo fixture joins CI alongside the first of
+them.
+
+**After that.** Measurement. `agentblog audit --crawlers` reads a log you
+already have and reports verified hits per bot per week. A hosted version reads
+Search Console over OAuth. Both sit on one interface, so the free tier and the
+paid one are the same shape.
+
+**Later.** A hosted content source, and a dashboard on top of the measurement
+layer.
+
+## Maintenance, as a standing job
+
+This product depends on third-party surfaces that move. Naming the cadence is
+more useful than promising to keep up.
+
+| Cadence             | What gets checked                                                                                                      |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| Every CI run        | The vendored bot list still matches Next.js. The registry still validates. Generated files have not drifted            |
+| Monthly             | Re-fetch the crawler IP range files and diff them. Look for new user agents                                            |
+| Quarterly           | Re-verify the Next.js API surface against the installed minor. Re-read the shadcn changelog. Re-check the CDN policies |
+| Every Next.js major | Full re-verification against the upgrade guide. The CI fixture moves to the new major first                            |
+
+The fixture in CI tracks the latest stable Next.js, which means upstream
+breakage surfaces in the AgentBlog repository before it surfaces in yours.
+
+## Version compatibility
+
+| AgentBlog | Next.js | React | Tailwind | shadcn CLI |
+| --------- | ------- | ----- | -------- | ---------- |
+| 0.x       | 16.x    | 19.x  | 4.x      | 4.x        |
+
+Next.js 17 will invalidate parts of this, the same way 16 invalidated the
+15-era guidance. When it lands, the fixture moves first and the blog follows.

@@ -7,7 +7,7 @@
  * invent. An orphan post is one nothing links to, which is discovered last and
  * carries no internal authority.
  *
- * @see https://agentblog.dev/docs/geo-playbook*/
+ * @see https://docs.agentblog.dev/concepts/geo-playbook*/
 import { findCopyStyleIssues } from './copy-style.ts'
 import { internalLinksIn, type PostFile } from './post.ts'
 import type { Reporter } from '../report/reporter.ts'

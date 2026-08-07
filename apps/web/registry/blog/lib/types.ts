@@ -36,7 +36,7 @@
  * execute JavaScript. A source that needs a request context turns every post
  * into an empty shell for exactly the readers this project exists to reach.
  *
- * @see https://agentblog.dev/docs/content-sources
+ * @see https://docs.agentblog.dev/reference/content-sources
  */
 import type { z } from 'zod'
 

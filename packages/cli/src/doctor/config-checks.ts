@@ -12,7 +12,7 @@
  * opportunity. `@agentblog/checks` produces both findings with those severities
  * already, which is why this file delegates rather than re-deriving them.
  *
- * @see https://agentblog.dev/docs/blog-block
+ * @see https://docs.agentblog.dev/reference/files
  */
 import {
   analyzeHtmlLimitedBots,
@@ -47,7 +47,7 @@ export function runConfigChecks(ctx: DoctorContext): void {
       id: 'monorepo-detected',
       severity: 'info',
       message: `This project sits inside a workspace rooted at ${project.workspaceRoot}. agentblog.config.ts, AGENTS.md, and the skills were written to ${project.root}, not to the workspace root.`,
-      remedy: 'https://agentblog.dev/docs/monorepos',
+      remedy: 'https://docs.agentblog.dev/guides/monorepo',
     })
   }
 }

@@ -17,7 +17,7 @@
  * Precedence, highest first: `--no-telemetry`, `DO_NOT_TRACK`,
  * `AGENTBLOG_TELEMETRY=0`, the stored preference, then the default (on).
  *
- * @see https://agentblog.dev/docs/roadmap
+ * @see https://docs.agentblog.dev/project/roadmap
  */
 import { appendFileSync, mkdirSync } from 'node:fs'
 import { homedir } from 'node:os'

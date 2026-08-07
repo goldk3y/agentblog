@@ -60,7 +60,7 @@
  * | `config.brand.sameAs`                 | `Organization.sameAs`                    | The entity-disambiguation property                                  |
  * | `homeUrl()`                           | `WebSite.url`, every site-level `@id`    | One spelling of the root across schema, sitemap, and breadcrumb      |
  *
- * @see https://agentblog.dev/docs/blog-block
+ * @see https://docs.agentblog.dev/reference/files
  */
 import type {
   Blog,

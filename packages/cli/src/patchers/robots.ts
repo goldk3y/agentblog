@@ -19,7 +19,7 @@
  * a staging site indexed. Guessing wrong in the restrictive direction is one
  * environment variable and is visible the moment anyone opens `/robots.txt`.
  *
- * @see https://agentblog.dev/docs/cli-reference check 5
+ * @see https://docs.agentblog.dev/reference/cli#doctor
  */
 import { createProject, Node, parseFile } from './ts-project.ts'
 import type { SourceFile } from './ts-project.ts'

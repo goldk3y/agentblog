@@ -17,7 +17,7 @@ import { ChevronLeftIcon, ChevronRightIcon } from './icons'
  * crawler that does not run JavaScript follows anchors and nothing else, so a
  * `<button onClick={() => router.push(...)}>` makes page 2 and everything below
  * it unreachable. This is the single most consequential line in the file.
- * @see https://agentblog.dev/docs/geo-playbook*
+ * @see https://docs.agentblog.dev/concepts/geo-playbook*
  * WHY IT IS SHAPED THIS WAY
  *   - `rel="prev"` and `rel="next"` on the adjacent-page links. Google stopped
  *     using them for indexing years ago, so they are here for accessibility, for

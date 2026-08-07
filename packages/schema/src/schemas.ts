@@ -35,7 +35,7 @@
  * If you add a field that maps to schema.org, also add a row to the mapping
  * table in `lib/schema.ts` so the JSON-LD builders stay reviewable.
  *
- * @see https://agentblog.dev/docs/content-sources
+ * @see https://docs.agentblog.dev/reference/content-sources
  */
 import { z } from 'zod'
 

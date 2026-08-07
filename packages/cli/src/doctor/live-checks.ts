@@ -35,7 +35,7 @@
  * blocked to everyone outside. The check says so in its own output rather than
  * relying on the reader having read this comment.
  *
- * @see https://agentblog.dev/docs/troubleshooting-cdn
+ * @see https://docs.agentblog.dev/troubleshooting/cdn-blocking-crawlers
  */
 import type { DoctorContext } from './context.ts'
 

@@ -19,18 +19,21 @@ pnpm install
 pnpm codegen        # write the generated files
 pnpm typecheck
 pnpm test
-pnpm --filter @agentblog/web dev
+pnpm --filter @agentblog/web dev     # agentblog.dev, on :3000
+pnpm --filter @agentblog/docs dev    # docs.agentblog.dev, on :3001
 ```
 
-`pnpm dev` at the root runs every app. Most of the time you want the single
-filtered command above.
+`pnpm dev` at the root runs every app. Most of the time you want one of the
+filtered commands above.
 
 ## How the repository is organised
 
 ```
 apps/
-  web/                 agentblog.dev: landing, docs, registry host, demo blog
+  web/                 agentblog.dev: landing page, registry host, demo blog
     registry/          THE SOURCE OF TRUTH for every file AgentBlog ships
+  docs/                docs.agentblog.dev: the documentation, built with Fumadocs
+    content/docs/      every page, as MDX. URLs come from the file paths
   fixture-next16/      clean Next.js 16 app, the end to end install target
   fixture-no-shadcn/   Tailwind without components.json, where init must refuse
 packages/
@@ -101,7 +104,7 @@ cannot read CSS variables. `scripts/assert-theme-conformance.mjs` encodes the
 exception explicitly.
 
 The product reason these rules are absolute is on the
-[Theming](https://agentblog.dev/docs/theming) page.
+[Theming](https://docs.agentblog.dev/guides/match-your-design) page.
 
 ### The shipped block imports no workspace package
 
@@ -179,9 +182,35 @@ than silent bundle growth. Client components receive config values as props from
 server parents. `scripts/assert-no-server-only-in-client.mjs` catches
 regressions before the bundler does, so the message is comprehensible.
 
+## Writing documentation
+
+The docs are their own Next.js app, `apps/docs`, deployed to
+`docs.agentblog.dev` and built with [Fumadocs](https://fumadocs.dev).
+
+- **A page is one MDX file under `apps/docs/content/docs`.** Its URL is its
+  path: `reference/cli.mdx` is served at `/reference/cli`. There is no route to
+  add and no index to update.
+- **`title` and `description` are both required.** The description is the meta
+  description, the sidebar subtitle, and the one line the page contributes to
+  `llms.txt`, so a missing one fails the build rather than rendering empty.
+- **Sidebar order comes from `meta.json`.** The root file lists the sections and
+  pulls each folder's pages in with `...folder`, so a new page needs its name
+  added to the `meta.json` beside it.
+- **MDX content carries no `className`.** Tailwind does not scan the content
+  directory, because a page that quotes a class name in backticks would
+  otherwise generate that class for real. Everything a page needs is a component
+  from `components/mdx.tsx`.
+- **The copy style rules apply.** The docs are scanned by
+  `assert-copy-style.mjs` exactly like the seed posts.
+- **Internal links are checked.** `node scripts/assert-docs-links.mjs` resolves
+  every internal link and every `#anchor` against the real page tree.
+
+The documentation prose is CC BY 4.0 rather than MIT. See
+[Licensing](https://docs.agentblog.dev/project/licensing).
+
 ## The checks that exist because the failure is silent
 
-There are thirteen of them. You will meet the ones you break in CI, so it is
+There are fifteen of them. You will meet the ones you break in CI, so it is
 cheaper to meet them here.
 
 ### The ones you can run on a clean checkout
@@ -194,7 +223,8 @@ pnpm check:lockfile        # pnpm install --frozen-lockfile
 pnpm check:copy-style      # node scripts/assert-copy-style.mjs
 pnpm check:theme           # node scripts/assert-theme-conformance.mjs
 pnpm check:client-imports  # node scripts/assert-no-server-only-in-client.mjs
-pnpm check:html-bots       # node scripts/assert-html-bots-current.mjs
+pnpm check:html-bots       # assert-html-bots-current.mjs + the docs app's own config
+pnpm check:docs-links      # node scripts/assert-docs-links.mjs
 node scripts/assert-file-count.mjs
 ```
 

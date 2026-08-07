@@ -1,0 +1,21 @@
+{
+  "title": "AgentBlog",
+  "pages": [
+    "---Start here---",
+    "index",
+    "quickstart",
+    "installation",
+    "first-post",
+    "deploy",
+    "---Guides---",
+    "...guides",
+    "---Reference---",
+    "...reference",
+    "---How it works---",
+    "...concepts",
+    "---When something is wrong---",
+    "...troubleshooting",
+    "---Project---",
+    "...project"
+  ]
+}

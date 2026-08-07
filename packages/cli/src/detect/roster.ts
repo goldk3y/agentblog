@@ -24,7 +24,7 @@
  * we need the slugs, not a validated record, and a roster with one malformed
  * entry should still let us check the others.
  *
- * @see https://agentblog.dev/docs/agent-layer
+ * @see https://docs.agentblog.dev/guides/write-with-your-agent
  */
 import { appPath, appPathLabel, type ProjectContext } from './project.ts'
 import { exists, join, readFile, readJson, toPosixRelative } from '../util/fs.ts'

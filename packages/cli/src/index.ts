@@ -9,7 +9,7 @@
  * what it does and does not do, because a command that quietly does less than
  * its name implies is how a tool loses trust it cannot buy back.
  *
- * @see https://agentblog.dev/docs/cli-reference
+ * @see https://docs.agentblog.dev/reference/cli
  */
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'

@@ -13,7 +13,7 @@
  * applies to `app/blog/page.tsx`. Putting it anywhere else is a silent no-op for
  * the blog index.
  *
- * @see https://agentblog.dev/docs/installation and 8.1 check 3
+ * @see https://docs.agentblog.dev/reference/cli#doctor
  */
 import {
   createProject,

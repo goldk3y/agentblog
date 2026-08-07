@@ -36,7 +36,7 @@
  *    `node:fs` and `node:path`, which is why it carries `server-only`.
  * 5. **A missing `next.config.*` is a warning, not a crash.**
  *
- * @see https://agentblog.dev/docs/installation
+ * @see https://docs.agentblog.dev/installation
  */
 import 'server-only'
 

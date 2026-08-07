@@ -1,0 +1,139 @@
+---
+title: Make it look like your site
+description: The blog inherits your colours, fonts, and components automatically. What to edit when you want it to look different, and the rules that keep the inheritance working.
+icon: Wrench
+---
+
+`/blog` should look like the rest of your product on the day you install it, and
+it does. AgentBlog ships no colours, no theme, and no font. It composes the
+shadcn components you already have and reads the tokens you already defined, so
+changing your theme changes the blog.
+
+## What to edit
+
+Everything here is a file in your repository. An update never overwrites any of
+it unless you explicitly pass `--overwrite`.
+
+| You want to change | Edit                                                            |
+| ------------------ | --------------------------------------------------------------- |
+| Colours and radii  | Your existing tokens in `globals.css`. Nothing blog-specific    |
+| Reading width      | `--agentblog-measure` in `styles/agentblog.css`, default `68ch` |
+| Article typography | The `@utility prose` block in the same file                     |
+| The post card      | `components/blog/post-card.tsx`                                 |
+| The article layout | `app/blog/[slug]/page.tsx`, an ordinary Server Component        |
+| Icons              | `components/blog/icons.tsx`, which re-exports every icon used   |
+
+If you have already customised your `Card`, the blog uses yours. `shadcn add`
+does not overwrite an existing component, and AgentBlog's post card composes on
+top of whatever `Card` your project has.
+
+## The rules that make that work
+
+Five decisions keep the inheritance intact. They are worth knowing before you
+edit a component, because breaking one of them is how a blog starts looking like
+a different website.
+
+### Primitives are requested by bare name
+
+```json
+{ "registryDependencies": ["card", "badge", "separator", "avatar", "button"] }
+```
+
+A bare name resolves against your configuration: your component base, your
+aliases, your base colour. That is the whole inheritance mechanism, and it is
+free as long as nothing fights it.
+
+### Only semantic tokens, never a palette utility
+
+Allowed everywhere in the blog: `bg-background`, `text-foreground`,
+`text-muted-foreground`, `bg-card`, `bg-muted`, `bg-primary`, `bg-secondary`,
+`bg-accent`, `text-destructive`, `border-border`, `ring-ring`, and the
+`rounded-*` scale derived from your `--radius`.
+
+Not allowed: any palette utility such as `text-zinc-500`, any colour literal,
+and any dark-mode colour variant.
+
+<Callout title="The dark-mode variant is the one that catches people">
+  Your tokens already flip under `.dark`. Writing a dark-mode colour override re-hardcodes exactly
+  what the token was abstracting, and it breaks the moment your dark theme is not near-black. A
+  component that seems to need one has picked the wrong token.
+</Callout>
+
+A lint runs over the shipped components on every commit and fails the build on
+any of the above, which is what keeps this true in month six.
+
+### Installing the blog installs no base and no theme
+
+A shadcn `registry:base` item carries a style, an icon library, a base colour,
+and CSS variables. Applying one to an app that already has a visual identity is
+a request to replace that identity, so `@agentblog/blog` does not depend on
+`@agentblog/theme` at all and never will.
+
+If you want AgentBlog's own reading theme, on a project that has nothing to
+lose, ask for it by name:
+
+```bash
+npx shadcn@latest add @agentblog/theme
+```
+
+### The blog's own tokens are namespaced and derived
+
+Long-form reading needs a measure and a prose scale that shadcn does not define.
+Those ship prefixed with `--agentblog-`, and each one is defined in terms of a
+token you already have.
+
+```css title="styles/agentblog.css"
+@theme inline {
+  --agentblog-measure: 68ch;
+  --color-agentblog-prose-body: var(--foreground);
+  --color-agentblog-prose-muted: var(--muted-foreground);
+  --color-agentblog-prose-rule: var(--border);
+}
+```
+
+No new colours enter your project. Change `--foreground` and the article prose
+follows.
+
+### The typography plugin is bridged rather than fought
+
+`@tailwindcss/typography` ships its own greys, which is the thing rule two
+forbids. In Tailwind v4 the plugin is customised through `--tw-prose-*`
+variables, so `styles/agentblog.css` is the one place long-form styling binds to
+your theme.
+
+```css title="styles/agentblog.css"
+@plugin '@tailwindcss/typography';
+
+@utility prose {
+  --tw-prose-body: var(--foreground);
+  --tw-prose-headings: var(--foreground);
+  --tw-prose-links: var(--primary);
+  --tw-prose-bullets: var(--border);
+  --tw-prose-hr: var(--border);
+  --tw-prose-quote-borders: var(--border);
+  --tw-prose-captions: var(--muted-foreground);
+  --tw-prose-pre-bg: var(--muted);
+  --tw-prose-th-borders: var(--border);
+  --tw-prose-td-borders: var(--border);
+}
+```
+
+<Callout type="warn" title="A version trap worth knowing">
+  Tailwind v3 era shadcn stored colours as bare HSL channel triplets, so the idiom everyone learned
+  was `hsl(var(--foreground))`. Tailwind v4 shadcn stores complete `oklch()` values, so the correct
+  form is `var(--foreground)` with no wrapper. Most answers online still show the old form. It fails
+  silently: the colour is invalid, the property is dropped, and the element inherits whatever was
+  above it.
+</Callout>
+
+## If the article prose looks unstyled
+
+That is almost always the stylesheet import, which is the one install step with
+no warning attached to it.
+
+```css title="app/globals.css"
+@import 'tailwindcss';
+@import '../styles/agentblog.css';
+```
+
+See [installation](/installation#the-one-line-nothing-tells-you-about).

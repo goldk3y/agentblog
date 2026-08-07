@@ -1,0 +1,323 @@
+---
+title: Installation
+description: The two ways to install AgentBlog, what each one does and does not do for you, and how to verify the result.
+icon: BookOpen
+---
+
+There are two ways in. `agentblog init` runs the whole install and patches your
+config. `shadcn add @agentblog/blog` copies the files and leaves the config to
+you. They converge on the same project: `init` calls `shadcn add` internally, so
+the registry is not an alternative to the CLI, it is how the CLI delivers files.
+
+<Callout type="warn" title="Pre-release">
+  `https://agentblog.dev/r/{name}.json` is not serving yet, so every `@agentblog/*` command on this
+  page describes the shape of the install rather than a host you can fetch from today. Until then,
+  use [install from a local checkout](#install-from-a-local-checkout). This notice comes down when
+  the registry is live.
+</Callout>
+
+## Which path
+
+|                                                | `agentblog init`                      | `shadcn add @agentblog/blog`           |
+| ---------------------------------------------- | ------------------------------------- | -------------------------------------- |
+| Copies the blog files                          | Yes                                   | Yes                                    |
+| Patches `next.config.ts` and `app/layout.tsx`  | Yes                                   | No, run `agentblog doctor --fix` after |
+| Writes `agentblog.config.ts` from your answers | Yes                                   | Writes a template you fill in          |
+| Backs up every file it touches                 | Yes, and `agentblog revert` undoes it | Nothing to back up                     |
+| Lets you read the payload first                | `--dry-run` prints the diff           | `--dry-run` prints every file          |
+| Installs part of the blog                      | No, all or nothing                    | Yes, item by item                      |
+
+If you are not sure, use `init`. If you want to read everything before it lands
+in your repository, use the registry path and then run `doctor --fix`.
+
+## Requirements
+
+`init` checks all of these before it writes anything, and refuses with the
+command to run rather than guessing.
+
+| Requirement           | Why it is a requirement                                                                                                             |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| Next.js 16.3 or newer | The crawler metadata behaviour this product is built around is specific to Next.js 16, and the `AGENTS.md` handling arrives in 16.3 |
+| The App Router        | Every route AgentBlog writes is an App Router route                                                                                 |
+| React 19              | Next.js 16's baseline                                                                                                               |
+| Tailwind CSS v4       | v3 stores colours in a format the shipped stylesheet cannot read. See [Roadmap](/project/roadmap)                                   |
+| `components.json`     | AgentBlog builds on your shadcn primitives. Without the file there is no design system to build on                                  |
+| Node 20.9 or newer    | Next.js 16's floor                                                                                                                  |
+
+## The CLI path
+
+```bash
+npx agentblog@latest init
+```
+
+In order, it:
+
+1. **Checks the requirements above.** A missing one is a refusal with
+   instructions. It will not run `shadcn init` for you, because that command
+   picks a component base and a base colour and writes CSS variables into your
+   stylesheet, which is choosing a design system on your behalf.
+2. **Reads your project.** Root or `src/` layout, package manager, monorepo, and
+   any existing `app/blog/**`. A blog you already wrote is a refusal rather than
+   an overwrite. `--force` proceeds anyway.
+3. **Asks four questions.** Content source, production site URL, brand name, and
+   default author slug.
+4. **Adds the `@agentblog` namespace to `components.json`**, before anything
+   else. `shadcn add @agentblog/blog` resolves that prefix through this file, so
+   the entry has to exist before the install runs.
+5. **Runs `shadcn add`** for the blog and your chosen content source.
+6. **Patches `next.config.ts`:** `htmlLimitedBots`, `images.qualities`, and
+   `images.remotePatterns`.
+7. **Patches `app/layout.tsx`:** `metadataBase`, `title.template` alongside
+   `title.default`, and the RSS link under `alternates.types`.
+8. **Writes** `agentblog.config.ts`, two entries in `.env.local`, and the
+   IndexNow key file in `public/`.
+9. **Writes** the `AGENTS.md` block and the skills in `.claude/skills/`.
+10. **Runs `agentblog doctor`** and prints the result.
+
+Config edits are made through the TypeScript AST rather than by pattern
+matching, so a patch either applies to the real syntax or declines and says why.
+Every file it modifies is copied to `.agentblog/backup/<timestamp>/` first,
+`--dry-run` prints the unified diff and writes nothing, and `agentblog revert`
+restores the last backup.
+
+Running `init` twice does nothing the second time. That is asserted on every
+commit, because a config tool that produces an unexplained diff on a re-run is a
+tool people quietly stop running.
+
+### What `init` still leaves to you
+
+Two things, both because they are yours rather than ours.
+
+- **The stylesheet import.** It will not write CSS into a file you own. See
+  [the one line nothing tells you about](#the-one-line-nothing-tells-you-about).
+- **Your author record.** It will not invent a name or a bio.
+
+## The registry path
+
+Add the namespace to `components.json`:
+
+```json title="components.json"
+{
+  "$schema": "https://ui.shadcn.com/schema.json",
+  "registries": {
+    "@agentblog": "https://agentblog.dev/r/{name}.json"
+  }
+}
+```
+
+Then:
+
+```bash
+npx shadcn@latest add @agentblog/blog
+npx agentblog@latest doctor --fix
+```
+
+The second command is not optional. It is what finishes the two config edits a
+registry cannot make, and the section below explains why one of them fails
+silently if you skip it.
+
+You can also install a part rather than the whole thing:
+
+| Item                     | What it gives you                              |
+| ------------------------ | ---------------------------------------------- |
+| `@agentblog/blog`        | Everything: routes, components, config, skills |
+| `@agentblog/blog-schema` | The structured data builders on their own      |
+| `@agentblog/blog-ui`     | The reading components on their own            |
+| `@agentblog/agent-kit`   | The four agent skills on their own             |
+
+The full catalogue is at [agentblog.dev/registry](https://agentblog.dev/registry).
+
+### What adding a registry authorises
+
+A registry URL is a code delivery channel, and it is worth being plain about
+that. Adding `@agentblog` to `components.json` authorises `shadcn add` to fetch
+source files, npm dependencies, and CSS from `agentblog.dev` and write them into
+your application, every time you run it. There is no lockfile for a registry, no
+integrity hash, and no review step unless you ask for one.
+
+That is the same trust you extend to an npm publisher, delivered at install time
+rather than pinned in a lockfile. Two things genuinely reduce your exposure:
+
+- `npx shadcn@latest add @agentblog/blog --dry-run` prints every file it would
+  write, before it writes anything.
+- `npx shadcn@latest add <item> --diff` shows what changed upstream before you
+  accept an update. That is the mechanism behind
+  [taking an update](/guides/take-an-update).
+
+Pinning a GitHub ref pins the GitHub path only. The `agentblog.dev` URL always
+serves current.
+
+```bash
+npx shadcn@latest add goldk3y/agentblog/blog
+npx shadcn@latest add goldk3y/agentblog/blog#v1.2.0
+```
+
+## What a registry cannot do for you
+
+A shadcn registry can write files, install npm dependencies, merge CSS
+variables, and add environment variable entries. It has no step that edits an
+existing file. So two things are left over, and they fail in opposite ways.
+
+### `htmlLimitedBots` in `next.config.ts`
+
+Without this setting, Next.js streams page metadata into `<body>` rather than
+`<head>` for any user agent it does not recognise as a bot, on any page that
+renders dynamically. GPTBot, ClaudeBot, OAI-SearchBot, and PerplexityBot are not
+on the list Next.js ships. The result is a blog that looks completely correct
+and serves its `<title>` in the wrong element to the exact crawlers you
+installed this for.
+
+```bash
+npx agentblog@latest doctor --fix
+```
+
+Four separate things tell you if you forget: a warning on every `next dev` and
+every build, the text `shadcn add` prints during the install, the
+`agentblog-setup` skill your agent can act on, and the block in your
+`AGENTS.md`.
+
+<Callout type="warn" title="Do not hand-write this value">
+  `htmlLimitedBots` **replaces** the Next.js default bot list rather than adding to it. A value
+  containing only the AI crawlers silently drops Googlebot, Bingbot, Applebot, and every social
+  preview bot. `doctor --fix` writes the union of both lists, which is why the generated value is
+  long.
+</Callout>
+
+### The one line nothing tells you about
+
+The install writes `styles/agentblog.css`, and nothing imports it for you. Add
+it to your global stylesheet, after the Tailwind import:
+
+```css title="app/globals.css"
+@import 'tailwindcss';
+@import '../styles/agentblog.css';
+```
+
+The file lands at your project root, so the path depends on where your
+stylesheet is. From `app/globals.css` it is `../styles/agentblog.css`. From
+`src/app/globals.css` it is `../../styles/agentblog.css`.
+
+That file binds article typography to your theme tokens. Skip it and the blog
+builds, renders, passes `doctor`, and serves article prose with no typography at
+all. Correct HTML, correct structured data, unstyled body text, and no error
+anywhere.
+
+This is the one wiring step with no redundant warning, against four for
+`htmlLimitedBots`. So check it by eye: if a post renders in one undifferentiated
+font size with no visible heading hierarchy, this is why.
+
+## Install from a local checkout
+
+This is how to evaluate AgentBlog while the registry is not being served. You
+are pointing your project at a registry running on your own machine, which is
+fine for a scratch app and not for anything you deploy.
+
+The `registries` map takes a URL and only a URL. A relative path is joined onto
+the default registry origin and 404s, and a `file://` URL is rejected. So the
+checkout has to serve HTTP.
+
+<Steps>
+
+<Step>
+### Build the registry
+
+From a clone of [goldk3y/agentblog](https://github.com/goldk3y/agentblog):
+
+```bash
+cd apps/web && npx shadcn build --output public/r
+```
+
+</Step>
+
+<Step>
+### Serve it
+
+From the repository root, in a second terminal:
+
+```bash
+node scripts/serve-registry.mjs
+```
+
+It serves `apps/web/public` on `http://127.0.0.1:4477` and prints the directory
+it is serving. Pass `--port` to move it.
+
+</Step>
+
+<Step>
+### Point your project at it
+
+```json title="components.json"
+{
+  "registries": {
+    "@agentblog": "http://127.0.0.1:4477/r/{name}.json"
+  }
+}
+```
+
+`npx shadcn@latest add @agentblog/blog` now resolves against your own machine.
+Everything else on this page is unchanged, including `doctor --fix`.
+
+</Step>
+
+</Steps>
+
+Re-run `shadcn build` after any change to the registry source, or the served
+JSON is stale.
+
+## Verify the install
+
+```bash
+npx agentblog@latest doctor
+```
+
+Then, once you have deployed, the check that matters most:
+
+```bash
+npx agentblog@latest doctor --url https://yoursite.com/blog/your-post
+```
+
+That fetches your live URL as GPTBot, ClaudeBot, PerplexityBot, OAI-SearchBot,
+and Googlebot and asserts each one gets a 200 with the article text in it. It is
+the only check that catches a correct install sitting behind a CDN that turns
+crawlers away. See [when your CDN blocks
+crawlers](/troubleshooting/cdn-blocking-crawlers).
+
+Run it from your own machine or from CI, never from inside the deployment. The
+request originates wherever the CLI runs, and a request from inside the network
+can bypass the exact rule you are testing for, which turns the most valuable
+check in the product into one that always passes.
+
+The version that needs no tooling at all:
+
+```bash
+curl -s -A "GPTBot" https://yoursite.com/blog/your-post | grep "a distinctive sentence"
+```
+
+If that sentence is not in the response, no AI crawler can see it. Use view
+source rather than the element inspector, which shows you the page after
+JavaScript has run.
+
+## Next
+
+<Cards>
+  <Card
+    title="Write your first post"
+    href="/first-post"
+    description="Scaffold it, have your agent draft it, audit it."
+  />
+  <Card
+    title="Configuration"
+    href="/reference/configuration"
+    description="Every field in agentblog.config.ts."
+  />
+  <Card
+    title="Deploy"
+    href="/deploy"
+    description="Two environment variables, one webhook, one verification."
+  />
+  <Card
+    title="Something is wrong"
+    href="/troubleshooting"
+    description="The failures that actually happen, and what each looks like."
+  />
+</Cards>

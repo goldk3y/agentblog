@@ -26,7 +26,7 @@ import { ChevronDownIcon } from './icons'
  * the only thing hydration adds is a highlight on whichever heading is currently
  * in view. Remove the JavaScript entirely and the component still renders a
  * working table of contents. That is the bar any change here has to clear.
- * @see https://agentblog.dev/docs/blog-block
+ * @see https://docs.agentblog.dev/reference/files
  *
  * WHY `<details>` AND NOT CONDITIONAL MOUNTING
  * The block ships open (`defaultOpen={false}` starts it collapsed) and the
@@ -39,7 +39,7 @@ import { ChevronDownIcon } from './icons'
  * anchor in the DOM. A React `{isOpen && <ol/>}` would remove the links from the
  * markup entirely, which is the listed extraction killer: accordions that mount
  * content on click. CSS-hidden is fine, JavaScript-mounted is not.
- * @see https://agentblog.dev/docs/geo-playbook*
+ * @see https://docs.agentblog.dev/concepts/geo-playbook*
  * WHY THE LIST IS NESTED
  * H3 entries render inside their parent H2's `<li>`, not as a flat list with
  * extra padding. Indentation is invisible to a screen reader; list nesting is

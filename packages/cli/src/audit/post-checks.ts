@@ -6,7 +6,7 @@
  * its neighbours, and the reporter, and reports either a pass or a finding that
  * states what to change.
  *
- * @see https://agentblog.dev/docs/geo-playbook*/
+ * @see https://docs.agentblog.dev/concepts/geo-playbook*/
 import { IsoDateTime } from '@agentblog/schema'
 
 import type { PostFile } from './post.ts'

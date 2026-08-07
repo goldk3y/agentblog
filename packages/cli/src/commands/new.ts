@@ -22,7 +22,7 @@
  * resolves, and when neither file is there the output says so rather than
  * emitting a slug that cannot validate.
  *
- * @see https://agentblog.dev/docs/agent-layer
+ * @see https://docs.agentblog.dev/guides/write-with-your-agent
  */
 import { join } from 'node:path'
 

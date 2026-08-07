@@ -70,7 +70,7 @@
  * Use `index: false` and `follow: false`; `noindex` and `nofollow` are typed
  * `never` and deprecated.
  *
- * @see https://agentblog.dev/docs/blog-block
+ * @see https://docs.agentblog.dev/reference/files
  */
 import type { Metadata } from 'next'
 

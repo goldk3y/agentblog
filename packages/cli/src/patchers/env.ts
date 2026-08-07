@@ -10,7 +10,7 @@
  * up holding them is actually ignored by git, because a registry-only install
  * will have taken the other path.
  *
- * @see https://agentblog.dev/docs/installation and 8.1 check 13
+ * @see https://docs.agentblog.dev/reference/cli#doctor
  */
 import { isAgentBlogEnvComment } from '../constants.ts'
 

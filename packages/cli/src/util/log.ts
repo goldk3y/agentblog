@@ -9,7 +9,7 @@
  * House style: no em dashes anywhere in CLI output. Use a comma, a colon,
  * parentheses, or a full stop.
  *
- * @see https://agentblog.dev/docs/agent-layer
+ * @see https://docs.agentblog.dev/guides/write-with-your-agent
  */
 import pc from 'picocolors'
 

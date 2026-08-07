@@ -42,7 +42,7 @@ import { ChevronRightIcon } from './icons'
  * - Making the last crumb a link removes `aria-current="page"`, which is the
  *   only signal telling assistive tech where in the trail the reader is.
  *
- * @see https://agentblog.dev/docs/geo-playbook
+ * @see https://docs.agentblog.dev/concepts/geo-playbook
  */
 export interface BreadcrumbTrailItem {
   readonly name: string

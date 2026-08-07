@@ -32,7 +32,7 @@
  *      can fix. Both read the same predicates, which is the only way those two
  *      tools cannot drift and disagree in front of a user.
  *
- * @see https://agentblog.dev/docs/cli-reference
+ * @see https://docs.agentblog.dev/reference/cli
  */
 
 /* ========================================================================== */

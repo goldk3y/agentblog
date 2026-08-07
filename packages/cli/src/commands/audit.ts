@@ -9,7 +9,7 @@
  *
  * Exit code is non-zero on an error finding so this can gate a merge.
  *
- * @see https://agentblog.dev/docs/geo-playbookthe AgentBlog docs and 7.3
+ * @see https://docs.agentblog.dev/guides/pre-publish-checklist
  */
 import { join } from 'node:path'
 

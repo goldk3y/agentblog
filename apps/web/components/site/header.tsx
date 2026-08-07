@@ -6,26 +6,34 @@
  * works before hydration, it works with JavaScript off, and it is one of the two
  * places on this site where the disclosure pattern the blog block uses for FAQs
  * and the table of contents is worth demonstrating.
+ *
+ * The container measure matches the one every page section uses, so the wordmark
+ * sits on the same left edge as the first word of every heading below it.
  */
 import Link from 'next/link'
 
 import { Github, Menu } from '@/components/site/icons'
 import { ThemeToggle } from '@/components/site/theme-toggle'
 
+/**
+ * The documentation is its own site, so those two entries are absolute URLs.
+ * `next/link` renders a plain anchor for an external href, which is what we
+ * want: there is nothing to prefetch across an origin.
+ */
 const NAV = [
-  { href: '/docs', label: 'Docs' },
-  { href: '/docs/geo-playbook', label: 'GEO playbook' },
+  { href: 'https://docs.agentblog.dev', label: 'Docs' },
+  { href: 'https://docs.agentblog.dev/concepts/geo-playbook', label: 'GEO playbook' },
   { href: '/registry', label: 'Registry' },
   { href: '/blog', label: 'Blog' },
 ] as const
 
 export function SiteHeader() {
   return (
-    <header className="border-border bg-background/85 sticky top-0 z-40 border-b backdrop-blur-md">
-      <div className="mx-auto flex h-16 max-w-6xl items-center gap-6 px-5 sm:px-8">
+    <header className="border-border bg-background/80 sticky top-0 z-40 border-b backdrop-blur-md">
+      <div className="mx-auto flex h-14 w-full max-w-5xl items-center gap-8 px-6">
         <Link
           href="/"
-          className="text-foreground font-mono text-sm font-semibold tracking-tight"
+          className="text-foreground text-mono-13 font-mono"
           aria-label="AgentBlog home"
         >
           agentblog
@@ -37,14 +45,14 @@ export function SiteHeader() {
             <Link
               key={item.href}
               href={item.href}
-              className="text-muted-foreground hover:text-foreground text-sm transition-colors"
+              className="text-muted-foreground hover:text-foreground text-copy-14 transition-colors"
             >
               {item.label}
             </Link>
           ))}
         </nav>
 
-        <div className="ml-auto flex items-center gap-1 md:ml-0">
+        <div className="ml-auto flex items-center gap-0.5 md:ml-0">
           <a
             href="https://github.com/goldk3y/agentblog"
             className="text-muted-foreground hover:bg-accent hover:text-foreground rounded-md p-2 transition-colors"
@@ -69,7 +77,7 @@ export function SiteHeader() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="text-popover-foreground hover:bg-accent block rounded-md px-3 py-2 text-sm transition-colors"
+                  className="text-popover-foreground hover:bg-accent text-copy-14 block rounded-md px-3 py-2 transition-colors"
                 >
                   {item.label}
                 </Link>

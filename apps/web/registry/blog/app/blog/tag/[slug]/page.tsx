@@ -24,8 +24,8 @@
  * number depends on how a given blog uses tags. Change it in
  * `agentblog.config.ts`, not here.
  *
- * @see https://agentblog.dev/docs/blog-block
- * @see https://agentblog.dev/docs/geo-playbook*/
+ * @see https://docs.agentblog.dev/reference/files
+ * @see https://docs.agentblog.dev/concepts/geo-playbook*/
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 

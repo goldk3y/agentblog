@@ -19,7 +19,7 @@
  * route under `app/blog/**` is a re-export: the demo blog reads the same seed
  * content the registry ships, so what is published here is what a consumer gets.
  *
- * @see https://agentblog.dev/docs/configuration
+ * @see https://docs.agentblog.dev/reference/configuration
  */
 import { defineConfig } from '@/lib/define-config'
 import { mdxSource } from '@/lib/sources/mdx'

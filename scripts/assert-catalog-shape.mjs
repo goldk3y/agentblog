@@ -35,7 +35,7 @@
  * Usage:
  *   node scripts/assert-catalog-shape.mjs [path/to/public/r]
  *
- * @see https://agentblog.dev/docs/installation
+ * @see https://docs.agentblog.dev/installation
  * @see BUILD-SPEC section 12
  */
 import { existsSync, readFileSync, readdirSync } from 'node:fs'

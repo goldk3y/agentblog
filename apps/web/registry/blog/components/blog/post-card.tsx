@@ -24,7 +24,7 @@ import { ClockIcon } from './icons'
  * overwrite a component the user has already customized, so a project that
  * restyled its `Card` gets that restyled card here for free. That inheritance is
  * the entire reason the block declares `card` and `badge` as bare-name registry
- * dependencies. @See https://agentblog.dev/docs/theming.3, rule 1.
+ * dependencies. @See https://docs.agentblog.dev/guides/match-your-design#primitives-are-requested-by-bare-name.
  *
  * ⚠️ ADDING `'use client'` TO THIS FILE REMOVES EVERY POST LIST FROM THE RAW
  * HTML THAT AI CRAWLERS READ.
@@ -43,7 +43,7 @@ import { ClockIcon } from './icons'
  * every card in a grid makes the browser fetch twelve images at highest priority
  * and reliably makes LCP worse than doing nothing. `post-list.tsx` exposes
  * `priorityFirst` for the single legitimate case.
- * @see https://agentblog.dev/docs/blog-block
+ * @see https://docs.agentblog.dev/reference/files
  *
  * WHAT BREAKS IF YOU CHANGE IT
  * - Replacing the title `<Link>` with an onClick handler removes the post from

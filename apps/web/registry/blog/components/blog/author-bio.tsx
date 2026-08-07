@@ -36,7 +36,7 @@ import { ExternalLinkIcon } from './icons'
  * `Avatar` and `Separator` are Radix based, so in a standard shadcn install both
  * carry `'use client'`. They are used here anyway, and only here, for two
  * reasons: composing on the consumer's own primitives is the point of the block
- * (@See https://agentblog.dev/docs/theming.3, rule 1), and neither one holds content.
+ * (@See https://docs.agentblog.dev/guides/match-your-design#primitives-are-requested-by-bare-name), and neither one holds content.
  * The `Separator` is decorative, and the avatar is a photo whose absence costs a
  * non-JavaScript reader nothing, since the author's name, title, bio, and links
  * are all plain server-rendered text. Do not reach for a Radix primitive to hold
@@ -50,7 +50,7 @@ import { ExternalLinkIcon } from './icons'
  * - Adding `'use client'` to this file removes the bio text, which is the actual
  *   trust signal, from the HTML.
  *
- * @see https://agentblog.dev/docs/geo-playbook*/
+ * @see https://docs.agentblog.dev/concepts/geo-playbook*/
 export interface AuthorBioProps {
   readonly author: Author
   /** Rendered as "N posts" when supplied. Omit on the author page itself. */

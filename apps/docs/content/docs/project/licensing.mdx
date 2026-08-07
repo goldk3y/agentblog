@@ -1,0 +1,68 @@
+---
+title: Licensing
+description: Three licenses scoped by directory, and the reasoning behind each one.
+icon: Scale
+---
+
+| Scope                                           | License   | File              |
+| ----------------------------------------------- | --------- | ----------------- |
+| Code                                            | MIT       | `LICENSE`         |
+| The example posts                               | CC0 1.0   | `LICENSE-SEED`    |
+| Documentation prose, including the GEO playbook | CC BY 4.0 | `LICENSE-CONTENT` |
+
+## Code: MIT
+
+A restrictive license on a template whose entire distribution mechanism is
+copying files into your repository would be incoherent. MIT matches shadcn,
+matches Next.js, and matches every expectation the audience has.
+
+## The example posts: CC0
+
+The two posts in `content/blog/` are copied into your repository and become your
+published content. Any attribution requirement would mean every AgentBlog user
+technically owed credit on their own blog, which is unenforceable and hostile.
+CC0 says so explicitly.
+
+Delete them, rewrite them, or publish them as they are. They are yours the
+moment they land.
+
+## Documentation: CC BY 4.0
+
+This reverses the obvious instinct, which was to stop a competitor reprinting
+the playbook.
+
+The realistic threat is scraping, and no license prevents scraping. The
+realistic upside is being quoted, and CC BY's attribution requirement is exactly
+the citation this product exists to generate. Licensing the best top-of-funnel
+asset here so that reproducing it requires a credit link is the most on-thesis
+choice available.
+
+So: reproduce these pages, translate them, quote them at length, put them in
+your internal wiki, feed them to a model. Credit `agentblog.dev` with a link.
+
+## What each one covers
+
+- **MIT:** everything under `packages/`, the code in
+  `apps/web/registry/blog/{app,components,lib,hooks,styles}/`, `apps/web/app/`,
+  `apps/web/components/`, `apps/web/lib/`, `apps/docs/{app,lib,components}/`,
+  `scripts/`, and `plugins/`.
+- **CC0:** `apps/web/registry/blog/content/**`.
+- **CC BY 4.0:** `apps/docs/content/docs/**`.
+
+SPDX headers mark the boundary in ambiguous files.
+
+## Third-party licenses
+
+AgentBlog composes shadcn/ui components (MIT) and depends on Next.js, React,
+Zod, Tailwind CSS, and the unified ecosystem, all MIT. Nothing in the dependency
+tree carries a copyleft obligation.
+
+The typography plugin is MIT. `schema-dts` is Apache 2.0, and it is a
+development dependency in the blog: it types the structured data builders and
+does not ship to the browser.
+
+## Contributions
+
+By opening a pull request you agree that your contribution is licensed under the
+license covering the directory you changed. There is no contributor license
+agreement.

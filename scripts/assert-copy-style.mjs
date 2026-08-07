@@ -29,7 +29,7 @@
  *   node scripts/assert-copy-style.mjs           errors fail, warnings print
  *   node scripts/assert-copy-style.mjs --strict  warnings fail too
  *
- * @see https://agentblog.dev/docs/agent-layer
+ * @see https://docs.agentblog.dev/guides/write-with-your-agent
  * @see BUILD-SPEC section 0
  */
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
@@ -49,6 +49,12 @@ const TEXT_EXTENSIONS = ['.ts', '.tsx', '.js', '.mjs', '.md', '.mdx', '.json', '
 const TARGETS = [
   { path: 'apps/web/registry', extensions: ['.ts', '.tsx', '.md', '.mdx', '.json', '.css'] },
   { path: 'apps/web/content', extensions: TEXT_EXTENSIONS },
+  // docs.agentblog.dev. Its prose is the product's voice, so it is held to the
+  // same rules as the seed posts.
+  { path: 'apps/docs/content', extensions: TEXT_EXTENSIONS },
+  { path: 'apps/docs/app', extensions: ['.ts', '.tsx', '.css'] },
+  { path: 'apps/docs/lib', extensions: ['.ts', '.tsx'] },
+  { path: 'apps/docs/components', extensions: ['.ts', '.tsx'] },
   { path: 'docs', extensions: TEXT_EXTENSIONS },
   { path: 'README.md', extensions: TEXT_EXTENSIONS },
   { path: 'CONTRIBUTING.md', extensions: TEXT_EXTENSIONS },
@@ -118,7 +124,7 @@ const EXEMPT = [
   },
   {
     // Documentation pages that state the rule have to quote it.
-    path: 'apps/web/content/docs/agent-layer.md',
+    path: 'apps/docs/content/docs/guides/write-with-your-agent.mdx',
     rules: ['fast-paced-world', 'not-just-x-its-y', 'word'],
   },
   {

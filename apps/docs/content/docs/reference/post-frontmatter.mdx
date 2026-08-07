@@ -1,0 +1,167 @@
+---
+title: Post frontmatter
+description: Every field at the top of a post file, what it does, what it rejects, and the two files that author and category point into.
+icon: FileText
+---
+
+A post is `content/blog/<slug>.mdx`. The block at the top of the file is
+frontmatter, and it is validated when the site builds, so a mistake is a build
+error with the field name in it rather than a missing value three files away.
+
+The file name is the slug. `do-ai-crawlers-run-javascript.mdx` is served at
+`/blog/do-ai-crawlers-run-javascript`. Rename the file to change the URL.
+
+## Every field
+
+| Field           | Type                | Required  | Notes                                                              |
+| --------------- | ------------------- | --------- | ------------------------------------------------------------------ |
+| `title`         | string              | yes       | 70 characters maximum, 60 is the target                            |
+| `description`   | string              | yes       | 50 to 160 characters. This is the meta description                 |
+| `answerCapsule` | string              | no        | The 40 to 60 word direct answer under the H1                       |
+| `datePublished` | date and time       | yes       | ISO 8601 with a UTC offset                                         |
+| `dateModified`  | date and time       | yes       | ISO 8601 with a UTC offset, and not before `datePublished`         |
+| `author`        | author slug         | yes       | Must name a record in `content/authors.json`                       |
+| `category`      | category slug       | yes       | Must name a record in `content/categories.json`                    |
+| `tags`          | string list         | no        | Free text. Tag pages are `noindex` below a configurable post count |
+| `heroImage`     | path or URL         | no        | Root-relative path or absolute http(s) URL                         |
+| `heroAlt`       | string              | with hero | Required whenever `heroImage` is set                               |
+| `relatedPosts`  | slug list           | no        | Editorial ordering, shown before automatic suggestions             |
+| `citations`     | citation list       | no        | See below. Renders as a source list and feeds the structured data  |
+| `faq`           | question and answer | no        | Renders visibly, and only then as FAQ structured data              |
+| `draft`         | boolean             | no        | Defaults to false. A draft is validated but not published          |
+| `locale`        | string              | no        | Defaults to the site locale                                        |
+
+## The rules behind the fields
+
+### Slugs cannot start with a date
+
+Lowercase, hyphen separated, no slashes, 120 characters maximum, and not
+beginning with a date. `2024-03-post-title` advertises the post's age in every
+search result and makes an evergreen refresh look stale, which is the opposite
+of what you want.
+
+### Dates carry an offset, always
+
+```yaml
+datePublished: 2026-08-06T09:30:00Z
+dateModified: 2026-08-06T09:30:00-04:00
+```
+
+The offset is not optional and the type refuses a timestamp without one. Google
+falls back to Googlebot's own timezone when a date has no offset, which shifts
+every published date by hours and can move a post across a day boundary.
+
+`dateModified` must not be earlier than `datePublished`, and it should move only
+when the content actually changed. See [why that
+matters](/guides/write-with-your-agent#refreshing-a-post-is-not-rewriting-it).
+
+### `answerCapsule` is the field that does the most work
+
+40 to 60 words, directly answering the title, with no links inside it. It
+renders under the H1 and it is the paragraph a retrieval system lifts when it
+quotes your page. Too short reads as a fragment, too long stops being liftable,
+and a link inside it fragments the chunk. `agentblog audit` reports the word
+count rather than failing the build, because a capsule eight words over is worth
+telling you about and not worth refusing.
+
+### `author` and `category` are references
+
+Both must name a record that exists. A typo is a build failure, which is the
+right outcome: a post attributed to nobody carries no credibility signal, and a
+category page with no record has nothing to describe itself with.
+
+### `heroImage` accepts two shapes and rejects a third
+
+A root-relative path beginning with a single slash, or an absolute http(s) URL.
+A protocol-relative `//host/path` is rejected, because it reads as a path and
+loads from another origin, and this value ends up in your sitemap, your social
+card, and your structured data.
+
+`heroAlt` is required whenever `heroImage` is set. An unlabelled hero image is
+an accessibility failure and the schema will not let you ship one.
+
+### Citations
+
+```yaml
+citations:
+  - name: The rise of the AI crawler
+    url: https://vercel.com/blog/the-rise-of-the-ai-crawler
+    author: Vercel and MERJ
+    datePublished: 2024-12-17
+    kind: industry
+```
+
+`name` and `url` are required. `kind` is one of `peer-reviewed`,
+`official-docs`, `industry`, `news`, or `other`, and defaults to `other`. It is
+used for auditing rather than emitted, so you can tell at a glance whether a
+post rests on primary sources or on vendor blog posts.
+
+### FAQ entries
+
+```yaml
+faq:
+  - question: Do AI crawlers execute JavaScript?
+    answer: >-
+      No. Two or three sentences that make sense on their own.
+```
+
+These render visibly on the page, and the FAQ structured data is emitted only
+when they do. Marking up content a reader cannot see is the most enforced
+structured data policy there is, and FAQ markup is the most common way blogs
+trip it.
+
+Write answers that stand alone. An answer that refers to "the table above" is
+useless in the place it will be quoted.
+
+## The two files a post points into
+
+### `content/authors.json`
+
+```json
+[
+  {
+    "slug": "editorial",
+    "name": "Ada Lovelace",
+    "bio": "Two sentences on why this person is credible on this subject.",
+    "jobTitle": "Head of Engineering",
+    "avatar": "https://yoursite.com/team/ada.jpg",
+    "knowsAbout": ["Search", "Next.js"],
+    "sameAs": ["https://www.linkedin.com/in/ada", "https://github.com/ada"]
+  }
+]
+```
+
+`slug`, `name`, and `bio` are required. `bio` is required because the author
+page is where a search engine or an assistant decides whether the person writing
+this knows the subject.
+
+`name` is the person's name and nothing else. Google's guidance is explicit that
+it must exclude job titles, honorifics, and the publisher name, which is why
+`jobTitle` is a separate field: the correct output is the only one you can
+construct.
+
+`sameAs` takes absolute profile URLs. It is what turns a name into an entity.
+
+### `content/categories.json`
+
+```json
+[
+  {
+    "slug": "ai-search",
+    "name": "AI search",
+    "description": "How ChatGPT, Claude, and Perplexity find, read, and cite web pages."
+  }
+]
+```
+
+All three fields are required. The description is required because the category
+page is indexable, and a hub page with nothing but a list of links is a crawl
+liability rather than an asset.
+
+## What is validated when
+
+| When              | What                                                                        |
+| ----------------- | --------------------------------------------------------------------------- |
+| Build             | Every field above, on every post, including drafts                          |
+| `agentblog audit` | Word counts, link counts, copy style, citations, and the pre-publish gate   |
+| Never             | Whether the statistic is true, or the quotation real. That part stays yours |

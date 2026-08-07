@@ -29,7 +29,7 @@
  * Usage:
  *   node scripts/assert-html-bots-current.mjs
  *
- * @see https://agentblog.dev/docs/blog-block
+ * @see https://docs.agentblog.dev/reference/files
  * @see packages/checks/src/core.ts
  */
 import { existsSync, readFileSync } from 'node:fs'

@@ -1,0 +1,120 @@
+---
+title: How search and AI read your site
+description: What a crawler actually receives, why so many blogs are invisible to AI assistants without any error appearing, and which parts of that AgentBlog handles for you.
+icon: BookOpen
+---
+
+You do not need this page to use AgentBlog. It is here so that the decisions the
+install makes on your behalf are decisions you can check rather than trust.
+
+## A crawler receives one response
+
+An AI crawler sends one GET request, reads the bytes your server returns, and
+moves on. No browser starts. No scripts run. No second request fires for data.
+Whatever text sits in that first response body is the entire article as far as
+the crawler is concerned.
+
+Googlebot is the exception that confuses everyone: it does render JavaScript, on
+a delay and at a cost. Bingbot renders too. GPTBot, ClaudeBot, PerplexityBot,
+and CCBot do not, and they are the ones deciding whether ChatGPT, Claude, and
+Perplexity can quote you.
+
+So a page can rank on Google and arrive at ChatGPT as an empty shell. That is
+not a bug in either system. They read the web differently.
+
+### How to check your own page in ten seconds
+
+```bash
+curl -s -A "GPTBot" https://yoursite.com/blog/your-post | grep "a distinctive sentence"
+```
+
+If the sentence is not in the output, no AI crawler can see it. Use view source
+rather than the element inspector in your browser: the inspector shows the page
+after JavaScript has run, which is a different document from the one your server
+sent.
+
+Four things break this regardless of framework: fetching content in the browser
+after load, mounting content on interaction, infinite scroll, and text that
+exists only inside an image.
+
+AgentBlog prerenders every post as complete static HTML at build time, and the
+two components that hydrate render their full content on the server first. That
+is the single most important thing it does.
+
+## Nothing turns red when this fails
+
+The reason blogs stay invisible for months is that every failure here is silent.
+A missing signal is not an error. Some examples, all of which the install
+handles:
+
+| What goes wrong                                                 | What you see                        |
+| --------------------------------------------------------------- | ----------------------------------- |
+| The article renders only in the browser                         | A perfect page in your browser      |
+| Page metadata streams into the body instead of the head         | A perfect page in your browser      |
+| The sitemap is a cached route and never learns about a new post | A perfect page, and a missing post  |
+| The author is a plain string rather than a linked entity        | A perfect page, with no attribution |
+| Your CDN turns crawlers away before your server ever sees them  | A perfect page, and no citations    |
+
+None of those produce a build failure, a console error, or a failing test. They
+produce nothing. You find out months later when nothing ranks and nothing cites
+you.
+
+That is why the CLI exists. `agentblog doctor` reads your config and reports
+what is missing, and `agentblog doctor --url` fetches your live site as five
+different crawlers and tells you what each one actually received.
+
+## Structured data is the summary machines read
+
+Structured data is a block of JSON in your page that says, in a vocabulary
+search engines agree on, what the page is: an article, published on this date,
+written by this person, who works for this organisation, which also has these
+profiles elsewhere.
+
+Two rules matter more than the rest, and both are about honesty:
+
+**Every marked-up fact has to be visible on the page.** Marking up content a
+reader cannot see is the most enforced structured data policy there is, and a
+violation can cost you rich results entirely. AgentBlog emits FAQ markup only
+when the FAQ section actually renders.
+
+**The author has to be an entity, not a string.** A name is a string. A name
+linked to a page that lists what that person knows about, with profile links a
+third party can verify, is an entity. Entity resolution is what lets an
+assistant say "according to X" and mean something by it.
+
+## Being read is not the same as being quoted
+
+Once the text reaches a crawler, a second question starts: when a retrieval
+system pulls a chunk out of your page to answer a question, is your chunk any
+good on its own?
+
+That is what the writing format is for. A direct 40 to 60 word answer under each
+heading, headings phrased as questions, sections that stand alone, entity names
+instead of pronouns, real tables instead of prose comparisons. Each of those
+makes an extracted fragment survive being extracted.
+
+The evidence for each technique, and how strong that evidence is, is in [the GEO
+playbook](/concepts/geo-playbook). The short version is that quotations from
+named sources and statistics with numbers measure highest, and keyword stuffing
+measures worse than doing nothing at all.
+
+## What this means for your blog
+
+Three things, in order:
+
+1. **Serve the article in the first response.** Everything else is downstream of
+   this. AgentBlog does it and CI proves it on every commit against a real
+   build.
+2. **Make the machine-readable layer correct and honest.** Also handled, and
+   `doctor` checks it stayed that way.
+3. **Write posts a retrieval system can lift a good answer out of.** That is the
+   part where the tools help and you decide.
+
+<Cards>
+  <Card
+    title="The GEO playbook"
+    href="/concepts/geo-playbook"
+    description="Every writing technique, with the strength of its evidence."
+  />
+  <Card title="Install it" href="/quickstart" description="The five minute path." />
+</Cards>

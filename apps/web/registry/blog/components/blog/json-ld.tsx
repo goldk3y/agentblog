@@ -39,7 +39,7 @@
  * The rule that follows: never pass this component a string built anywhere else,
  * and never serialize a schema object outside `renderJsonLd`.
  *
- * @see https://agentblog.dev/docs/blog-block
+ * @see https://docs.agentblog.dev/reference/files
  */
 import type { GraphNode } from '@/lib/schema'
 import { renderJsonLd } from '@/lib/schema'

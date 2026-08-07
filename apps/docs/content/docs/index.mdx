@@ -1,0 +1,125 @@
+---
+title: What AgentBlog is
+description: A blog for your Next.js app that search engines rank and AI assistants cite, installed with one command, with agent skills that know how to write for it.
+icon: Compass
+---
+
+AgentBlog is a blog you install into a Next.js app you already have. One command
+writes 70 files into your repository: the routes, the structured data, the
+sitemap, the feed, the social images, and a set of skills your coding agent uses
+to write the posts. The files are yours after that, the same way shadcn/ui
+components are yours.
+
+## Who this is for
+
+You have a product with a website, and you know a blog would bring people to it.
+You would rather not spend a week reading about canonical tags to find out
+whether yours are right.
+
+That is the whole audience. You do not need to know what JSON-LD is. You do need
+a Next.js app and about ten minutes.
+
+<Cards>
+  <Card
+    title="Quickstart"
+    href="/quickstart"
+    description="Install it and see a post render. About five minutes."
+  />
+  <Card
+    title="Full installation"
+    href="/installation"
+    description="Both install paths, the four files you edit, and what each one does."
+  />
+</Cards>
+
+## Why it exists
+
+Three things go wrong between wanting a blog and having one that works.
+
+### You are not sure how to build one
+
+The usual answers are a separate WordPress site, a Webflow or Framer page, or a
+hosted platform on a subdomain. Each of those splits your site in two: your
+product on one domain, your writing on another, two design systems, two bills,
+and search engines treating them as unrelated.
+
+A blog inside your Next.js app has none of that. It is a route in your existing
+project. It reads your design tokens, deploys with your app, and lives on your
+domain, where the links people give you help the pages that sell your product.
+
+### You cannot tell whether it is set up correctly
+
+This is the expensive one. A blog can look completely finished and be invisible.
+
+The page renders in your browser, so you assume a crawler sees the same thing.
+It usually does not. Content that only appears after JavaScript runs is missing
+for AI crawlers, which do not run JavaScript at all. A new post never reaches
+`sitemap.xml` because that route was cached. The author field is a plain string,
+so nothing connects the post to a person. None of that shows up as an error.
+Nothing turns red. You find out months later when nothing ranks and nothing
+cites you.
+
+AgentBlog was built from the current guidance Google and the AI search vendors
+publish, and the parts that cannot be verified by reading are verified by
+fetching. `agentblog doctor` reads your config and reports what is wrong.
+`agentblog doctor --url` fetches your live site as GPTBot, ClaudeBot,
+PerplexityBot, OAI-SearchBot, and Googlebot, and tells you which of them your
+CDN is turning away.
+
+### You do not want to write the posts
+
+Posts are MDX files in your repository, which makes them something a coding
+agent can genuinely maintain. Installing AgentBlog also writes four skills into
+`.claude/skills/`, so your agent already knows the format: the direct answer
+under each heading that an AI assistant can lift, the question-shaped headings,
+the tables, the citations, and the internal links that keep a new post from
+being an orphan.
+
+You ask for a post. The agent writes a draft in your voice, using your existing
+posts as the reference. You edit it and merge it.
+
+## How it installs
+
+The same way you install a shadcn/ui component, because it uses the same
+mechanism.
+
+```bash
+npx agentblog@latest init
+```
+
+That command checks your project meets the requirements, adds the AgentBlog
+registry to your `components.json`, copies the files in, patches the two config
+files a file copier cannot reach, and asks you for your site URL and brand name.
+It prints everything it is about to do first, backs up every file it changes,
+and does nothing when you run it twice.
+
+There is no package of ours in your `package.json` afterwards. Nothing to
+upgrade around, nothing that breaks when we ship a change you did not ask for.
+
+## What you actually get
+
+| Piece                | What it means for you                                                                         |
+| -------------------- | --------------------------------------------------------------------------------------------- |
+| Blog routes          | An index, post pages, category and tag pages, and author pages, all prerendered as plain HTML |
+| Structured data      | The machine-readable summary Google and the assistants read, connected and typed              |
+| Sitemap, feed, pings | Search engines find new posts on the day you publish rather than the week after               |
+| Social images        | A generated card per post, so a shared link is not a bare URL                                 |
+| Your design system   | The blog uses your colours, your fonts, and your components. It ships no theme of its own     |
+| Agent skills         | Four skills that write posts, refresh them, finish the setup, and audit before you publish    |
+| `agentblog doctor`   | One command that tells you whether any of the above is actually working                       |
+
+## What it is not
+
+It is not a hosted platform, and there is no dashboard. It is not a template you
+clone, because your app already exists. It is not a theme: the components carry
+no colours of their own, so `/blog` looks like the rest of your product on the
+day you install it.
+
+<Cards>
+  <Card title="Start installing" href="/quickstart" description="The five minute path." />
+  <Card
+    title="How search and AI read a site"
+    href="/concepts/how-ai-search-reads-your-site"
+    description="The background, if you want it before you commit."
+  />
+</Cards>

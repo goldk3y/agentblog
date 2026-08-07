@@ -38,7 +38,7 @@ import { cn } from '@/lib/utils'
  *   from the HTML a non-JavaScript crawler receives.
  * - Moving it below the table of contents pushes it out of the opening chunk.
  *
- * @see https://agentblog.dev/docs/geo-playbook
+ * @see https://docs.agentblog.dev/concepts/geo-playbook
  */
 export interface AnswerCapsuleProps {
   /**

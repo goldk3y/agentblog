@@ -3,7 +3,7 @@
  * block are the same modules. The full explanation is in
  * `app/blog/[slug]/page.tsx`, which is the representative shim.
  *
- * @see https://agentblog.dev/docs/cli-reference
+ * @see https://docs.agentblog.dev/reference/cli
  */
 export { default, generateMetadata } from '@/app/blog/page'
 

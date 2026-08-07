@@ -1,0 +1,152 @@
+---
+title: What gets installed
+description: A file-by-file tour of the 70 files AgentBlog writes into your repository, and the rules each piece obeys.
+icon: FileText
+---
+
+Everything below lands in your repository as source you own and can edit. The
+paths assume a flat layout. In a `src/` layout, shadcn resolves them against
+your `components.json` aliases.
+
+## Routes
+
+| File                                  | What it does                                                |
+| ------------------------------------- | ----------------------------------------------------------- |
+| `app/blog/layout.tsx`                 | Imports the preflight check, adds the editorial policy link |
+| `app/blog/page.tsx`                   | Paginated index with `Blog` structured data                 |
+| `app/blog/[slug]/page.tsx`            | The post route                                              |
+| `app/blog/[slug]/opengraph-image.tsx` | The social card for each post                               |
+| `app/blog/category/[slug]/page.tsx`   | Category hub, always indexable                              |
+| `app/blog/tag/[slug]/page.tsx`        | Tag listing, `noindex` below your configured post count     |
+| `app/authors/[slug]/page.tsx`         | Author page emitting `Person` structured data               |
+| `app/editorial-policy/page.tsx`       | Optional, ships as `@agentblog/eeat-pages`                  |
+
+Five rules are baked into these files, and each one closes a failure that has no
+visible symptom.
+
+**`generateStaticParams` returns every slug.** Never sliced, never paginated.
+Every post becomes complete static HTML at build time, which is the safest
+possible shape for a crawler that fetches once and runs no JavaScript.
+
+**No `'use client'` in the article render path.** Two components are allowed to
+be client components, the table of contents for its scroll tracking and the
+share buttons, and both render their full content on the server first. The FAQ
+and the table of contents use `<details>` and CSS rather than mounting on
+interaction, so their text is in the HTML whether or not anything hydrates.
+
+**One `<h1>` per page**, a `<time>` element on every date, a stable `id` on
+every H2 and H3, and `rel="author"` on the byline link.
+
+**Every route that sets `openGraph` or `robots` spreads the shared defaults**
+from `lib/metadata.ts`. See [the shallow merge trap](#the-shallow-merge-trap).
+
+**Pagination renders real links.** A paginator that only works after hydration
+hides everything past page one from a crawler.
+
+## SEO routes
+
+| File                       | Notes                                                                           |
+| -------------------------- | ------------------------------------------------------------------------------- |
+| `app/sitemap.ts`           | `lastModified` comes from each post's `dateModified`, never from the build time |
+| `app/robots.ts`            | Guarded on the deployment environment, and emits your `aiAccess` rules          |
+| `app/feed.xml/route.ts`    | RSS 2.0                                                                         |
+| `app/opengraph-image.tsx`  | The site-level social card                                                      |
+| `app/not-found.tsx`        | A 404 that links back into the content rather than being a dead end             |
+| `app/api/publish/route.ts` | Revalidation and IndexNow, in that order                                        |
+
+`sitemap.xml`, `robots.txt`, `feed.xml`, and the social images are all cached
+route handlers. That is why the publish webhook revalidates the sitemap and the
+feed explicitly rather than only the post paths: a new post that never reaches
+either is a failure with no symptom.
+
+## Components
+
+`components/blog/` holds the reading experience: the answer capsule, the author
+bio, breadcrumbs, the byline, category pills, icons, the structured data
+serialiser, pagination, the post card, the post list, the prose wrapper, related
+posts, share buttons, and the table of contents.
+
+`components/mdx/` holds the component map plus the callout, code block, FAQ,
+figure, key takeaways, quote, stat, and table. See [components you can use in a
+post](/reference/mdx-components).
+
+`components/blog/icons.tsx` re-exports every icon used anywhere in the block, so
+swapping icon libraries costs one file rather than a search across twelve
+components.
+
+## Library
+
+| File                                | Responsibility                                                                |
+| ----------------------------------- | ----------------------------------------------------------------------------- |
+| `lib/config.ts`                     | The resolved config and the URL helpers. The only file that reads your config |
+| `lib/posts.ts`                      | The content source facade. Every route reads posts through this file          |
+| `lib/schema.ts`                     | The structured data builders, typed rather than hand-written JSON             |
+| `lib/metadata.ts`                   | The shared metadata defaults every route spreads                              |
+| `lib/render-mdx.tsx`                | The only place MDX is compiled                                                |
+| `lib/mdx-plugins/`                  | Table of contents extraction and answer capsule handling                      |
+| `lib/toc.ts`, `lib/reading-time.ts` | Heading extraction, word count and minutes                                    |
+| `lib/indexnow.ts`                   | Submission, with the response codes surfaced rather than swallowed            |
+| `lib/ai-referrers.ts`               | Classifies assistant referrals. See [measuring](/guides/measure-ai-traffic)   |
+| `lib/sources/mdx.ts`                | The MDX content source                                                        |
+
+Four files are generated and carry a banner saying so: `lib/schemas.ts`,
+`lib/types.ts`, `lib/define-config.ts`, and `lib/preflight-checks.ts`. They are
+generated rather than imported because they ship into your repository, where
+there is no package of ours to import from. Do not edit them: they are the files
+most likely to carry a real fix in an update, and they are always safe to
+overwrite.
+
+## The shallow merge trap
+
+Worth stating on its own, because it is invisible to the type checker and it is
+the single most common way a correct-looking blog loses metadata.
+
+Next.js merges metadata across segments shallowly. If your root layout sets:
+
+```ts
+openGraph: { siteName: 'Your Brand', locale: 'en_US', type: 'website' }
+```
+
+and a post page sets:
+
+```ts
+openGraph: {
+  type: 'article',
+  title: post.title,
+  description: post.description,
+  url: canonical,
+  images: [ogImage],
+}
+```
+
+then because the page defined `openGraph` at all, the layout's entire object is
+discarded. Every post ships a social card with no site name and no locale.
+Nothing errors, no validator complains, and the types are correct. The only way
+to notice is to view source on a built page.
+
+`lib/metadata.ts` exists so that no route file can make this mistake by
+accident, and `agentblog doctor` asserts it against built HTML rather than
+against the source.
+
+## Styles
+
+`styles/agentblog.css` carries two things: the bridge from the typography plugin
+to your theme tokens, and the `--agentblog-` prefixed variables for the reading
+measure and the prose scale. See [make it look like your
+site](/guides/match-your-design).
+
+Nothing imports this file for you. That is the one install step with no warning
+attached.
+
+## Content
+
+`content/blog/*.mdx`, `content/authors.json`, and `content/categories.json`.
+
+Two example posts ship with the block, licensed CC0, because they become your
+published content and an attribution requirement would mean every AgentBlog user
+owed credit on their own blog.
+
+They are also the format specification. They are what the `write-blog-post`
+skill patterns from, so they follow every rule in [the GEO
+playbook](/concepts/geo-playbook), including the copy style rules. Read one
+before you delete them.

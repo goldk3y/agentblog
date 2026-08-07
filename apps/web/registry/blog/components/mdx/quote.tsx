@@ -26,7 +26,7 @@
  * The markdown `>` blockquote maps here too, without attribution, which is why
  * every prop is optional.
  *
- * @see https://agentblog.dev/docs/geo-playbook*/
+ * @see https://docs.agentblog.dev/concepts/geo-playbook*/
 import type { ReactNode } from 'react'
 
 export interface QuoteProps {

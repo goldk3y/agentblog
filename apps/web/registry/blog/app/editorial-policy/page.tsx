@@ -22,7 +22,7 @@
  * corrections address below does not exist. Search every `EDIT:` marker in this
  * file before you ship it.
  *
- * @see https://agentblog.dev/docs/agent-layer
+ * @see https://docs.agentblog.dev/guides/write-with-your-agent
  */
 import Link from 'next/link'
 import type { ReactNode } from 'react'

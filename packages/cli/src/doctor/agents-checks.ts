@@ -11,7 +11,7 @@
  * agent instruction in the project, which the user should know rather than
  * assume.
  *
- * @see https://agentblog.dev/docs/agent-layer
+ * @see https://docs.agentblog.dev/guides/write-with-your-agent
  */
 import { join } from 'node:path'
 

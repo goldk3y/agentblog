@@ -45,7 +45,7 @@
  * silence is the trap: nothing errors, some text is just quietly the wrong
  * colour. If you are copying a snippet from anywhere, check this first.
  *
- * @See https://agentblog.dev/docs/theming.3 rules 4 and 5
+ * @See https://docs.agentblog.dev/guides/match-your-design#the-typography-plugin-is-bridged-rather-than-fought
  */
 
 @plugin '@tailwindcss/typography';

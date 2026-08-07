@@ -11,7 +11,7 @@
  * because git's own answer accounts for nested ignore files, negations, and the
  * global excludes file, and ours would not.
  *
- * @see https://agentblog.dev/docs/installation
+ * @see https://docs.agentblog.dev/installation
  */
 import { basename, join } from 'node:path'
 

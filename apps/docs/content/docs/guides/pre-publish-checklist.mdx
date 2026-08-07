@@ -1,0 +1,121 @@
+---
+title: Check a post before publishing
+description: The pre-publish gate agentblog audit runs, split into what the tooling checks for you and the four things only you can judge.
+icon: Wrench
+---
+
+```bash
+npx agentblog@latest audit <slug>
+```
+
+That runs the mechanical half of this page and reports each item pass or fail
+with the value it found. It never reports success on a failure. The rest of this
+page is the same checklist in a form you can read, plus the part no tool can
+check.
+
+## Once, before your first post
+
+These are install-time. `npx agentblog@latest doctor` checks all of them.
+
+- [ ] `htmlLimitedBots` in `next.config.ts` includes the Next.js default list as well as the AI crawlers
+- [ ] `metadataBase` and `title.template` are set in the root layout
+- [ ] `app/robots.ts` has the deployment guard, so preview URLs stay out of the index
+- [ ] `sitemap.xml` and `feed.xml` both resolve and list real posts
+- [ ] The sitemap is submitted to Google Search Console and Bing Webmaster Tools
+- [ ] Verification tokens are in `agentblog.config.ts`
+- [ ] The IndexNow key file is served from your domain root and matches `INDEXNOW_KEY`
+- [ ] `brand.sameAs` points at two or more profiles a third party can verify
+- [ ] `/editorial-policy` says something specific about how you correct mistakes
+- [ ] `npx agentblog@latest doctor --url <a live post URL>` passes, including the Googlebot fetch
+
+That last one is the check most people skip and the one most likely to fail. See
+[when your CDN blocks crawlers](/troubleshooting/cdn-blocking-crawlers).
+
+## The post itself
+
+- [ ] One `<h1>`, and it matches what the reader was searching for
+- [ ] `title` is 60 characters or fewer and reads as a title rather than a keyword string
+- [ ] `description` is 150 to 160 characters and describes the post rather than teasing it
+- [ ] An answer capsule under the H1: 40 to 60 words, direct, no links inside it
+- [ ] An answer capsule under each H2, same rules
+- [ ] H2s are phrased as questions where a question is what a reader would ask
+- [ ] Sections are 150 to 300 words and each one stands alone
+- [ ] Entity names are repeated rather than replaced by pronouns
+- [ ] At least one real statistic, cited
+- [ ] At least one quotation from a named source, cited
+- [ ] Comparison data is in a table, not in prose
+- [ ] Five to fifteen contextual internal links
+- [ ] At least one existing post now links to this one
+- [ ] No keyword stuffing. It measures worse than writing normally
+- [ ] No em dashes, and none of the other copy tells
+
+## Frontmatter
+
+- [ ] `title`, `description`, `datePublished`, `dateModified`, `author`, `category` are all present
+- [ ] Dates are ISO 8601 with a UTC offset
+- [ ] `dateModified` changed only because the content changed
+- [ ] `tags` are terms a reader would use, and there are not thirty of them
+- [ ] Every entry in `citations` has a source and a kind
+- [ ] Every `faq` entry matches a question the body actually answers
+
+## Structured data
+
+The install generates all of this. The audit checks it, and it is worth knowing
+what is being checked.
+
+- [ ] Exactly one `ld+json` block, containing a connected graph
+- [ ] Every marked-up fact is visible on the page
+- [ ] An `FAQPage` block only when the FAQs render in the HTML
+- [ ] `author` is a linked `Person` node with an `@id` and a `url`, never a bare string
+- [ ] `author.name` carries no job title, honorific, or company name
+- [ ] Every `sameAs` entry is an absolute URL rather than a handle
+- [ ] `Organization.logo` carries `width` and `height`
+- [ ] Validated against the raw HTML rather than the rendered page
+
+Google's Rich Results Test and the Schema Markup Validator answer different
+questions, eligibility and vocabulary, so check both when something looks wrong.
+
+## Images
+
+- [ ] Descriptive file names rather than `IMG_1234.png`
+- [ ] `alt` describes what the image shows, in plain language
+- [ ] Every chart is paired with its numbers in a table nearby
+- [ ] No critical text that exists only inside an image
+- [ ] `preload` on at most one image per page, and only when it is definitely the largest element
+
+## After it is live
+
+Do this every time, immediately after deploying:
+
+```bash
+curl -s -A "GPTBot" "$URL" | grep -q "a distinctive sentence from the article"
+curl -s -A "GPTBot" "$URL" | head -c 4000 | grep -q "<title>"
+```
+
+The first asserts that the article text reaches a crawler that runs no
+JavaScript. The second asserts that `<title>` landed inside `<head>` rather than
+being appended to `<body>`, which is what happens when page metadata streams.
+
+Then the version that also catches a CDN turning crawlers away:
+
+```bash
+npx agentblog@latest doctor --url "$URL"
+```
+
+And the publishing half:
+
+- [ ] The publish step revalidated `sitemap.xml` and `feed.xml` as well as the post
+- [ ] IndexNow returned 200 or 202, not 403 or 422
+- [ ] The post appears in `sitemap.xml` and in `feed.xml`
+- [ ] The canonical URL on the page matches the sitemap entry exactly
+
+## What no tool can check
+
+Four things, and the audit will pass a post that fails all of them:
+
+- Whether the post answers the question a reader actually has.
+- Whether the statistic is true.
+- Whether the quotation is real and correctly attributed.
+- Whether you would link to this post from another site.
+
+That is the part of the job that stays yours.

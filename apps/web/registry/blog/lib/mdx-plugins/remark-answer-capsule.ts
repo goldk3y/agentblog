@@ -39,8 +39,8 @@
  * We mirror it to `console.warn` in development for that reason. Production
  * builds stay quiet: by then `agentblog audit` has already had its say.
  *
- * @see https://agentblog.dev/docs/blog-block
- * @see https://agentblog.dev/docs/geo-playbook*/
+ * @see https://docs.agentblog.dev/reference/files
+ * @see https://docs.agentblog.dev/concepts/geo-playbook*/
 import type { Nodes, Paragraph, Root } from 'mdast'
 import type { VFile } from 'vfile'
 

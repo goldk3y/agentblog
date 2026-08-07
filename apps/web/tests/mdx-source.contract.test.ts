@@ -16,7 +16,7 @@
  *
  * Run with `pnpm --filter @agentblog/web test`.
  *
- * @see https://agentblog.dev/docs/content-sources
+ * @see https://docs.agentblog.dev/reference/content-sources
  */
 import assert from 'node:assert/strict'
 import path from 'node:path'

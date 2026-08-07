@@ -51,7 +51,7 @@
  *   AGENTBLOG_REVALIDATE_SECRET   required. Shared secret for this endpoint.
  *   AGENTBLOG_DEPLOY_WAIT_MS      optional. Deploy wait budget, default 45000.
  *
- * @see https://agentblog.dev/docs/blog-block
+ * @see https://docs.agentblog.dev/reference/files
  */
 import { revalidatePath, revalidateTag } from 'next/cache'
 import { createHash, timingSafeEqual } from 'node:crypto'

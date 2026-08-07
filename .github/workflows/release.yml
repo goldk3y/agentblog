@@ -14,7 +14,7 @@ name: Release
 #                            is what makes tag pinning work for the GitHub
 #                            install path (`goldk3y/agentblog/blog#v1.2.0`).
 #
-# @see https://agentblog.dev/docs/installation
+# @see https://docs.agentblog.dev/installation
 
 on:
   push:

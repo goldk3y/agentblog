@@ -16,7 +16,7 @@
  * second cssVars format, a second prose bridge, and pinning users to shadcn
  * 2.3.0, which predates registry namespaces, `include`, and `registry:base`.
  *
- * @see https://agentblog.dev/docs/installation
+ * @see https://docs.agentblog.dev/installation
  */
 import { NO_COMPONENTS_JSON_MESSAGE, TAILWIND_V4_MIGRATION_URL } from '../constants.ts'
 import { collidingBlogFiles } from '../detect/routes.ts'

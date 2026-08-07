@@ -1,0 +1,153 @@
+---
+title: Content sources
+description: Where posts come from, the MDX source that ships with the blog, and what it takes to write your own.
+icon: FileText
+---
+
+A content source is the boundary between the blog and wherever your posts live.
+Every route reads posts through `lib/posts.ts`, which is a thin layer over
+whatever you set as `source`, so changing where posts come from is one line in
+`agentblog.config.ts` and nothing else in the blog changes.
+
+```ts
+source: mdxSource({ dir: 'content/blog' })
+```
+
+If you are happy writing posts as files in your repository, that line is all you
+need and the rest of this page is background.
+
+## The MDX source
+
+```ts
+mdxSource({
+  dir: 'content/blog',
+  authorsFile: 'content/authors.json',
+  onInvalid: 'warn',
+})
+```
+
+| Option           | Default                   | Notes                                                                    |
+| ---------------- | ------------------------- | ------------------------------------------------------------------------ |
+| `dir`            | required                  | Directory of `.mdx` files, relative to the project root                  |
+| `authorsFile`    | `content/authors.json`    | Author records, keyed by slug                                            |
+| `categoriesFile` | `content/categories.json` | Category records, keyed by slug                                          |
+| `defaultAuthor`  | none                      | Applied when a post omits `author`. Must exist in the roster             |
+| `onInvalid`      | `'throw'`                 | `'warn'` skips a malformed post and logs it instead of failing the build |
+
+Frontmatter is validated as the site builds, and a post with a bad date or a
+missing description names the file and the field.
+
+A post whose `datePublished` is in the future, or whose `draft` flag is set, is
+excluded from the index, the sitemap, the feed, and the prerendered routes. It
+is still readable by slug while you are developing.
+
+### Where the slug comes from
+
+The file name, with `.mdx` removed. Only `.mdx` files are read: a `.md` file in
+the directory is skipped with a warning in the build log, because every body is
+compiled as MDX and the Markdown that MDX does not share fails the compile for
+the whole site.
+
+A `slug` in frontmatter overrides the file name, silently. That is occasionally
+what you want, when a published URL has to outlive a file rename. Otherwise it
+is a way to end up at a URL that names no file anyone is editing. Keep them
+identical unless you have a reason not to.
+
+### The two files posts point into
+
+`author` and `category` are slug references, resolved from
+`content/authors.json` and `content/categories.json` during the same read. A
+slug with no record is a build failure naming the post, the field, and the file
+to add the record to. An inline object works too, for the one-off post whose
+author is not in the roster.
+
+This is the coupling that catches most new installs, because the example posts
+name the example records. See [the build fails after I edited
+content](/troubleshooting#the-build-fails-after-i-edited-content).
+
+## The contract
+
+Any source implements this interface:
+
+```ts
+interface ContentSource<Strategy extends PrerenderStrategy = PrerenderStrategy> {
+  readonly name: string
+  readonly prerenderStrategy: Strategy
+
+  getAllPosts(opts?: PostQuery): Promise<PublishedPost[]>
+  getPost(slug: string, opts?: PostQuery): Promise<Post | null>
+  getAllCategories(): Promise<Category[]>
+  getAllAuthors(): Promise<Author[]>
+  getPostsByCategory(slug: string): Promise<PublishedPost[]>
+  getPostsByAuthor(slug: string): Promise<PublishedPost[]>
+  getRelatedPosts(post: Post, limit: number): Promise<PublishedPost[]>
+}
+```
+
+Every domain type is inferred from the validation schema rather than written by
+hand, so the shape you validate and the shape you type cannot drift apart.
+
+### `prerenderStrategy` prevents the worst failure in the system
+
+| Value           | Meaning                                                   | Consequence                                     |
+| --------------- | --------------------------------------------------------- | ----------------------------------------------- |
+| `'build'`       | Every post is known at build time                         | Nothing extra required. The MDX source is this  |
+| `'deploy-hook'` | Publishing needs a rebuild before the post exists as HTML | `deployHook` becomes a compile-time requirement |
+| `'on-demand'`   | New posts render on first request                         | Measure that render before you rely on it       |
+
+The failure it prevents: you publish a post to a database, the webhook pings
+IndexNow, a crawler arrives within seconds, and the route was never prerendered
+because the build has not run since. What the crawler receives then depends on
+your dynamic route settings and on whether the first render finishes inside its
+timeout. Both are worse than a static file.
+
+With `'deploy-hook'`, your config does not type check until you supply a rebuild
+trigger, and the publish webhook fires that rebuild before it pings anything.
+
+## Writing your own
+
+Three things to get right, in order of how expensive they are to get wrong.
+
+**Hydrate in bulk, not per post.** `getAllPosts` is called by the sitemap, the
+feed, and the prerender step. An implementation that fetches each post's author
+with its own query turns a 400-post blog into 400 extra round trips per build,
+and build time grows with your content instead of staying flat. The contract
+suite watches the call count and fails when it scales with post count, because
+this is the mistake every database adapter makes first.
+
+**Return dates with an offset.** Not decorative: a date without one shifts by
+hours depending on who reads it.
+
+**Declare your strategy honestly.** If publishing does not rebuild the site, say
+`'deploy-hook'`. The compile error that follows is the point.
+
+### Testing it
+
+```ts
+import { runSourceContractTests } from '@agentblog/schema/contract'
+
+runSourceContractTests(async () => myAdapter({/* ... */}), fixtures)
+```
+
+Eight assertions, run against a fixture you describe to the suite:
+
+| Assertion                                               | The mistake it catches                                       |
+| ------------------------------------------------------- | ------------------------------------------------------------ |
+| Every returned post satisfies the post schema           | A shape that validates in your tests and not in the blog's   |
+| Drafts are excluded by default and included on request  | A draft in the sitemap, or a draft you cannot preview        |
+| Author and category are hydrated in a single round trip | The query explosion that makes build time scale with content |
+| Every method is callable with no request context        | An adapter that reads cookies and breaks static generation   |
+| An unknown slug returns null rather than throwing       | A 500 where a 404 belongs                                    |
+| Related posts return editorial picks first, in order    | Editorial intent silently reordered by a similarity score    |
+| `prerenderStrategy` is declared                         | The staleness bug the field exists to make a compile error   |
+| Ordering is stable across calls                         | A sitemap and an index page that disagree about post order   |
+
+Passing the suite is the definition of a working source. `agentblog doctor` does
+not re-check any of it, because a bad source fails at build.
+
+## What is coming
+
+The MDX source ships today. Supabase and Convex follow, in that order. Because
+each one implements the same interface and passes the same suite, moving between
+them is a config line rather than a rewrite, which is the whole reason this
+layer exists. See [the roadmap](/project/roadmap).

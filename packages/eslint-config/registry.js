@@ -17,7 +17,7 @@ export default [
       // The shipped block runs in a consumer's repository and may only depend on
       // packages declared on its registry item. Importing from our workspace
       // would produce a module the consumer does not have.
-      // See https://agentblog.dev/docs/content-sources.
+      // See https://docs.agentblog.dev/reference/content-sources.
       'no-restricted-imports': [
         'error',
         {
@@ -25,7 +25,7 @@ export default [
             {
               group: ['@agentblog/*'],
               message:
-                'Files shipped into a consumer repository cannot import workspace packages. Shared code is copied in by scripts/codegen.mjs instead. See https://agentblog.dev/docs/content-sources.',
+                'Files shipped into a consumer repository cannot import workspace packages. Shared code is copied in by scripts/codegen.mjs instead. See https://docs.agentblog.dev/reference/content-sources.',
             },
           ],
         },

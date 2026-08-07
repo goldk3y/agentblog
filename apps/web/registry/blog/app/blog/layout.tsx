@@ -72,7 +72,7 @@
  * components that are documented as such, and both render meaningful content on
  * the server first.
  *
- * @see https://agentblog.dev/docs/blog-block
+ * @see https://docs.agentblog.dev/reference/files
  */
 import Link from 'next/link'
 

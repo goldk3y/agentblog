@@ -18,8 +18,8 @@
  * the paragraph below, you have reintroduced the problem the schema exists to
  * prevent.
  *
- * @see https://agentblog.dev/docs/blog-block
- * @see https://agentblog.dev/docs/geo-playbook
+ * @see https://docs.agentblog.dev/reference/files
+ * @see https://docs.agentblog.dev/concepts/geo-playbook
  */
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'

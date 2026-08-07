@@ -26,8 +26,8 @@
  * their content on the server first and hydrate only to add scroll spy and share
  * intents on top of markup that is already in the HTML.
  *
- * @see https://agentblog.dev/docs/blog-block
- * @see https://agentblog.dev/docs/geo-playbook
+ * @see https://docs.agentblog.dev/reference/files
+ * @see https://docs.agentblog.dev/concepts/geo-playbook
  */
 import type { Metadata } from 'next'
 import Image from 'next/image'

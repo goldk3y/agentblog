@@ -7,7 +7,7 @@
  * drops the edit. That is a stronger idempotency guarantee than a dispatch table
  * keyed on finding ids, which has to stay in sync with the checks by hand.
  *
- * @see https://agentblog.dev/docs/installation
+ * @see https://docs.agentblog.dev/installation
  */
 import { basename, join } from 'node:path'
 

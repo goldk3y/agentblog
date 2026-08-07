@@ -1,0 +1,89 @@
+---
+title: Why the blog does not ship llms.txt
+description: The evidence against llms.txt for content sites, the one case where it genuinely helps, and why these docs serve one while your blog will not.
+icon: BookOpen
+---
+
+The blog ships no `llms.txt`. Not as an option, not behind a flag. This
+documentation site does serve one, at [/llms.txt](/llms.txt), and the difference
+between those two situations is the whole point.
+
+## The evidence
+
+- **Gary Illyes, Google Search Central Deep Dive, July 2025:** Google does not
+  support `llms.txt` and is not planning to.
+- **John Mueller** compared it on the record to the discredited keywords meta
+  tag.
+- **Google's own AI optimization guide:** "You don't need to create new machine
+  readable files, AI text files, markup, or Markdown to appear in Google Search
+  (including its generative AI capabilities), as Google Search itself doesn't
+  use them." The same page adds that maintaining one for other services will
+  neither harm nor help visibility, because Google Search ignores it.
+- **No major model provider consumes it in production.**
+- **An SE Ranking study** found that removing `llms.txt` as a variable improved
+  their citation-prediction model, meaning it was adding noise.
+- **OtterlyAI instrumented one site for 90 days** and logged 84 requests to
+  `/llms.txt` out of 62,100 AI bot visits. An ordinary page on the same site
+  averaged about 265 AI bot visits in the same window.
+
+That last measurement is the one worth sitting with. The file that exists to be
+read by AI crawlers was fetched roughly a third as often as a random page that
+was not written for them at all.
+
+A larger figure circulates, 408 requests out of more than 500 million AI bot
+visits. It is not used here: it comes from a vendor with no published
+methodology, no data window, and no dataset, and a number that convenient
+deserves the same scrutiny as the claim it argues against.
+
+## The cost is not the file
+
+`llms.txt` neither helps nor hurts your search performance. The cost of shipping
+one is the implication. A blog that ships an `llms.txt` is telling its owner
+that the file does something, and that owner will spend an hour maintaining it
+that belongs somewhere else.
+
+## The one case where it earns its place
+
+Developer documentation with programmatic readers, where the token saving is
+real.
+
+The mechanism is different from the citation claim. Nobody is arguing that a
+crawler discovers your docs through `llms.txt`. The argument is that when an
+agent has already been pointed at a documentation site and has to read it, a
+Markdown index and Markdown page variants cost a fraction of the tokens that
+rendered HTML with navigation chrome costs. That is a measurable saving on a
+real workflow rather than a ranking hypothesis.
+
+Next.js does exactly this for its own documentation, and so does this site:
+
+- [/llms.txt](/llms.txt), an index of every page with its description
+- [/llms-full.txt](/llms-full.txt), every page concatenated
+- A Markdown variant of every page, at [/installation.md](/installation.md) and
+  so on for the rest
+
+Your blog is not that. Its readers are people, plus crawlers that want HTML with
+structured data in it. Serving those crawlers a second parallel copy of the same
+content adds a surface to keep in step and buys nothing measurable.
+
+## What to do with the hour instead
+
+1. **Server-rendered HTML.** The text in the first response, with no JavaScript
+   required. This is the whole game, and most sites fail it.
+2. **Structured data.** A connected graph that resolves your author and your
+   organisation to real entities.
+3. **Third-party mentions.** Being discussed somewhere you do not control is
+   closer to the mechanism than anything you can put in your own root directory.
+
+AgentBlog does the first two for you and tells you how to work on the third.
+`llms.txt` is not on the list.
+
+## If you want one anyway
+
+It is your repository. A route handler at `app/llms.txt/route.ts` returning a
+plain-text index is about fifteen lines, and nothing in the blog will fight you.
+
+It is not shipped by default because shipping it implies it works.
+
+---
+
+_This page is licensed [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)._

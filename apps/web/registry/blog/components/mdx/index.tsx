@@ -47,7 +47,7 @@
  * not by the order of names in the attribute. There is no `cn()` import, so the
  * block has no dependency on the consumer having `lib/utils.ts`.
  *
- * @see https://agentblog.dev/docs/theming
+ * @see https://docs.agentblog.dev/guides/match-your-design
  */
 import type { ComponentPropsWithoutRef } from 'react'
 

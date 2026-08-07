@@ -1,0 +1,17 @@
+# The committed state of this fixture is a clean Next.js 16 app with Tailwind v4
+# and deliberately no components.json, which is the single condition
+# scripts/assert-init-refuses.mjs exists to test. Nothing generated belongs in
+# it.
+#
+# next-env.d.ts is written by `next build`, and it references types under
+# .next/, so its committed content would describe whichever build last ran here.
+# apps/web and apps/docs track theirs because they are shipped applications and
+# that is the Next.js convention. A fixture is not, for the same reason
+# apps/fixture-next16/.gitignore gives: anyone who builds locally to debug
+# something is then one `git add -A` away from committing generated output, and
+# it reads as ordinary work in review.
+#
+# assert-init-refuses.mjs hashes this directory from the filesystem rather than
+# from git, so ignoring a file here does not narrow what it checks.
+next-env.d.ts
+*.tsbuildinfo

@@ -1,0 +1,281 @@
+---
+title: CLI
+description: Every agentblog command, its flags, what doctor checks, and what --fix will and will not repair.
+icon: FileText
+---
+
+```bash
+npx agentblog@latest <command>
+```
+
+Published to npm as `agentblog`. It bundles its own copy of TypeScript rather
+than resolving one from your `node_modules`, because it edits config files in
+projects whose TypeScript version it does not control.
+
+## Commands
+
+| Command          | Does                                                                               |
+| ---------------- | ---------------------------------------------------------------------------------- |
+| `init`           | Check the stack, prompt, install, patch the configs, generate keys, run `doctor`   |
+| `create <name>`  | Scaffold a new Next.js project and install the blog into it                        |
+| `doctor [--fix]` | Verify the install. Exits non-zero on an error, so it works in CI                  |
+| `audit [slug]`   | The pre-publish checklist, for one post or all of them                             |
+| `new <title>`    | Scaffold a post file with correct frontmatter                                      |
+| `ping <slug>`    | Revalidate and submit to IndexNow by hand                                          |
+| `revert`         | Restore the last patch set from `.agentblog/backup/`                               |
+| `uninstall`      | Reverse every config patch, remove the `AGENTS.md` block, list the files to delete |
+| `telemetry`      | Anonymous usage data: `on`, `off`, or `status`                                     |
+
+## Flags
+
+Four flags are global, accepted before the command name and by every command.
+Everything else belongs to one command or a few, and `agentblog <command>
+--help` is the authority.
+
+| Global flag       | Effect                                                                     |
+| ----------------- | -------------------------------------------------------------------------- |
+| `--cwd <path>`    | Run as if `agentblog` had started in this directory                        |
+| `--no-telemetry`  | Disable anonymous usage data for this run. `DO_NOT_TRACK` is also honoured |
+| `-v`, `--version` | Print the version                                                          |
+| `-h`, `--help`    | Print help for the command                                                 |
+
+There is no global `--dry-run`, `--yes`, `--force`, or `--json`. Passing one to
+a command that does not declare it is an error rather than a no-op, which is
+worth knowing before you script against this.
+
+| Flag           | Accepted by                                             | Effect                                                       |
+| -------------- | ------------------------------------------------------- | ------------------------------------------------------------ |
+| `--dry-run`    | `init`, `create`, `doctor --fix`, `revert`, `uninstall` | Print the unified diff and write nothing                     |
+| `-y`, `--yes`  | `init`, `create`                                        | Skip the prompts. Read the contract below first              |
+| `--force`      | `init`                                                  | Proceed even when files already exist under `app/blog`       |
+| `--json`       | `doctor`, `audit`                                       | Print the whole report as one JSON document and nothing else |
+| `--verbose`    | `doctor`, `audit`                                       | List passing checks as well as failures                      |
+| `--offline`    | `doctor`                                                | Skip every check that needs the network                      |
+| `--dir <path>` | `audit`, `new`                                          | Content directory. Defaults to `content/blog`                |
+
+### What `--yes` actually means
+
+`--yes` does not accept prompt defaults, because three of the prompts have no
+defensible default. `init --yes` on its own refuses and tells you so. The
+non-interactive form is all four flags together:
+
+```bash
+npx agentblog@latest init --yes \
+  --site-url https://yoursite.com \
+  --brand "Your Brand" \
+  --author your-slug
+```
+
+Each value is validated against the same rule its prompt uses. A flag that
+accepted what the prompt rejects would be the same bug arriving through a
+different door.
+
+## init
+
+```bash
+npx agentblog@latest init [--source mdx] [--site-url https://…] [--brand "Name"] [--author slug]
+                          [--yes] [--dry-run] [--force] [--skip-install] [--reinstall]
+                          [--registry <url>]
+```
+
+Refuses, before writing anything, when Next.js is older than 16.3 or not on the
+App Router, React is not 19, Tailwind is not v4, or `components.json` is absent.
+The last one prints the `shadcn init` command rather than running it.
+
+It also refuses when `app/blog/**` already exists and AgentBlog did not write
+it, and prints the conflicting paths. `--force` proceeds.
+
+`--skip-install` runs only the config patches, which is what you want when the
+files are already on disk. `--reinstall` forces the file copy on a project that
+already has an install manifest. `--registry` points the `@agentblog` namespace
+somewhere other than `agentblog.dev`, for a local server or a private mirror.
+
+Your content is never overwritten. `content/authors.json`,
+`content/categories.json`, and `content/blog/**` are snapshotted before the
+install runs and restored afterwards, so seed content only ever lands where
+there was nothing.
+
+### What a second run does
+
+Nothing. Each patch site has stated semantics rather than "write the value":
+
+| Patch site                       | Behaviour when a value already exists                                      |
+| -------------------------------- | -------------------------------------------------------------------------- |
+| `htmlLimitedBots`                | Union, never replace. Replacing is a live SEO regression                   |
+| `images.qualities`               | Union with your array, deduped and sorted                                  |
+| `images.remotePatterns`          | Appends when no structurally equal entry exists                            |
+| `metadataBase`, `title.template` | Written only when absent. Reported, never overwritten                      |
+| The `AGENTS.md` block            | Replaced between its own markers. Appended when absent                     |
+| The IndexNow key                 | Generated only when both the key file and the environment value are absent |
+
+Anything the CLI declines to overwrite becomes a `doctor` warning, so you are
+told rather than left half-configured.
+
+### AGENTS.md, and the file Next.js also owns
+
+On Next.js 16.3 and later, `next dev` generates `AGENTS.md` and `CLAUDE.md` at
+your project root and rewrites a managed block inside its own markers on every
+run. Content outside those markers is preserved.
+
+So `init` writes strictly after the closing marker, never inside or across it,
+and never writes `CLAUDE.md` at all. Next.js generates that file already
+importing `AGENTS.md`, so adding our block there would put the same text into
+context twice. A hand-written `CLAUDE.md` is left alone.
+
+## doctor
+
+```bash
+npx agentblog@latest doctor [--fix] [--dry-run] [--url https://…] [--offline] [--verbose] [--json]
+```
+
+Exits non-zero on any error-severity finding.
+
+Every finding carries a stable id, printed with the message and included under
+`--json`. Search for the id rather than the wording: the wording changes and the
+id does not.
+
+### What it checks
+
+| Area              | Checks                                                                                                                         |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| Crawler config    | `htmlLimitedBots` exists and is a superset of the Next.js default list plus the AI crawlers                                    |
+| Metadata          | `metadataBase`, `title.template`, and the RSS entry in the root layout                                                         |
+| Prerendering      | `generateStaticParams` exists in the post route and is not sliced. An AST check, not a text search                             |
+| Robots            | The environment guard in `app/robots.ts`                                                                                       |
+| Sitemap           | No fabricated `lastModified` from `new Date()`                                                                                 |
+| Render path       | No `'use client'` anywhere in the article render path                                                                          |
+| Revalidation      | Every `revalidateTag` call passes a profile, and the publish path uses `{ expire: 0 }`                                         |
+| Versions          | Next.js on a patched release, React 19, Tailwind v4, Node 20.9 or newer                                                        |
+| Images            | `images.qualities` covers every quality the block uses, and `preload` is on at most one image per route                        |
+| Secrets           | The IndexNow key file exists and matches, and no AgentBlog secret is in a git-tracked file                                     |
+| Routes            | No collision with an existing `app/blog/**`, and every route file landed                                                       |
+| Structured output | Post metadata still spreads the shared defaults, asserted against built HTML rather than source                                |
+| Agent files       | The `AGENTS.md` block is outside the Next.js markers and no `CLAUDE.md` was written by us                                      |
+| Your config       | `defineConfig` is used, `siteUrl` is real, `brand.sameAs` is not empty, the author roster has been edited, one config importer |
+| Theme             | No palette utilities, colour literals, or dark-mode colour variants in the installed components                                |
+| Copy style        | No em dashes in the seed posts, the registry text, or the `AGENTS.md` block                                                    |
+| Client bundle     | Zod is absent from every client chunk                                                                                          |
+| Monorepo          | Reports where each root-level file landed. Never blocks                                                                        |
+
+With `--url` it adds the live checks: it fetches the URL as GPTBot, ClaudeBot,
+PerplexityBot, OAI-SearchBot, and Googlebot, and asserts each gets a 200 with
+body text present and `<title>` inside `<head>`. A 403, a challenge page, or an
+interstitial is a blocking failure that names the CDN it detected.
+
+<Callout type="warn" title="Run the live checks from outside the deployment">
+  It is an ordinary fetch from wherever the CLI runs. A request originating inside your own network
+  can bypass the exact CDN rule the check exists to find, and then the most valuable check in the
+  product passes on a site no crawler can reach.
+</Callout>
+
+### What `--fix` repairs
+
+A fixed list, and nothing else. It never edits a route beyond the robots guard,
+and it never touches your content.
+
+| It writes                                                                            | It declines when                                                                                                       |
+| ------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
+| `htmlLimitedBots`, as the union of your value, the Next.js list, and the AI crawlers | The key appears twice, a spread could set it, or the current value is not a literal it can read                        |
+| `metadataBase`, when absent                                                          | `siteUrl` is missing or still the placeholder, or the layout has no metadata object                                    |
+| `title.template`, when there is no title or the title is already an object           | **The title is a plain string.** Converting it changes how every page title on your site is composed, so that is yours |
+| The RSS entry under `alternates.types`                                               | `alternates` is not an object literal, or `types` is already set                                                       |
+| The robots environment guard                                                         | The default export is not a function body it can edit                                                                  |
+| `images.qualities`, unioned and sorted                                               | `images` appears twice or is not a literal                                                                             |
+| `INDEXNOW_KEY`, `AGENTBLOG_REVALIDATE_SECRET`, and the key file in `public/`         | A `public/*.txt` only counts as a key file when it contains exactly its own name, so `security.txt` is never touched   |
+| The `AGENTS.md` block, after the Next.js managed region                              | The markers are malformed                                                                                              |
+
+Everything else is reported with a remedy and never written, for three reasons:
+it is your code (route files and render paths), it is your decision (tsconfig
+strictness, config values, components you may have restyled deliberately), or it
+cannot be written (version floors, missing packages, live HTTP responses).
+
+<Callout title="If the fixable count never goes down">
+  The summary counts findings that are marked fixable, which is a property of the finding rather
+  than a prediction about your file. A project whose root layout has `title: 'My Site'` as a plain
+  string is told forever that one thing can be repaired, while `--fix` correctly declines to convert
+  it every time. Read the declined list, or run `doctor --fix --json` and read `fix.declined`.
+</Callout>
+
+## audit
+
+```bash
+npx agentblog@latest audit [slug] [--dir <path>] [--stale] [--days <n>]
+                           [--crawlers <logfile>] [--verbose] [--json]
+```
+
+Runs the [pre-publish checklist](/guides/pre-publish-checklist) against one post
+or all of them, reporting each item pass or fail. It never claims success on a
+failure.
+
+Every check runs on every post. There is no flag to run a subset, because the
+checks a writer would switch off are the ones that catch the expensive
+mistakes. Narrow the input instead: pass a slug, or pass `--dir`.
+
+`--stale` lists posts by how overdue a refresh is, ranked by inbound internal
+links, with `--days` setting the threshold (90 by default).
+
+`--crawlers` parses a server or CDN access log and reports hits per bot per
+week, verifying each hit against the operators' published IP ranges. User agent
+strings are trivially spoofed, so a count that trusts the string alone is
+reporting noise.
+
+## new
+
+```bash
+npx agentblog@latest new "Do AI crawlers run JavaScript?" [--slug <slug>] [--dir <path>]
+                         [--author <slug>] [--category <slug>]
+```
+
+Writes `content/blog/do-ai-crawlers-run-javascript.mdx` with complete
+frontmatter, today's date with an offset, and `draft: true`. It does not write
+the post.
+
+<Callout type="warn" title="Pass --author and --category">
+  `new` does not read `agentblog.config.ts`, so without them it writes placeholder values that name
+  no real record. `draft: true` does not save you: drafts are validated like any other post, so the
+  next build fails with `unknown author slug`.
+</Callout>
+
+## ping
+
+```bash
+npx agentblog@latest ping do-ai-crawlers-run-javascript [--skip-revalidate] [--skip-indexnow]
+                          [--site-url <url>] [--key <key>] [--secret <secret>]
+```
+
+Calls your publish webhook and submits the URL to IndexNow, printing the
+response code with its meaning attached: 200 submitted, 202 accepted with key
+validation pending, 400 bad format, 403 key invalid or missing, 422 URL and host
+mismatch, 429 rate limited. The 403 and 422 cases look identical to success from
+the caller's side, which is why they are printed.
+
+Exit code 0 means every step you asked for happened. A missing credential is an
+error rather than a warning, because a publish step that silently submits
+nothing and reports success is the failure this command exists to make loud.
+
+## revert and uninstall
+
+```bash
+npx agentblog@latest revert [--all] [--dry-run]
+npx agentblog@latest uninstall [--keep-env] [--keep-backups] [--dry-run]
+```
+
+`revert` restores the most recent backup only, so a second `doctor --fix` can be
+undone without also unwinding your `init`. `revert --all` replays every backup
+newest to oldest, returning the patched files to their state before the first
+run.
+
+`uninstall` removes the `AGENTS.md` block, removes the two environment
+variables AgentBlog added, restores every backup, removes `.agentblog/`, and
+then lists the files the registry wrote without deleting any of them. You have
+probably edited some, and deleting edited components is not ours to do.
+
+## Telemetry
+
+Anonymous and opt-out: install count, framework version, chosen content source,
+and doctor pass rate. Nothing about your content, your URLs, or your
+configuration values is collected.
+
+In this release the events are written to a local file and never sent anywhere.
+`--no-telemetry` disables it for a run, `agentblog telemetry off` disables it
+permanently, and `DO_NOT_TRACK` is honoured.

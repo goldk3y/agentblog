@@ -33,7 +33,7 @@
  * than a truncated first paragraph. If you want full content, render it through
  * `renderMdx` to a string and add `content:encoded` here, escaped as CDATA.
  *
- * @see https://agentblog.dev/docs/blog-block
+ * @see https://docs.agentblog.dev/reference/files
  */
 import {
   absoluteUrl,

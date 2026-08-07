@@ -40,7 +40,7 @@
  *   1  AI crawler branches missing only (missed opportunity)
  *   2  default-list branches missing, or the key is absent (active regression)
  *
- * @see https://agentblog.dev/docs/blog-block
+ * @see https://docs.agentblog.dev/reference/files
  * @see packages/checks/src/core.ts
  */
 import { existsSync, readFileSync } from 'node:fs'

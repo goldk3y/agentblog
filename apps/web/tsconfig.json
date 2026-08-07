@@ -7,7 +7,7 @@
     // `https://yourdomain.com`) instead of this app's real one, and the dogfood
     // site renders someone else's example values. Everything else is meant to
     // resolve registry-first: that is what makes the demo blog the same modules
-    // the registry ships. See https://agentblog.dev/docs/cli-reference
+    // the registry ships. See https://docs.agentblog.dev/reference/cli
     "paths": {
       "@/agentblog.config": ["./agentblog.config.ts"],
       "@/*": ["./registry/blog/*", "./*"]

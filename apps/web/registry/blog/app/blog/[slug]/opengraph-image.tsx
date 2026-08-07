@@ -37,7 +37,7 @@
  * Any asset is read ONCE at module scope. A `readFile` inside the default export
  * would run on every generation, which is once per post.
  *
- * @see https://agentblog.dev/docs/blog-block
+ * @see https://docs.agentblog.dev/reference/files
  */
 import { ImageResponse } from 'next/og'
 import { readFile } from 'node:fs/promises'

@@ -2,7 +2,7 @@
   "$schema": "https://json.schemastore.org/tsconfig",
   "display": "AgentBlog base",
   "_comment": [
-    "TypeScript 7 baseline. See https://agentblog.dev/docs/cli-reference",
+    "TypeScript 7 baseline. See https://docs.agentblog.dev/reference/cli",
     "TS 7 removed `baseUrl`, `moduleResolution: node`, and `target: es5` as hard",
     "errors, and stopped auto-discovering @types. Every option below is either a",
     "TS 7 requirement or a deliberate strictness choice we rely on elsewhere."

@@ -35,10 +35,10 @@
  *                     can point at `#organization` instead of restating the
  *                     publisher on every post.
  *
- * @see https://agentblog.dev/docs/blog-block
+ * @see https://docs.agentblog.dev/reference/files
  */
 import type { Metadata, Viewport } from 'next'
-import { Inter, JetBrains_Mono, Source_Serif_4 } from 'next/font/google'
+import { Geist, Geist_Mono } from 'next/font/google'
 
 import { SiteFooter } from '@/components/site/footer'
 import { SiteHeader } from '@/components/site/header'
@@ -48,26 +48,30 @@ import { absoluteUrl, config } from '@/lib/config'
 import './globals.css'
 
 /*
- * Fonts are loaded through `next/font`, which self hosts the files, emits the
- * `@font-face` rules at build time, and sets `size-adjust` fallback metrics.
- * No network request to a font CDN at runtime, so no render-blocking third
- * party and no layout shift when the webfont arrives.
+ * Geist and Geist Mono, the two cuts of the one typeface the Geist design
+ * system defines. Nothing else is loaded: the site has no serif, so a stray
+ * `font-serif` resolves to nothing rather than to a font nobody chose.
+ *
+ * Both are variable fonts across weights 100 to 900, which is what makes the
+ * heading weight of 450 in `globals.css` a real instance rather than a
+ * synthesised one. `font-synthesis: none` in the base layer proves it: if the
+ * variable axis were missing, headings would render at 400 and the difference
+ * would be visible rather than silent.
+ *
+ * `next/font` self hosts the files, emits the `@font-face` rules at build time,
+ * and sets `size-adjust` fallback metrics. No network request to a font CDN at
+ * runtime, so no render-blocking third party and no layout shift when the
+ * webfont arrives.
  */
-const inter = Inter({
+const geistSans = Geist({
   subsets: ['latin'],
-  variable: '--font-inter',
+  variable: '--font-geist-sans',
   display: 'swap',
 })
 
-const sourceSerif = Source_Serif_4({
+const geistMono = Geist_Mono({
   subsets: ['latin'],
-  variable: '--font-source-serif',
-  display: 'swap',
-})
-
-const jetbrainsMono = JetBrains_Mono({
-  subsets: ['latin'],
-  variable: '--font-jetbrains-mono',
+  variable: '--font-geist-mono',
   display: 'swap',
 })
 
@@ -133,7 +137,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html
       lang={config.locale.split('_')[0] ?? 'en'}
       suppressHydrationWarning
-      className={`${inter.variable} ${sourceSerif.variable} ${jetbrainsMono.variable}`}
+      className={`${geistSans.variable} ${geistMono.variable}`}
     >
       <body className="flex min-h-dvh flex-col antialiased">
         {/*

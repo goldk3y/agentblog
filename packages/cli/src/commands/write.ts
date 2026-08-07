@@ -12,7 +12,7 @@
  * the IndexNow key file were never created, and nothing told the user that a
  * single command puts all of it back.
  *
- * @see https://agentblog.dev/docs/installation
+ * @see https://docs.agentblog.dev/installation
  */
 import { PatchWriteError, type PatchSet } from '../patchers/patch-set.ts'
 import { bullet, report, say } from '../util/log.ts'

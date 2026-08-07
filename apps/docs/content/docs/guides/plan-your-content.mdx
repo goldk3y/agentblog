@@ -1,0 +1,154 @@
+---
+title: Decide what to write about
+description: A working method for choosing topics, grouping them into clusters, and keeping the ones that earn traffic current, using the tools the install gives you.
+icon: Compass
+---
+
+The hardest part of running a blog is not writing the posts. It is knowing which
+posts to write. This page is a method you can hand to your agent, not a theory
+of content marketing.
+
+## Start from questions your customers already ask
+
+The posts that earn search traffic and get quoted by assistants answer a
+specific question completely. So the unit of planning is a question, not a
+topic.
+
+You already have a supply of them:
+
+- Support conversations, sales calls, and onboarding sessions. Any question you
+  have answered twice is a post.
+- The queries that already bring people to your site. Google Search Console,
+  Performance, Queries.
+- What people ask about your category in public. Reddit threads, competitor
+  comparison pages, and the "People also ask" box.
+- Your own product decisions. The reasoning behind a choice you made is often
+  the most useful thing you can publish, and nobody else can write it.
+
+Write the question down in the words a person would actually type. "Do AI
+crawlers run JavaScript?" is a post. "AI crawler considerations" is not.
+
+## Group them into clusters
+
+A cluster is one broad page plus several narrow ones, all linking to each other.
+Search engines and retrieval systems both use those links to work out what your
+site is about, and a group of connected posts on one subject reads as expertise
+in a way that ten unconnected posts does not.
+
+In AgentBlog a cluster maps onto a category. Each entry in
+`content/categories.json` gets an indexable hub page at `/blog/category/<slug>`,
+so the category description is real copy that ranks, not a label.
+
+```json title="content/categories.json"
+[
+  {
+    "slug": "ai-search",
+    "name": "AI search",
+    "description": "How ChatGPT, Claude, and Perplexity find, read, and cite web pages, and what that means for how you publish."
+  }
+]
+```
+
+A workable first shape is two or three categories, each with one broad post and
+three to five narrow ones. More categories than that on a young blog splits your
+internal links across pages that have none to spare.
+
+Tags are for cross-cutting themes rather than structure. Tag pages are
+`noindex` below a configurable post count, because a tag page with two posts on
+it is a thin page competing with your real ones.
+
+## Ask your agent to plan, not just to write
+
+Your agent has your existing posts, your categories, and your config in context,
+which makes it a better planner than a blank page.
+
+```text
+Read content/blog and content/categories.json.
+Propose eight posts for the ai-search cluster that we have not written yet.
+For each one give the exact question it answers, who it is for, which existing
+posts should link to it, and which existing post it should link to.
+Rank them by how likely they are to be searched by someone
+who could buy our product.
+```
+
+That last clause matters more than volume. A question with 200 searches a month
+from people evaluating a purchase is worth more than one with 20,000 searches
+from people who will never buy.
+
+## Publish in an order that compounds
+
+Write the broad post in a cluster first, then the narrow ones, then go back and
+link the broad one to each of them. Every new post should get at least one
+inbound link from an existing post in the same commit that adds it. A post
+nothing links to is discovered only through your sitemap and inherits none of
+the context around it.
+
+Orphan posts are the most common structural failure on a blog that otherwise
+does everything right.
+
+## Refresh what already works
+
+New posts are not the only lever, and often not the best one. A post that
+already ranks and is now slightly wrong is the cheapest win available.
+
+```bash
+npx agentblog@latest audit --stale
+```
+
+That lists posts by how overdue a refresh is, ranked by how many internal links
+point at them, so the top of the list is where a refresh pays back most. Then:
+
+```text
+Refresh content/blog/<slug>.mdx using the refresh-blog-post skill.
+```
+
+The agent re-fetches every source, corrects what actually changed, and leaves
+`dateModified` alone if nothing did. See [writing with your
+agent](/guides/write-with-your-agent#refreshing-a-post-is-not-rewriting-it) for
+why that discipline matters.
+
+A reasonable cadence for a small team is one new post and one refresh per week.
+Two posts a week that nobody links to is worse than one post a week inside a
+cluster.
+
+## Build the entity, not only the pages
+
+An assistant that quotes you has to resolve "who published this" to something
+real. Three things help, and none of them is a blog post:
+
+- `brand.sameAs` in your config, pointing at profiles a third party can verify:
+  LinkedIn, GitHub, Crunchbase, YouTube, Wikidata.
+- A real author with a real bio and their own `sameAs` links, in
+  `content/authors.json`. One named author with a filled-in profile beats three
+  empty ones.
+- Being discussed somewhere you do not control. Off-site mentions correlate more
+  strongly with AI visibility than raw backlink counts do. The measurements
+  behind that claim, and their limits, are in [the GEO
+  playbook](/concepts/geo-playbook#entity-building).
+
+## Know what "working" looks like
+
+Two numbers, checked monthly.
+
+**Impressions per cluster** in Search Console, filtered by URL path. A cluster
+that is working shows impressions climbing before clicks do.
+
+**Assistant referrals**, which do not group with search traffic in any default
+report. `lib/ai-referrers.ts` classifies them for you. See [measuring AI
+traffic](/guides/measure-ai-traffic).
+
+Give a new cluster three months before you judge it. Give an individual post
+six weeks before you decide it failed, then refresh it rather than deleting it.
+
+<Cards>
+  <Card
+    title="Write the post"
+    href="/first-post"
+    description="From an empty file to something ready to publish."
+  />
+  <Card
+    title="The format, and the evidence for it"
+    href="/concepts/geo-playbook"
+    description="Why answer capsules, question headings, and tables."
+  />
+</Cards>

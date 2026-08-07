@@ -17,7 +17,7 @@
  * The write is append only and idempotent: git is asked first whether the path
  * is already ignored, so a project that covers it some other way gets no diff.
  *
- * @see https://agentblog.dev/docs/cli-reference check 13
+ * @see https://docs.agentblog.dev/reference/cli#doctor
  */
 import { isGitIgnored } from '../util/exec.ts'
 import type { PatchResult } from './next-config.ts'

@@ -28,7 +28,7 @@
  *     `index: true`. Googlebot obeys the more specific directive, so that
  *     version reads as noindex to everyone except the crawler it matters most
  *     to. `googleBotDefaults` is spread so `max-snippet: -1` and the preview
- *     limits survive. See https://agentblog.dev/docs/blog-block. This is the same shape
+ *     limits survive. See https://docs.agentblog.dev/reference/files. This is the same shape
  *     `buildListMetadata` uses for a thin tag page; keep them in step.
  *   - `follow: true` stays on. The recovery links below are the point of the
  *     page, and telling a crawler that reached a dead link to ignore the way
@@ -70,7 +70,7 @@
  * the site. If the content source is unreachable, an unhandled throw here turns
  * a 404 into a 500, which is a strictly worse answer to the same request.
  *
- * @see https://agentblog.dev/docs/blog-block
+ * @see https://docs.agentblog.dev/reference/files
  */
 import type { Metadata } from 'next'
 import Link from 'next/link'
