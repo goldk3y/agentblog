@@ -37,6 +37,26 @@ jobs:
   # https://registry.npmjs.org/agentblog`, and painted main red for a condition
   # that is not a defect. A red main that is always red is a signal nobody reads.
   #
+  # The first version of that gate overcorrected. It skipped the publish and
+  # exited 0 unconditionally, so a push to main with released work waiting on it
+  # finished green in six seconds having published nothing, and the explanation
+  # went to the step summary, which is a page nobody opens when the tick is
+  # already green. `agentblog` sat unpublished on npm for a day of commits and
+  # the first person to run `npx agentblog@latest init` got `E404 Not Found`.
+  # That is this repository's own characteristic failure: it compiled, it linted,
+  # it went green, and the product was invisible.
+  #
+  # So the gate now distinguishes the two states it was collapsing:
+  #
+  #   Nothing to release      No changeset is pending, so a skipped publish
+  #                           costs nothing. Green, quietly.
+  #   A release was expected  Changesets are pending and there is no token, so
+  #                           work that was marked user-visible cannot reach
+  #                           users. Red, with an annotation on the run itself.
+  #
+  # A fork is exempt from the failing case, because a fork has no token by
+  # construction and its red would be the noise the original gate removed.
+  #
   # `secrets` is not one of the contexts GitHub exposes to a job-level `if`
   # (`github`, `needs`, `vars`, and `inputs` are), so the decision is made in a
   # job that can read secrets and published as an output, which `needs` then
@@ -49,31 +69,59 @@ jobs:
     outputs:
       can-publish: ${{ steps.check.outputs.can-publish }}
     steps:
+      - uses: actions/checkout@v4
+
+      # Counted from the files rather than from `changeset status`, which would
+      # need a full pnpm install to answer a question that is one `find` away.
+      # `.changeset/README.md` and `config.json` are not changesets.
+      - id: pending
+        name: Count the changesets waiting on a release
+        run: |
+          count=$(find .changeset -maxdepth 1 -name '*.md' ! -name 'README.md' | wc -l | tr -d ' ')
+          echo "count=$count" >> "$GITHUB_OUTPUT"
+          echo "$count changeset(s) pending"
+
       - id: check
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          PENDING: ${{ steps.pending.outputs.count }}
+          IS_FORK: ${{ github.event.repository.fork }}
         run: |
           if [ -n "$NPM_TOKEN" ]; then
             echo 'can-publish=true' >> "$GITHUB_OUTPUT"
             echo '### Publishing is configured' >> "$GITHUB_STEP_SUMMARY"
-          else
-            echo 'can-publish=false' >> "$GITHUB_OUTPUT"
-            {
-              echo '### Publishing is not set up yet, so nothing was published'
-              echo
-              echo 'The `NPM_TOKEN` secret is not set on this repository. Everything'
-              echo 'else in this workflow ran; only the publish was skipped. To turn'
-              echo 'publishing on:'
-              echo
-              echo '1. Claim `agentblog` and the `@agentblog` scope on npm.'
-              echo '2. Create a granular access token with write access to both.'
-              echo '3. Add it as the `NPM_TOKEN` repository secret.'
-              echo
-              echo 'After the first successful publish, replace the token with'
-              echo 'trusted publishing (`npm trust github agentblog --file release.yml`),'
-              echo 'which needs no long-lived secret at all.'
-            } >> "$GITHUB_STEP_SUMMARY"
+            exit 0
           fi
+
+          echo 'can-publish=false' >> "$GITHUB_OUTPUT"
+          {
+            echo '### Publishing is not set up, so nothing was published'
+            echo
+            echo "The \`NPM_TOKEN\` secret is not set on this repository, and $PENDING"
+            echo 'changeset(s) are waiting on it. Everything else in this workflow'
+            echo 'ran; only the publish was skipped. To turn publishing on:'
+            echo
+            echo '1. Claim `agentblog` and the `@agentblog` scope on npm.'
+            echo '2. Create a granular access token with write access to both.'
+            echo '3. Add it as the `NPM_TOKEN` repository secret.'
+            echo
+            echo 'After the first successful publish, replace the token with'
+            echo 'trusted publishing (`npm trust github agentblog --file release.yml`),'
+            echo 'which needs no long-lived secret at all.'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          if [ "$IS_FORK" = 'true' ]; then
+            echo 'Fork, and a fork has no publishing credential by construction. Not failing.'
+            exit 0
+          fi
+
+          if [ "$PENDING" -eq 0 ]; then
+            echo 'No changeset is pending, so there was nothing to publish anyway.'
+            exit 0
+          fi
+
+          echo "::error title=Nothing was published::$PENDING changeset(s) are waiting on a release and NPM_TOKEN is not set on this repository. Every version described by those changesets is unreachable to anyone running npx agentblog. See this run's summary for the three steps that fix it."
+          exit 1
 
   npm:
     name: Publish agentblog to npm
