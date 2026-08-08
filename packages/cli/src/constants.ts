@@ -161,6 +161,24 @@ export const NO_COMPONENTS_JSON_MESSAGE = [
 /** shadcn publishes the migration path; we link it rather than restating it. */
 export const TAILWIND_V4_MIGRATION_URL = 'https://ui.shadcn.com/docs/tailwind-v4'
 
+/*
+ * The dependency floors, written as semver ranges because that is what they are
+ * compared against.
+ *
+ * `init` and `doctor` both read these, and they are the same requirement stated
+ * once. When they were two sets of literals in two files, the pair could drift
+ * and a project could pass one command and fail the other.
+ *
+ * They are ranges rather than numbers so an installed version can be tested
+ * with `satisfies` and a declared range with `intersects`. See the header of
+ * `detect/versions.ts` for why those are different questions.
+ */
+export const NEXT_FLOOR = '>=16.0.0'
+export const REACT_FLOOR = '>=19.0.0'
+export const TAILWIND_FLOOR = '>=4.0.0'
+/** Next.js 16 requires it, and TypeScript 5.1 is where it lands. */
+export const TYPESCRIPT_FLOOR = '>=5.1.0'
+
 /**
  * The AGENTS.md block, built with the skill invocation that matches how the
  * project was installed.

@@ -16,13 +16,37 @@
  * second cssVars format, a second prose bridge, and pinning users to shadcn
  * 2.3.0, which predates registry namespaces, `include`, and `registry:base`.
  *
+ * ===========================================================================
+ * A REFUSAL HAS TO BE TRUE
+ * ===========================================================================
+ * Every message here names a version, and for a while none of them could read
+ * one. `create-next-app` writes `"tailwindcss": "^4"`, the range parser only
+ * matched a full `x.y.z`, and so the most common project shape in existence was
+ * refused with "Tailwind CSS is not installed" and sent to a v3 migration
+ * guide. The refusal was absolute, unactionable, and wrong.
+ *
+ * So a version now arrives as a `DependencyStatus` with four cases, and each
+ * one gets its own sentence. The two that are easy to collapse and must not be:
+ * a package that is not there, and a package whose version this CLI cannot
+ * determine (a pnpm `catalog:`, a `workspace:*`, a `node_modules` that was
+ * never installed). The first is the user's problem to fix. The second is ours
+ * to state plainly.
+ *
  * @see https://docs.agentblog.dev/installation
  */
-import { NO_COMPONENTS_JSON_MESSAGE, TAILWIND_V4_MIGRATION_URL } from '../constants.ts'
+import {
+  NEXT_FLOOR,
+  NO_COMPONENTS_JSON_MESSAGE,
+  REACT_FLOOR,
+  TAILWIND_FLOOR,
+  TAILWIND_V4_MIGRATION_URL,
+} from '../constants.ts'
+import { componentsJsonTargetsTailwindV4, dependenciesInstalled } from '../detect/project.ts'
 import { collidingBlogFiles } from '../detect/routes.ts'
-import { resolvedVersion } from '../detect/versions.ts'
+import { describeStatus, meetsFloor, resolveDependency } from '../detect/versions.ts'
 import type { ProjectContext } from '../detect/project.ts'
-import { bullet, refusal, report, say } from '../util/log.ts'
+import { installCommand } from '../util/exec.ts'
+import { bullet, note, refusal, report, say } from '../util/log.ts'
 
 export interface RequirementResult {
   readonly ok: boolean
@@ -43,39 +67,8 @@ export function checkRequirements(
     return { ok: false, forceable: false }
   }
 
-  const next = resolvedVersion(project, 'next')
-  if (!next || next.major < 16) {
-    report(
-      'error',
-      next
-        ? `Next.js ${next.raw} is installed. AgentBlog requires Next.js 16 with the App Router.`
-        : 'Next.js is not installed in this project.',
-      'npx @next/codemod@canary upgrade latest',
-    )
-    return { ok: false, forceable: false }
-  }
-
-  const react = resolvedVersion(project, 'react')
-  if (react && react.major < 19) {
-    report(
-      'error',
-      `React ${react.raw} is installed. Next.js 16 and the shipped components require React 19.`,
-      'Upgrade react and react-dom to 19.',
-    )
-    return { ok: false, forceable: false }
-  }
-
-  const tailwind = resolvedVersion(project, 'tailwindcss')
-  if (!tailwind || tailwind.major < 4) {
-    report(
-      'error',
-      tailwind
-        ? `Tailwind CSS ${tailwind.raw} is installed. AgentBlog requires v4, and v3 is not supported.`
-        : 'Tailwind CSS is not installed. AgentBlog requires Tailwind v4.',
-      `Migrate first: ${TAILWIND_V4_MIGRATION_URL}`,
-    )
-    return { ok: false, forceable: false }
-  }
+  if (!checkFramework(project)) return { ok: false, forceable: false }
+  if (!checkTailwind(project)) return { ok: false, forceable: false }
 
   if (!project.componentsJson) {
     refusal(NO_COMPONENTS_JSON_MESSAGE.split('\n'))
@@ -107,4 +100,104 @@ export function checkRequirements(
   }
 
   return { ok: true, forceable: false }
+}
+
+/**
+ * The remedy for a spec that names no version.
+ *
+ * `pnpm install` when the tree is simply not there, and a pointer at the spec
+ * itself when it is. Telling someone with a populated `node_modules` to install
+ * again wastes their time, and telling someone with an empty project that their
+ * `catalog:` entry is exotic explains nothing.
+ */
+function unresolvedRemedy(project: ProjectContext, name: string, spec: string): string {
+  return dependenciesInstalled(project)
+    ? `package.json declares ${name} as "${spec}", which names no version. Pin it to a version range, or install it so AgentBlog can read the installed one.`
+    : `Run ${installCommand(project.packageManager)} first, so AgentBlog can read the installed ${name} version.`
+}
+
+function checkFramework(project: ProjectContext): boolean {
+  const next = resolveDependency(project, 'next')
+
+  if (next.state === 'absent') {
+    report(
+      'error',
+      'Next.js is not a dependency of this project.',
+      'AgentBlog targets Next.js 16 with the App Router. Install it, or run this from the right directory.',
+    )
+    return false
+  }
+
+  if (next.state === 'unresolved') {
+    report(
+      'error',
+      'AgentBlog could not determine the Next.js version, and it requires 16.',
+      unresolvedRemedy(project, 'next', next.spec),
+    )
+    return false
+  }
+
+  if (meetsFloor(next, NEXT_FLOOR) === false) {
+    report(
+      'error',
+      `${describeStatus('Next.js', next)} cannot satisfy ${NEXT_FLOOR}. AgentBlog requires Next.js 16 with the App Router.`,
+      'npx @next/codemod@canary upgrade latest',
+    )
+    return false
+  }
+
+  const react = resolveDependency(project, 'react')
+  // Compared against `false` rather than falsy: `null` is "no evidence", and no
+  // evidence is not a failure. React has no requirement of its own to state, so
+  // an unreadable react version is passed over in silence.
+  if (meetsFloor(react, REACT_FLOOR) === false) {
+    report(
+      'error',
+      `${describeStatus('React', react)} cannot satisfy ${REACT_FLOOR}, which Next.js 16 and the shipped components require.`,
+      'Upgrade react and react-dom to 19.',
+    )
+    return false
+  }
+
+  return true
+}
+
+function checkTailwind(project: ProjectContext): boolean {
+  const tailwind = resolveDependency(project, 'tailwindcss')
+
+  if (tailwind.state === 'absent') {
+    report(
+      'error',
+      'Tailwind CSS is not a dependency of this project. AgentBlog requires Tailwind v4.',
+      `Install tailwindcss and @tailwindcss/postcss, or migrate from v3: ${TAILWIND_V4_MIGRATION_URL}`,
+    )
+    return false
+  }
+
+  if (tailwind.state === 'unresolved') {
+    // shadcn writes `"config": ""` into components.json for a v4 project and
+    // reads it back as the version, so it answers the case a `catalog:` entry
+    // cannot.
+    if (componentsJsonTargetsTailwindV4(project)) {
+      note('Tailwind version read from components.json, which records a v4 project.')
+      return true
+    }
+    report(
+      'error',
+      'AgentBlog could not determine the Tailwind CSS version, and it requires v4.',
+      unresolvedRemedy(project, 'tailwindcss', tailwind.spec),
+    )
+    return false
+  }
+
+  if (meetsFloor(tailwind, TAILWIND_FLOOR) === false) {
+    report(
+      'error',
+      `${describeStatus('Tailwind CSS', tailwind)} cannot satisfy ${TAILWIND_FLOOR}. AgentBlog requires v4, and v3 is not supported.`,
+      `Migrate first: ${TAILWIND_V4_MIGRATION_URL}`,
+    )
+    return false
+  }
+
+  return true
 }

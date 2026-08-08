@@ -75,6 +75,16 @@ export function dlxCommand(pm: PackageManager): { command: string; args: string[
 }
 
 /**
+ * The install command to name in a remedy, in the user's package manager.
+ *
+ * Printed rather than run. A version check that cannot read `node_modules` has
+ * no business installing a tree on the user's behalf to find out.
+ */
+export function installCommand(pm: PackageManager): string {
+  return `${pm} install`
+}
+
+/**
  * Build the `shadcn add` invocation.
  *
  * `--overwrite` is not optional on a re-install. Without it an install that

@@ -42,6 +42,7 @@
     "commander": "^15.0.0",
     "picocolors": "^1.1.1",
     "prompts": "^2.4.2",
+    "semver": "^7.8.5",
     "ts-morph": "^28.0.0",
     "yaml": "^2.9.0"
   },
@@ -52,6 +53,7 @@
     "@agentblog/typescript-config": "workspace:*",
     "@types/node": "^26.1.2",
     "@types/prompts": "^2.4.9",
+    "@types/semver": "^7.8.0",
     "eslint": "^10.8.0",
     "tsup": "^8.5.1"
   },

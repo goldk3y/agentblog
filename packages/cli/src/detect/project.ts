@@ -23,7 +23,7 @@ export interface PackageJson {
 
 export interface ComponentsJson {
   readonly aliases?: Record<string, string>
-  readonly tailwind?: { css?: string; baseColor?: string }
+  readonly tailwind?: { config?: string; css?: string; baseColor?: string }
   readonly registries?: Record<string, unknown>
 }
 
@@ -78,6 +78,37 @@ export function detectProject(cwd: string): ProjectContext {
     agentblogConfigPath: firstExisting(root, ['agentblog.config.ts', 'agentblog.config.js']),
     workspaceRoot: findWorkspaceRoot(root),
   }
+}
+
+/**
+ * shadcn's own marker for a Tailwind v4 project: an empty `tailwind.config`.
+ *
+ * v4 has no JavaScript config file, so `shadcn init` writes `"config": ""` and
+ * its CLI reads that back as "v4" before it looks at `package.json` at all.
+ * Borrowing the marker gives us an answer in the cases where a dependency spec
+ * cannot give one, which is a pnpm `catalog:`, a `workspace:*`, or a project
+ * whose dependencies are not installed yet.
+ *
+ * It is only ever consulted when the version is genuinely unresolvable. A
+ * declared v3 range is a real answer and outranks this, because the v3 refusal
+ * is about cssVars and prose formats that an empty config string says nothing
+ * about.
+ *
+ * @see https://ui.shadcn.com/docs/components-json
+ */
+export function componentsJsonTargetsTailwindV4(project: ProjectContext): boolean {
+  return project.componentsJson?.tailwind?.config === ''
+}
+
+/**
+ * Whether dependencies have been installed at all.
+ *
+ * Distinguishes "your range is exotic" from "you have not run install yet",
+ * which are the same missing version with two different remedies.
+ */
+export function dependenciesInstalled(project: ProjectContext): boolean {
+  const roots = [project.root, project.workspaceRoot].filter((r): r is string => r !== null)
+  return roots.some((root) => existsSync(join(root, 'node_modules')))
 }
 
 /** Resolve a project relative path, honouring a `src/` layout for app paths. */

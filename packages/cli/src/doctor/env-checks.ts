@@ -15,14 +15,14 @@
  */
 import { basename, join } from 'node:path'
 
-import { AGENTBLOG_ENV_KEYS, BACKUP_DIR } from '../constants.ts'
+import { AGENTBLOG_ENV_KEYS, BACKUP_DIR, TYPESCRIPT_FLOOR } from '../constants.ts'
 import { collidingBlogFiles, hasPublishRoute } from '../detect/routes.ts'
 import { envValue } from '../patchers/env.ts'
 import { AGENTBLOG_IGNORE_ENTRY, isAgentBlogIgnored } from '../patchers/gitignore.ts'
 import { isGitIgnored, isGitTracked } from '../util/exec.ts'
 import { exists, readFile, walk, toPosixRelative } from '../util/fs.ts'
 import { isIndexNowKeyFile } from '../util/indexnow.ts'
-import { parseSemVer, resolvedVersion } from '../detect/versions.ts'
+import { describeStatus, meetsFloor, parseSemVer, resolveDependency } from '../detect/versions.ts'
 import type { DoctorContext } from './context.ts'
 
 const ENV_FILES = ['.env', '.env.local', '.env.production', '.env.development']
@@ -284,21 +284,28 @@ function checkRuntimeFloors(ctx: DoctorContext): void {
     ctx.reporter.pass(`21 Node ${process.versions.node} meets the 20.9 floor`)
   }
 
-  const typescript = resolvedVersion(ctx.project, 'typescript')
-  if (!typescript) {
-    ctx.reporter.skip('21 TypeScript floor', 'typescript is not installed in this project')
+  const typescript = resolveDependency(ctx.project, 'typescript')
+  if (typescript.state === 'absent') {
+    ctx.reporter.skip('21 TypeScript floor', 'typescript is not a dependency of this project')
     return
   }
-  if (typescript.major < 5 || (typescript.major === 5 && typescript.minor < 1)) {
+  if (typescript.state === 'unresolved') {
+    ctx.reporter.skip(
+      '21 TypeScript floor',
+      `package.json declares typescript as "${typescript.spec}", which names no version`,
+    )
+    return
+  }
+  if (meetsFloor(typescript, TYPESCRIPT_FLOOR) === false) {
     ctx.reporter.fail('21 TypeScript floor', {
       id: 'typescript-too-old',
       severity: 'error',
-      message: `TypeScript ${typescript.raw} is below the 5.1 floor that Next.js 16 requires.`,
+      message: `${describeStatus('TypeScript', typescript)} cannot satisfy ${TYPESCRIPT_FLOOR}, which Next.js 16 requires.`,
       remedy: 'Upgrade TypeScript.',
     })
     return
   }
-  ctx.reporter.pass(`21 TypeScript ${typescript.raw} meets the 5.1 floor`)
+  ctx.reporter.pass(`21 ${describeStatus('TypeScript', typescript)} meets ${TYPESCRIPT_FLOOR}`)
 }
 
 /** Used by `--fix` to know where the secrets currently are. */

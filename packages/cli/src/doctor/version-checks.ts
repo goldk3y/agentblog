@@ -23,13 +23,17 @@
  *
  * @see https://docs.agentblog.dev/reference/cli
  */
-import { TAILWIND_V4_MIGRATION_URL } from '../constants.ts'
+import { NEXT_FLOOR, REACT_FLOOR, TAILWIND_FLOOR, TAILWIND_V4_MIGRATION_URL } from '../constants.ts'
+import { componentsJsonTargetsTailwindV4, dependenciesInstalled } from '../detect/project.ts'
 import {
   compareSemVer,
+  describeStatus,
   fetchVersions,
+  meetsFloor,
   newestPatchOnLine,
-  resolvedVersion,
+  resolveDependency,
 } from '../detect/versions.ts'
+import { installCommand } from '../util/exec.ts'
 import type { DoctorContext } from './context.ts'
 
 export async function runVersionChecks(
@@ -43,9 +47,22 @@ export async function runVersionChecks(
   await checkNextIsPatched(ctx, options.offline)
 }
 
+/**
+ * The remedy for a spec that names no version, matching what `init` prints.
+ *
+ * `pnpm install` when the tree is not there, and a pointer at the spec itself
+ * when it is. A `catalog:` entry and an uninstalled project are the same
+ * missing version with two different fixes.
+ */
+function unresolvedRemedy(ctx: DoctorContext, name: string, spec: string): string {
+  return dependenciesInstalled(ctx.project)
+    ? `package.json declares ${name} as "${spec}", which names no version. Pin it to a version range, or install it so AgentBlog can read the installed one.`
+    : `Run ${installCommand(ctx.project.packageManager)} first, so AgentBlog can read the installed ${name} version.`
+}
+
 function checkFramework(ctx: DoctorContext): void {
-  const next = resolvedVersion(ctx.project, 'next')
-  if (!next) {
+  const next = resolveDependency(ctx.project, 'next')
+  if (next.state === 'absent') {
     ctx.reporter.fail('Next.js present', {
       id: 'next-missing',
       severity: 'error',
@@ -53,54 +70,75 @@ function checkFramework(ctx: DoctorContext): void {
       remedy:
         'AgentBlog targets Next.js 16 App Router. Install it, or run this in the right directory.',
     })
-  } else if (next.major < 16) {
+  } else if (next.state === 'unresolved') {
+    ctx.reporter.fail('Next.js 16', {
+      id: 'next-version-unknown',
+      severity: 'warning',
+      message: `The Next.js version could not be determined, so the 16 floor was not checked. package.json declares "${next.spec}".`,
+      remedy: unresolvedRemedy(ctx, 'next', next.spec),
+    })
+  } else if (meetsFloor(next, NEXT_FLOOR) === false) {
     ctx.reporter.fail('Next.js 16', {
       id: 'next-too-old',
       severity: 'error',
-      message: `Next.js ${next.raw} is installed. AgentBlog requires 16, which is where htmlLimitedBots, the new metadata behaviour, and the agent rules file all live.`,
+      message: `${describeStatus('Next.js', next)} cannot satisfy ${NEXT_FLOOR}, which is where htmlLimitedBots, the new metadata behaviour, and the agent rules file all live.`,
       remedy: 'npx @next/codemod@canary upgrade latest',
     })
   } else {
-    ctx.reporter.pass(`Next.js ${next.raw}`)
+    ctx.reporter.pass(describeStatus('Next.js', next))
   }
 
-  const react = resolvedVersion(ctx.project, 'react')
-  if (react && react.major < 19) {
+  const react = resolveDependency(ctx.project, 'react')
+  if (meetsFloor(react, REACT_FLOOR) === false) {
     ctx.reporter.fail('React 19', {
       id: 'react-too-old',
       severity: 'error',
-      message: `React ${react.raw} is installed. Next.js 16 and the shipped components require React 19.`,
+      message: `${describeStatus('React', react)} cannot satisfy ${REACT_FLOOR}, which Next.js 16 and the shipped components require.`,
       remedy: 'Upgrade react and react-dom to 19.',
     })
-  } else if (react) {
-    ctx.reporter.pass(`React ${react.raw}`)
+  } else if (react.state === 'installed' || react.state === 'declared') {
+    ctx.reporter.pass(describeStatus('React', react))
   }
 }
 
 function checkTailwind(ctx: DoctorContext): void {
-  const tailwind = resolvedVersion(ctx.project, 'tailwindcss')
-  if (!tailwind) {
+  const tailwind = resolveDependency(ctx.project, 'tailwindcss')
+  if (tailwind.state === 'absent') {
     ctx.reporter.fail('10 Tailwind v4', {
       id: 'tailwind-missing',
       severity: 'error',
-      message: 'Tailwind CSS is not installed. AgentBlog requires Tailwind v4.',
-      remedy: TAILWIND_V4_MIGRATION_URL,
+      message: 'Tailwind CSS is not a dependency of this project. AgentBlog requires Tailwind v4.',
+      remedy: `Install tailwindcss and @tailwindcss/postcss, or migrate from v3: ${TAILWIND_V4_MIGRATION_URL}`,
     })
     return
   }
-  if (tailwind.major < 4) {
+  if (tailwind.state === 'unresolved') {
+    // shadcn writes `"config": ""` for a v4 project and reads it back as the
+    // version, so it answers what a `catalog:` entry cannot.
+    if (componentsJsonTargetsTailwindV4(ctx.project)) {
+      ctx.reporter.pass('10 Tailwind v4, per the empty tailwind.config in components.json')
+    } else {
+      ctx.reporter.fail('10 Tailwind v4', {
+        id: 'tailwind-version-unknown',
+        severity: 'warning',
+        message: `The Tailwind CSS version could not be determined, so the v4 floor was not checked. package.json declares "${tailwind.spec}".`,
+        remedy: unresolvedRemedy(ctx, 'tailwindcss', tailwind.spec),
+      })
+    }
+  } else if (meetsFloor(tailwind, TAILWIND_FLOOR) === false) {
     ctx.reporter.fail('10 Tailwind v4', {
       id: 'tailwind-v3',
       severity: 'error',
-      message: `Tailwind ${tailwind.raw} is installed. v3 is not supported: it needs a different cssVars format, a different prose bridge, and shadcn 2.3.0, which predates registry namespaces and half of the install path.`,
+      message: `${describeStatus('Tailwind', tailwind)} cannot satisfy ${TAILWIND_FLOOR}. v3 needs a different cssVars format, a different prose bridge, and shadcn 2.3.0, which predates registry namespaces and half of the install path.`,
       remedy: `Migrate to Tailwind v4: ${TAILWIND_V4_MIGRATION_URL}`,
     })
     return
+  } else {
+    ctx.reporter.pass(`10 ${describeStatus('Tailwind', tailwind)}`)
   }
-  ctx.reporter.pass(`10 Tailwind ${tailwind.raw}`)
 
-  const typography = resolvedVersion(ctx.project, '@tailwindcss/typography')
-  if (!typography) {
+  const typography = resolveDependency(ctx.project, '@tailwindcss/typography')
+  if (typography.state === 'absent' || typography.state === 'unresolved') {
     ctx.reporter.fail('10 prose styles', {
       id: 'typography-missing',
       severity: 'warning',
@@ -109,13 +147,29 @@ function checkTailwind(ctx: DoctorContext): void {
       remedy: 'Install @tailwindcss/typography, or confirm styles/agentblog.css is imported.',
     })
   } else {
-    ctx.reporter.pass(`10 @tailwindcss/typography ${typography.raw}`)
+    ctx.reporter.pass(`10 ${describeStatus('@tailwindcss/typography', typography)}`)
   }
 }
 
 async function checkNextIsPatched(ctx: DoctorContext, offline: boolean): Promise<void> {
-  const installed = resolvedVersion(ctx.project, 'next')
-  if (!installed) return
+  /*
+   * `node_modules` only, and this is the one check where the distinction is
+   * load bearing. The claim is "a newer patch exists on the line you are
+   * running", and a declared `^16.3.0` does not say which patch is running. It
+   * would have this check report an upgrade for a project that already
+   * installed the newest one.
+   */
+  const next = resolveDependency(ctx.project, 'next')
+  if (next.state !== 'installed') {
+    if (next.state !== 'absent') {
+      ctx.reporter.skip(
+        '9 Next.js is on a patched release',
+        'the installed version could not be read from node_modules, and a declared range does not say which patch is running',
+      )
+    }
+    return
+  }
+  const installed = next.version
 
   if (offline) {
     ctx.reporter.skip('9 Next.js is on a patched release', '--offline was passed')
