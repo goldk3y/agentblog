@@ -170,8 +170,15 @@ jobs:
       # artifact that is wrong, and it does not exist until the build writes it.
       # Serving the site locally proves nothing, because `next start` reads from
       # the repository where every file is present either way.
+      #
+      # Through turbo rather than `pnpm --filter`, because `build` carries
+      # `dependsOn: ["^build"]` and `next build` type checks `tests/**`, which
+      # imports `@agentblog/schema`. That package resolves its types through
+      # `dist`, `dist` is gitignored, and nothing else in this job builds it. A
+      # direct filter therefore fails on a fresh checkout with TS2307 while
+      # passing on any machine that has built the package once.
       - name: Build the site
-        run: pnpm --filter @agentblog/web build
+        run: pnpm turbo run build --filter=@agentblog/web
 
       - name: The landing page's trace carries the registry it reads
         run: node scripts/assert-registry-traced.mjs --ci
