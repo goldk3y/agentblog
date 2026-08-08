@@ -5,13 +5,13 @@
     "name": "AgentBlog contributors",
     "url": "https://github.com/goldk3y/agentblog"
   },
-  "description": "The agent layer for AgentBlog: skills that write, refresh, and audit blog posts for AI search citation on Next.js.",
+  "description": "The agent layer for AgentBlog: skills that set up, plan, write, refresh, audit, and publish blog posts for AI search citation on Next.js.",
   "plugins": [
     {
       "name": "agentblog",
       "source": "./plugins/agentblog",
       "displayName": "AgentBlog",
-      "description": "Write, refresh, and audit blog posts that generative search engines cite. Carries the GEO writing playbook, the JSON-LD graph shapes, and the install-wiring checks for an AgentBlog install on Next.js.",
+      "description": "Six skills that take a blog from install to published: finish the setup, plan the topic clusters, write posts that generative search engines cite, refresh them without falsifying dateModified, audit before publish, and publish with the IndexNow response code actually read. Carries the GEO writing playbook and the JSON-LD graph shapes for an AgentBlog install on Next.js.",
       "category": "content",
       "tags": ["blog", "seo", "geo", "nextjs", "schema.org", "content"],
       "homepage": "https://agentblog.dev",

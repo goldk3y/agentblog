@@ -222,6 +222,11 @@ export default async function LandingPage() {
                 The count sits behind a rule rather than in parentheses so the
                 button keeps one width when GitHub is unreachable and the count
                 is absent. `tabular-nums` stops it twitching as the number grows.
+
+                Zero is hidden as well as null. `getStarCount` already fails to
+                null rather than to zero so an outage cannot invent the claim,
+                but a true zero makes the same claim honestly, and a bare button
+                asks for the star that a visible `0` argues against.
               */}
               <Link
                 href={GITHUB_REPO_URL}
@@ -229,12 +234,12 @@ export default async function LandingPage() {
               >
                 <Github aria-hidden="true" className="size-4" />
                 Star on GitHub
-                {stars !== null && (
+                {stars !== null && stars > 0 && (
                   <>
                     <span aria-hidden="true" className="bg-border h-4 w-px" />
                     <span className="text-foreground tabular-nums">
                       {formatStarCount(stars)}
-                      <span className="sr-only"> stars</span>
+                      <span className="sr-only">{stars === 1 ? ' star' : ' stars'}</span>
                     </span>
                   </>
                 )}
