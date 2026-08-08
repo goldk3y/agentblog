@@ -159,6 +159,23 @@ jobs:
       - name: The documented file count matches the registry
         run: node scripts/assert-file-count.mjs
 
+      # The landing page reads that same registry at render rather than quoting
+      # it, and it carries `revalidate`, so the read happens again in a function
+      # an hour after the deploy. Only files Next.js traced are there by then,
+      # and the paths past `registry.json` are all computed, so none of them were
+      # traced until `outputFileTracingIncludes` said so. The section rendered
+      # empty for as long as that was true, and nothing anywhere went red.
+      #
+      # This is the one check that needs a real `next build`: the trace is the
+      # artifact that is wrong, and it does not exist until the build writes it.
+      # Serving the site locally proves nothing, because `next start` reads from
+      # the repository where every file is present either way.
+      - name: Build the site
+        run: pnpm --filter @agentblog/web build
+
+      - name: The landing page's trace carries the registry it reads
+        run: node scripts/assert-registry-traced.mjs --ci
+
       - uses: actions/upload-artifact@v4
         with:
           name: registry

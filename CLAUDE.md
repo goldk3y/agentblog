@@ -172,17 +172,18 @@ command with four invented flags and nothing noticed.
 Match the check to what you touched. Every script's header comment has its exact
 invocation.
 
-| Changed                                            | Run                                                                                |
-| -------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| `packages/schema` or `packages/checks`             | `pnpm codegen && pnpm typecheck && pnpm test`                                      |
-| `apps/web/registry/**`                             | `pnpm check:static`, then `registry:build && pnpm check:registry`                  |
-| `apps/docs/content/**`                             | `pnpm check:copy-style && pnpm check:docs-links`                                   |
-| `apps/web/registry/agent/skills/**`                | `pnpm check:skills`, then `pnpm codegen`                                           |
-| `packages/cli/src/index.ts` command surface        | `pnpm check:skills`, which reads it to validate what the skills tell agents to run |
-| `packages/cli/src/patchers/**`                     | `pnpm check:patcher` and `pnpm check:init-refuses`                                 |
-| the `next.config` patcher or the bot list          | `node scripts/assert-htmlbots-superset.mjs <path/to/next.config.ts>`               |
-| `shadcn-directory-entry.json` or the deploy domain | `node scripts/assert-directory-entry.mjs --live`                                   |
-| anything affecting rendered HTML                   | `assert-crawler-visible.mjs`, `assert-og-defaults.mjs`, `assert-cold-slug.mjs`     |
+| Changed                                              | Run                                                                                |
+| ---------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| `packages/schema` or `packages/checks`               | `pnpm codegen && pnpm typecheck && pnpm test`                                      |
+| `apps/web/registry/**`                               | `pnpm check:static`, then `registry:build && pnpm check:registry`                  |
+| `apps/docs/content/**`                               | `pnpm check:copy-style && pnpm check:docs-links`                                   |
+| `apps/web/registry/agent/skills/**`                  | `pnpm check:skills`, then `pnpm codegen`                                           |
+| `packages/cli/src/index.ts` command surface          | `pnpm check:skills`, which reads it to validate what the skills tell agents to run |
+| `packages/cli/src/patchers/**`                       | `pnpm check:patcher` and `pnpm check:init-refuses`                                 |
+| the `next.config` patcher or the bot list            | `node scripts/assert-htmlbots-superset.mjs <path/to/next.config.ts>`               |
+| `shadcn-directory-entry.json` or the deploy domain   | `node scripts/assert-directory-entry.mjs --live`                                   |
+| anything affecting rendered HTML                     | `assert-crawler-visible.mjs`, `assert-og-defaults.mjs`, `assert-cold-slug.mjs`     |
+| `outputFileTracingIncludes`, or a new registry chunk | build `@agentblog/web`, then `pnpm check:registry-traced`                          |
 
 IMPORTANT: `htmlLimitedBots` in `next.config.ts` **overrides** the Next.js
 default bot list rather than extending it. A patch that writes only the AI

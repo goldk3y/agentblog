@@ -8,9 +8,10 @@ import type { NextConfig } from 'next'
  * changes here and changes to `packages/cli/src/patchers/next-config.ts` belong
  * in the same commit.
  *
- * One setting below is agentblog.dev's own and is NOT written by the CLI:
- * `redirects`, which forwards the documentation to its own site. A consumer's
- * blog has none.
+ * Two settings below are agentblog.dev's own and are NOT written by the CLI:
+ * `redirects`, which forwards the documentation to its own site, and the `/` key
+ * of `outputFileTracingIncludes`, which carries the registry that the landing
+ * page reads to build its install tree. A consumer's blog has neither.
  */
 const nextConfig: NextConfig = {
   /**
@@ -68,6 +69,43 @@ const nextConfig: NextConfig = {
       './content/authors.json',
       './content/categories.json',
     ],
+
+    /*
+     * agentblog.dev's own, and NOT written by the CLI. A consumer's blog has no
+     * registry to read, so this key does not belong in the patch.
+     *
+     * The landing page builds its install tree by walking `registry.json` on
+     * disk, so that the panel showing what an install writes cannot drift from
+     * what an install actually writes. That read is `lib/installed-files.ts`,
+     * and it is only safe while the page is prerendered and never runs again.
+     * `revalidate = 3600` on the page means it does run again: once an hour, in
+     * a function, where an untraced file simply does not exist.
+     *
+     * Next.js finds `registry.json` on its own, because the literal is right
+     * there in the source. It cannot find what that file's `include` array
+     * points at, and it cannot find the sources those chunks name, because
+     * every one of those paths is computed. So the hourly rerender read an
+     * empty catalog, `getInstalledFiles` returned nothing, and the section
+     * rendered its heading and its caption with nothing in between. It served a
+     * 200 and it never failed a build, so the deploy that broke it looked
+     * exactly like the one before.
+     *
+     * The key is `/` rather than `/**` because the landing page is the only
+     * route that reads the registry at request time. `/registry` reads the same
+     * files through `lib/registry-catalog.ts` but is fully static, and a static
+     * page produces no trace for an entry here to apply to.
+     * `scripts/assert-registry-traced.mjs` is what keeps that claim honest: it
+     * reads the built trace and fails if any file this page opens is missing
+     * from it, so a wrong key here is a red CI job rather than another empty
+     * panel.
+     *
+     * The whole `registry` directory rather than the chunks the walk reaches
+     * today, because the two lines that would name them are the two lines a new
+     * chunk would need somebody to remember to edit. It is under a megabyte,
+     * and `registry.json` is listed separately only because it sits beside that
+     * directory rather than inside it.
+     */
+    '/': ['./registry.json', './registry/**/*'],
   },
 
   /*

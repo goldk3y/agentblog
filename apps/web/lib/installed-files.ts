@@ -12,7 +12,10 @@
  * It reads deliberately forgivingly, for the reason `lib/registry-catalog.ts`
  * gives: a half-written catalog should render a short tree rather than fail the
  * site build, and anything genuinely wrong with it is caught by
- * `shadcn registry validate` and `assert-file-count` in CI.
+ * `shadcn registry validate` and `assert-file-count` in CI. The one exception is
+ * resolving nothing at all, which `getInstalledFiles` raises rather than
+ * returns. See the note there for why that case is not the same kind of
+ * incomplete.
  */
 import 'server-only'
 
@@ -201,6 +204,18 @@ function excerptOf(absolutePath: string): string | null {
  *
  * Two items may name the same target when one is a subset of the other, and a
  * consumer receives that file once, so the list counts it once.
+ *
+ * Forgiving about a short list, unforgiving about an empty one. Every skip above
+ * is a file this build cannot describe, and rendering the rest is the right
+ * answer for each of them. Zero files is a different claim: it says the walk
+ * never reached a catalog at all, which no state of this repository produces.
+ * The one thing that does produce it is a deployment where `registry.json` is
+ * traced and the chunks it includes are not, and the symptom there is a section
+ * that renders its heading over an empty space. That is invisible in a build
+ * log, so it is raised here instead. Throwing during a revalidation is safe:
+ * Next.js keeps serving the last good page and retries on the next request,
+ * which turns a silently empty panel into a stale-but-correct one and a logged
+ * error.
  */
 export function getInstalledFiles(): InstalledFile[] {
   const byPath = new Map<string, InstalledFile>()
@@ -216,6 +231,16 @@ export function getInstalledFiles(): InstalledFile[] {
     if (excerpt === null) continue
 
     byPath.set(filePath, { path: filePath, language, excerpt })
+  }
+
+  if (byPath.size === 0) {
+    throw new Error(
+      `getInstalledFiles: resolved no files from ${path.join(ROOT, 'registry.json')}. ` +
+        'The landing page reads the registry at render, so a rerender in a function needs ' +
+        'the chunk registries and their sources declared under the `/` key of ' +
+        '`outputFileTracingIncludes` in next.config.ts. Run `node scripts/assert-registry-traced.mjs` ' +
+        'after a build to see which of them the trace is missing.',
+    )
   }
 
   return [...byPath.values()].sort((a, b) => a.path.localeCompare(b.path))

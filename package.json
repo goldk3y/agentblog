@@ -41,6 +41,7 @@
     "changeset": "changeset",
     "release": "turbo run build --filter=agentblog && changeset publish",
     "check:file-count": "node scripts/assert-file-count.mjs",
+    "check:registry-traced": "node scripts/assert-registry-traced.mjs",
     "check:lockfile": "pnpm install --frozen-lockfile"
   },
   "devDependencies": {
