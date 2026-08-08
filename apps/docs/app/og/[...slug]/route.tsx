@@ -17,7 +17,7 @@
 import { ImageResponse } from 'next/og'
 import { notFound } from 'next/navigation'
 
-import { docsOgCard } from '@/lib/og-card'
+import { OG_SIZE, docsOgCard } from '@/lib/og-card'
 import { ogImageSegments } from '@/lib/page-urls'
 import { SITE_NAME } from '@/lib/site'
 import { source } from '@/lib/source'
@@ -35,8 +35,7 @@ export async function GET(_request: Request, { params }: RouteParams): Promise<R
   if (page === undefined) notFound()
 
   return new ImageResponse(docsOgCard({ eyebrow: SITE_NAME, title: page.data.title }), {
-    width: 1200,
-    height: 630,
+    ...OG_SIZE,
   })
 }
 

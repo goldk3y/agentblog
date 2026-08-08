@@ -54,7 +54,7 @@ updates:
     ignore:
       # shadcn is pinned exactly, and a registry built by a different CLI version
       # can differ in ways no schema check sees. Upgrade it deliberately, with the
-      # measured facts in BUILD-SPEC section 12 re-verified against the new CLI.
+      # measured facts in packages/cli/src/util/exec.ts re-verified against it.
       - dependency-name: shadcn
 
   - package-ecosystem: github-actions

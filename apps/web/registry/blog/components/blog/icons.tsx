@@ -8,10 +8,10 @@
  * WHY IT IS SHAPED THIS WAY
  * A shadcn `registry:base` item sets `iconLibrary`, so a consumer may be on
  * Tabler, Phosphor, or Radix icons rather than Lucide. AgentBlog installs no
- * base in Mode A (@See https://docs.agentblog.dev/guides/match-your-design#installing-the-blog-installs-no-base-and-no-theme), which means we
- * inherit whatever the project already chose. Routing every icon through one
- * re-export module makes swapping libraries a single-file edit instead of a grep
- * across twelve components, and it is what `shadcn migrate icons` rewrites.
+ * base in Mode A, which means we inherit whatever the project already chose.
+ * Routing every icon through one re-export module makes swapping libraries a
+ * single-file edit instead of a grep across twelve components, and it is what
+ * `shadcn migrate icons` rewrites.
  *
  * WHAT BREAKS IF YOU CHANGE IT
  * - Import an icon straight from `lucide-react` inside a component and you have
@@ -30,7 +30,8 @@
  * plus neutral icons rather than brand marks, so a Lucide upgrade cannot break a
  * consumer's install.
  *
- * @See https://docs.agentblog.dev/guides/match-your-design
+ * @see https://docs.agentblog.dev/guides/match-your-design
+ * @see https://docs.agentblog.dev/guides/match-your-design#installing-the-blog-installs-no-base-and-no-theme
  */
 export {
   ArrowLeft as ArrowLeftIcon,
@@ -43,7 +44,6 @@ export {
   CircleAlert as CircleAlertIcon,
   CircleCheck as CircleCheckIcon,
   CircleHelp as CircleHelpIcon,
-  Clock as ClockIcon,
   Copy as CopyIcon,
   ExternalLink as ExternalLinkIcon,
   Hash as HashIcon,

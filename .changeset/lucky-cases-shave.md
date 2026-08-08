@@ -13,16 +13,29 @@ trail is more useful ending at a category hub a reader can actually go to. The
 blog index renders no breadcrumb on page one, where the trail would be the
 single word "Blog" above an H1 that says "Blog".
 
-`<Breadcrumbs>` decides the current page from the crumb with no `href` rather
-than from the last crumb, so a trail can end at a real destination and keep it
-clickable. Every existing trail ends in a crumb with no `href`, so nothing else
-changes.
+`<Breadcrumbs>` decides the current page from the crumb with no destination
+rather than from the last crumb, so a trail can end at a real destination and
+keep it clickable. Every existing trail ends in a crumb with no destination, so
+nothing else changes.
+
+**Breadcrumb links are paths again.** A crumb carried an absolute URL built from
+`siteUrl`, which is correct for the `BreadcrumbList` and wrong for an `href`:
+`next/link` falls back to a plain document navigation when the origin is not the
+one serving the page, so on a preview deployment or a local dev server every
+crumb left the deployment for the production domain. `BreadcrumbTrailItem.href`
+is now `BreadcrumbTrailItem.path` and takes a root-relative path, and
+`buildBreadcrumb` absolutizes it for the JSON-LD. The emitted structured data is
+byte for byte what it was.
 
 The H1 drops to weight 500. At 48px a 600 reads as a headline shouting over the
 sentence under it; the section headings stay at 600 because at 24px they have no
 size advantage to trade. The byline moved up to sit directly under the H1 as one
 line, `By {author} · {n} min read`, with no clock icon beside a phrase that
-already says "read" and no rule under it. The answer capsule is now typeset as
+already says "read" and no rule under it. The post cards on every list surface
+lost their clock for the same reason, and their reading time reads `{n} min read`
+rather than `{n} min` now that no glyph is supplying the missing word. `Clock` is
+no longer re-exported from `components/blog/icons.tsx`, since nothing in the
+block renders it. The answer capsule is now typeset as
 what it is, the first paragraph of the article, at the same size and leading as
 the body text.
 
@@ -45,7 +58,9 @@ route builds one array and hands it to both.
 
 **Upgrading:** `buildArticleGraph(post)` becomes
 `buildArticleGraph(post, trail)`. If you have customised `app/blog/[slug]/page.tsx`,
-pass it the same array you give `<Breadcrumbs>`. The reading size also moved out
+pass it the same array you give `<Breadcrumbs>`, and rename each crumb's `url` or
+`href` key to `path` with a root-relative value: `categoryPath(slug)` rather than
+`categoryUrl(slug)`. The reading size also moved out
 of `@utility prose` and into `--agentblog-reading-size` and
 `--agentblog-reading-leading` in `styles/agentblog.css`, so the body text and
 the answer capsule cannot drift apart; change the size there rather than on

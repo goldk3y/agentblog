@@ -6,8 +6,8 @@ import tseslint from 'typescript-eslint'
  * Shared flat config for every TypeScript package in the monorepo.
  *
  * `next lint` was removed in Next.js 16 and `next build` no longer lints, so
- * every app and package has to run ESLint explicitly. See the AgentBlog docs
- * section 5.8.
+ * every app and package has to run ESLint explicitly, including the installed
+ * files in the fixture.
  */
 export default tseslint.config(
   { ignores: ['dist/**', '.next/**', '.turbo/**', 'node_modules/**', 'coverage/**'] },

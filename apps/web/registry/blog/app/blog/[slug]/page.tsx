@@ -51,7 +51,7 @@ import {
   SECTION_HEADING,
   TITLE_CLUSTER,
 } from '@/components/blog/type-scale'
-import { absoluteUrl, categoryUrl, postUrl } from '@/lib/config'
+import { blogPath, categoryPath, postUrl } from '@/lib/config'
 import { buildPostMetadata } from '@/lib/metadata'
 import { renderMdx } from '@/lib/render-mdx'
 import { getAllPosts, getPost, getRelatedPosts } from '@/lib/posts'
@@ -207,7 +207,7 @@ export default async function PostPage(props: PageProps<'/blog/[slug]'>) {
       : toc
 
   /*
-   * ONE trail, rendered by `<Breadcrumbs>` below and emitted as the
+   * One trail, rendered by `<Breadcrumbs>` below and emitted as the
    * `BreadcrumbList` by `buildArticleGraph`. Building it twice is how the page
    * came to display Home, Blog, Category, Post while the markup claimed Home,
    * Blog, Post, which is marked-up navigation no reader can see.
@@ -215,21 +215,26 @@ export default async function PostPage(props: PageProps<'/blog/[slug]'>) {
    * It ends at the category hub, not at this post. Google does not require the
    * trail to reach the current page, and a crumb naming the post repeats the H1
    * directly beneath it. The hub is a real destination, so it stays a link;
-   * `<Breadcrumbs>` reserves `aria-current="page"` for a crumb with no `href`,
+   * `<Breadcrumbs>` reserves `aria-current="page"` for a crumb with no `path`,
    * and there is none here.
    *
    * There is no Home crumb for the same reason there is none anywhere else in
    * the block. Google: "It is not required to include a breadcrumb ListItem for
    * the top level path (your site's domain or host name)."
    *
-   * Typed explicitly rather than inferred so `crumb.url` is a legal property
+   * Paths rather than absolute URLs, which is what lets one array serve both
+   * consumers: `buildBreadcrumb` absolutizes for the JSON-LD, and the rendered
+   * `href` stays inside whatever origin is serving the page. See
+   * `BreadcrumbTrailItem.path`.
+   *
+   * Typed explicitly rather than inferred so `crumb.path` is a legal property
    * access on every element and the shape matches `buildBreadcrumb`. Note the
    * `?:` rather than `| undefined`: this block compiles with
-   * `exactOptionalPropertyTypes`, so an absent crumb URL is an absent key.
+   * `exactOptionalPropertyTypes`, so an absent crumb path is an absent key.
    */
-  const trail: { name: string; url?: string }[] = [
-    { name: 'Blog', url: absoluteUrl('/blog') },
-    { name: post.category.name, url: categoryUrl(post.category.slug) },
+  const trail: { name: string; path?: string }[] = [
+    { name: 'Blog', path: blogPath() },
+    { name: post.category.name, path: categoryPath(post.category.slug) },
   ]
 
   return (
@@ -274,15 +279,12 @@ export default async function PostPage(props: PageProps<'/blog/[slug]'>) {
          * document this element by name, so do not unwrap it.
          */}
         <header className={cn(PAGE_HEADER, 'w-full', showToc && 'xl:max-w-(--agentblog-measure)')}>
-          {/* Breadcrumb hrefs are composed by the config URL helpers, same as
-              every canonical, so the visible trail and the BreadcrumbList JSON-LD
-              built by `buildArticleGraph` can never disagree about a URL: both
-              read the `trail` array above. */}
-          <Breadcrumbs
-            trail={trail.map((crumb) =>
-              crumb.url ? { name: crumb.name, href: crumb.url } : { name: crumb.name },
-            )}
-          />
+          {/* Breadcrumb paths are composed by the config path helpers, the same
+              helpers every canonical is absolutized from, so the visible trail
+              and the BreadcrumbList JSON-LD built by `buildArticleGraph` can
+              never disagree about a destination: both read the `trail` array
+              above, unmodified. */}
+          <Breadcrumbs trail={trail} />
 
           {/*
            * Headline, byline, capsule: one cluster at the tighter rhythm, in the

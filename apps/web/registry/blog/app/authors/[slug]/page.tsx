@@ -44,7 +44,7 @@ import {
   SECTION_GAP,
   SECTION_HEADING,
 } from '@/components/blog/type-scale'
-import { absoluteUrl, authorUrl } from '@/lib/config'
+import { authorUrl, blogPath } from '@/lib/config'
 import { buildListMetadata, googleBotDefaults } from '@/lib/metadata'
 import { getAllAuthors, getAuthor, getPostsByAuthor } from '@/lib/posts'
 import { buildBreadcrumb, buildPersonGraph } from '@/lib/schema'
@@ -171,8 +171,8 @@ export default async function AuthorPage(props: PageProps<'/authors/[slug]'>) {
 
   // No Home crumb. See `breadcrumbs.tsx` for why the trail starts at the first
   // level that tells a reader something they cannot get from the address bar.
-  const trail: { name: string; url?: string }[] = [
-    { name: 'Blog', url: absoluteUrl('/blog') },
+  const trail: { name: string; path?: string }[] = [
+    { name: 'Blog', path: blogPath() },
     { name: author.name },
   ]
 
@@ -187,13 +187,10 @@ export default async function AuthorPage(props: PageProps<'/authors/[slug]'>) {
     <div className="bg-background text-foreground py-12 lg:py-20">
       <div className={cn('mx-auto w-full max-w-(--agentblog-rail) px-6', SECTION_GAP)}>
         <header className={PAGE_HEADER}>
-          {/* Breadcrumb hrefs come from the config URL helpers, so the visible trail
-              and the BreadcrumbList built from the same array below cannot drift. */}
-          <Breadcrumbs
-            trail={trail.map((crumb) =>
-              crumb.url ? { name: crumb.name, href: crumb.url } : { name: crumb.name },
-            )}
-          />
+          {/* Breadcrumb paths come from the config path helpers, so the visible
+              trail and the BreadcrumbList built from the same array below cannot
+              drift. */}
+          <Breadcrumbs trail={trail} />
 
           {/* Exactly one <h1>, and it is the person's name and nothing else. Job
               titles, honorifics, and the publisher name belong in `jobTitle` and

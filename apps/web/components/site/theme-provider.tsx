@@ -24,7 +24,8 @@
  * `light` or `dark` to `localStorage`, and that choice survives reloads.
  *
  * The blog block ships no theme provider of its own. It reads whatever tokens
- * the host app defines, which is the point of section 4.3.
+ * the host app defines, which is the point.
+ * @see https://docs.agentblog.dev/guides/match-your-design
  */
 'use client'
 

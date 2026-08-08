@@ -109,6 +109,16 @@ same list because `doctor` runs the same rule against an installed project.
 The product reason these rules are absolute is on the
 [Theming](https://docs.agentblog.dev/guides/match-your-design) page.
 
+### Breadcrumb trails carry paths, never absolute URLs
+
+A route builds one trail array and passes it to both `<Breadcrumbs>` and
+`buildBreadcrumb`. The crumbs hold root-relative paths, and `buildBreadcrumb` is
+the one place they are absolutized, because `BreadcrumbList.item` needs an
+absolute URL and an `href` needs a relative one. Put the absolute form in the
+trail and `next/link` stops recognising the destination as local on every origin
+that is not the configured `siteUrl`, which means every preview deployment and
+every dev server sends readers to production.
+
 ### The shipped block imports no workspace package
 
 Files under `apps/web/registry/blog/**` may depend on packages declared on their

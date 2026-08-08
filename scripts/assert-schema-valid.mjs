@@ -35,8 +35,7 @@
  * Usage:
  *   node scripts/assert-schema-valid.mjs [path/to/public/r]
  *
- * @see CONTRIBUTING.md
- * @see BUILD-SPEC section 12
+ * @see CONTRIBUTING.md, "The shadcn registry directory"
  */
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { createRequire } from 'node:module'

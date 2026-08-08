@@ -29,7 +29,7 @@
  * Usage:
  *   node scripts/assert-no-server-only-in-client.mjs [registry/blog dir]
  *
- * @see BUILD-SPEC section 6, "Zero 'use client' in the article render path"
+ * @see CONTRIBUTING.md, "Zod stays on the server"
  * @see https://docs.agentblog.dev/reference/content-sources
  */
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'

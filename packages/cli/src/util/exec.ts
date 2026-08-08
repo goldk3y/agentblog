@@ -5,7 +5,8 @@
  * `shadcn add --yes` still blocks on an interactive overwrite prompt when a
  * target file already exists, which turns a CI install into a hung job with no
  * output. `--overwrite` is what actually makes it non-interactive. That was
- * measured against shadcn 4.16.2; see BUILD-SPEC section 12.
+ * measured against shadcn 4.16.2, which is why `SHADCN_VERSION` below is
+ * pinned rather than tracking `@latest`.
  */
 import { spawnSync } from 'node:child_process'
 
@@ -35,10 +36,10 @@ export function isPackageManager(value: unknown): value is PackageManager {
  * The shadcn version every invocation is pinned to.
  *
  * `@latest` meant the behaviour the CLI was built against and the behaviour it
- * got could differ on any given day, and the measured facts in BUILD-SPEC
- * section 12 (`--overwrite` is what makes `add` non-interactive, `--name` is
- * what scaffolds into a directory, `registry:page` is framework gated) are
- * facts about a version, not about a package name.
+ * got could differ on any given day, and the measured facts this CLI depends on
+ * (`--overwrite` is what makes `add` non-interactive, `--name` is what scaffolds
+ * into a directory, `registry:page` is framework gated) are facts about a
+ * version, not about a package name.
  */
 export const SHADCN_VERSION = '4.16.1'
 export const SHADCN_PACKAGE = `shadcn@${SHADCN_VERSION}`

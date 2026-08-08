@@ -17,7 +17,7 @@
  * Satori has no DOM, no stylesheet, and therefore no CSS custom properties. It
  * cannot read `--background`. A literal is the only way to colour a PNG.
  *
- * MAKING THE CARD YOURS IS A FOUR LINE EDIT. Change the four colours below to
+ * Making the card yours is a four line edit. Change the four colours below to
  * the resolved values of your own `--background`, `--card`, `--foreground`, and
  * `--muted-foreground`. Resolved, not `var(--card)`: paste the hex or `oklch()`
  * your stylesheet ends up at. Nothing else in the card needs touching, and no
@@ -48,13 +48,13 @@
  * ---------------------------------------------------------------------------
  * HARD LIMITS
  * ---------------------------------------------------------------------------
- * - `opengraph-image` output must be at most 8MB or THE BUILD FAILS. The
+ * - `opengraph-image` output must be at most 8MB or the build fails. The
  *   `twitter-image` limit is 5MB. This layout produces a few tens of kilobytes,
  *   so the only realistic way to breach it is embedding a large asset.
  * - Satori supports flexbox and a subset of CSS. `display: grid` does not work,
  *   and every element with children below sets `display: flex` explicitly
  *   because Satori requires it rather than inferring it.
- * - Any file read happens ONCE, at module scope. A `readFile` inside the render
+ * - Any file read happens once, at module scope. A `readFile` inside the render
  *   path runs on every card, which for two hundred posts is two hundred reads
  *   for byte-identical output.
  *
@@ -138,8 +138,8 @@ const LOGO_MIME: Record<string, string> = {
  *      `/logo.png` means `public/logo.png`.
  *   4. The file is over 150KB. See `MAX_LOGO_BYTES`.
  *
- * NO LOGO AT ALL? Export a square PNG at 512x512 with a transparent background,
- * save it as `public/logo.png`, and set
+ * If you have no logo at all, export a square PNG at 512x512 with a transparent
+ * background, save it as `public/logo.png`, and set
  * `brand: { logo: { url: '/logo.png', width: 512, height: 512 } }` in
  * `agentblog.config.ts`. Those dimensions are also what `Organization.logo` in
  * the JSON-LD graph needs, so one file serves the card and the structured data.
@@ -246,7 +246,7 @@ export function ogCard({ eyebrow, title }: OgCardProps) {
       >
         {brandMark ? (
           /*
-           * THE DISABLE HAS TO BE HERE, NOT AT THE TOP OF THE FILE.
+           * The disable has to be here rather than at the top of the file.
            *
            * `ImageResponse` renders through Satori, which implements a small
            * subset of HTML and has no concept of `next/image`. A plain `img` is

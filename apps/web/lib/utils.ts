@@ -11,8 +11,8 @@
  * This file lives at `apps/web/lib/utils.ts` rather than in the registry source
  * on purpose. `components.json` aliases `utils` to `@/lib/utils`, and a consumer
  * already has their own copy from `shadcn init`. Shipping ours would overwrite
- * theirs, which is exactly the inheritance failure section 4.3 exists to
- * prevent.
+ * theirs, which is the inheritance failure the block exists to avoid.
+ * @see https://docs.agentblog.dev/guides/match-your-design
  */
 import { type ClassValue, clsx } from 'clsx'
 import { twMerge } from 'tailwind-merge'

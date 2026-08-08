@@ -20,7 +20,16 @@ import Link from 'next/link'
 import { CodePanel, type CodeLine } from '@/components/site/code-panel'
 import { CopyCommand } from '@/components/site/copy-command'
 import { FileBrowser } from '@/components/site/file-browser'
-import { Braces, FileCode, Palette, Quote, Rss, Stethoscope } from '@/components/site/icons'
+import {
+  Braces,
+  Eye,
+  FileCode,
+  FileText,
+  Palette,
+  Quote,
+  Rss,
+  Stethoscope,
+} from '@/components/site/icons'
 import { InstallSwitch } from '@/components/site/install-switch'
 import { Panel } from '@/components/site/panel'
 import { Button } from '@/components/ui/button'
@@ -176,14 +185,25 @@ export default function LandingPage() {
               <InstallSwitch />
             </div>
 
-            <div className="text-copy-13 mt-10 flex items-center gap-6">
+            {/*
+              `rounded-md` is the 6px control step off `--radius`, not the 8px
+              container step, so these read as controls beside the install pills
+              rather than as small cards.
+            */}
+            <div className="text-copy-13 mt-10 flex items-center gap-3">
               <Link
                 href="https://docs.agentblog.dev"
-                className="text-muted-foreground hover:text-foreground"
+                className="border-border text-muted-foreground hover:bg-accent hover:text-foreground inline-flex h-9 items-center gap-2 rounded-md border px-4 transition-colors"
               >
+                {/* Decorative: the label beside it already names the destination. */}
+                <FileText aria-hidden="true" className="size-4" />
                 Documentation
               </Link>
-              <Link href="/blog" className="text-muted-foreground hover:text-foreground">
+              <Link
+                href="/blog"
+                className="border-border text-muted-foreground hover:bg-accent hover:text-foreground inline-flex h-9 items-center gap-2 rounded-md border px-4 transition-colors"
+              >
+                <Eye aria-hidden="true" className="size-4" />
                 See it running
               </Link>
             </div>
@@ -250,8 +270,11 @@ export default function LandingPage() {
       >
         <FileBrowser files={installedFiles} initialPath="app/blog/[slug]/page.tsx" />
 
-        <p className="text-muted-foreground text-copy-13 mt-8 text-center">
-          Open any file to read the source it installs. Each preview is the first sixteen lines.
+        {/* A caption for the panel above it, so it sits at the tighter gap. The
+            paragraph below is a separate thought and keeps the section gap. */}
+        <p className="text-muted-foreground text-copy-13 mt-4 text-center">
+          Open any file to read the source it installs. Each preview is the first sixteen lines
+          after the file header, and the whole file arrives with the install.
         </p>
 
         <p className="text-muted-foreground text-copy-14 mx-auto mt-8 max-w-2xl text-center">
@@ -327,7 +350,7 @@ export default function LandingPage() {
             </Button>
           </div>
           <div className="mt-10 max-w-md">
-            <CopyCommand command="npx agentblog@latest init" />
+            <CopyCommand command="npx agentblog@latest init" accent />
           </div>
         </Container>
       </section>

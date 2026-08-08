@@ -34,7 +34,7 @@
  *     [--site-name "Fixture Blog"]
  *
  * @see https://docs.agentblog.dev/reference/files
- * @see BUILD-SPEC section 10, lib/metadata.ts
+ * @see apps/web/registry/blog/lib/metadata.ts
  */
 const args = new Map()
 for (let i = 2; i < process.argv.length; i += 1) {

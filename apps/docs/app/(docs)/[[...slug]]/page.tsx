@@ -95,7 +95,7 @@ export async function generateMetadata({ params }: DocPageProps): Promise<Metada
        * `app/opengraph-image.png` is named here rather than left to the file
        * convention, and it has to be. Next.js only merges a file-based image
        * into a segment that does not already own `openGraph.images`, and it
-       * merges the image belonging to THAT segment. This is a nested segment
+       * merges the image belonging to that same segment. This is a nested segment
        * that sets `images` for every other page, so the root's card would be
        * dropped rather than inherited. The static file still covers any route
        * that sets no `openGraph` at all, such as the 404.

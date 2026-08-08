@@ -4,7 +4,7 @@
  * Split out of `init.ts` so the command reads as a sequence (refuse, prompt,
  * install, patch, verify) and the per-file merge semantics live in one place.
  *
- * Every rule here is from the merge table in the AgentBlog docs:
+ * Every rule here is a merge semantic this command promises to honour:
  * `htmlLimitedBots` unions and never replaces, `metadataBase` and
  * `title.template` are written only when absent, the AGENTS.md block is replaced
  * between its markers, and the IndexNow key is generated only when both

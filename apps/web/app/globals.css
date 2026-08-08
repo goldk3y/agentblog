@@ -206,6 +206,13 @@
   /* Site-only tokens. The blog block ships none of these. */
   --brand: var(--ds-blue-900);
   --brand-foreground: var(--ds-background-100);
+  /*
+   * Fixed in both themes: this is a mark colour, not a surface-relative one, so
+   * its label is a literal white rather than `--ds-background-100`, which goes
+   * near-black under `.dark` and would vanish on the fill.
+   */
+  --brand-blue: #246bfd;
+  --brand-blue-foreground: #ffffff;
   --signal-ok: var(--ds-green-900);
   --signal-bad: var(--ds-red-900);
 }
@@ -363,6 +370,8 @@
 
   --color-brand: var(--brand);
   --color-brand-foreground: var(--brand-foreground);
+  --color-brand-blue: var(--brand-blue);
+  --color-brand-blue-foreground: var(--brand-blue-foreground);
   --color-signal-ok: var(--signal-ok);
   --color-signal-bad: var(--signal-bad);
 

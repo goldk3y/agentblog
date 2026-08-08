@@ -20,10 +20,17 @@ interface CopyCommandProps {
   readonly command: string
   /** Larger presentation for the hero. Everything else uses the default. */
   readonly size?: 'default' | 'lg'
+  /** Brand-blue edge and copy glyph. The copied state stays green either way. */
+  readonly accent?: boolean
   readonly className?: string
 }
 
-export function CopyCommand({ command, size = 'default', className }: CopyCommandProps) {
+export function CopyCommand({
+  command,
+  size = 'default',
+  accent = false,
+  className,
+}: CopyCommandProps) {
   const [copied, setCopied] = useState(false)
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -45,7 +52,8 @@ export function CopyCommand({ command, size = 'default', className }: CopyComman
   return (
     <div
       className={cn(
-        'group border-border bg-card flex items-center gap-3 rounded-lg border font-mono',
+        'group bg-card flex items-center gap-3 rounded-lg border font-mono',
+        accent ? 'border-brand-blue' : 'border-border',
         size === 'lg' ? 'text-mono-14 h-12 pr-2 pl-4' : 'text-mono-13 h-10 pr-1.5 pl-3.5',
         className,
       )}
@@ -65,9 +73,23 @@ export function CopyCommand({ command, size = 'default', className }: CopyComman
         type="button"
         onClick={copy}
         aria-label={`Copy the command ${command}`}
-        className="text-muted-foreground hover:bg-accent hover:text-foreground shrink-0 rounded-md p-2 transition-colors"
+        className={cn(
+          'shrink-0 rounded-md p-2 transition-colors',
+          accent
+            ? 'bg-brand-blue text-brand-blue-foreground hover:bg-brand-blue/90'
+            : 'text-muted-foreground hover:bg-accent hover:text-foreground',
+        )}
       >
-        {copied ? <Check className="text-signal-ok size-3.5" /> : <Copy className="size-3.5" />}
+        {copied ? (
+          /*
+            On the filled button the green sits at about 1.8:1 against the blue, so
+            the glyph inherits white and the swap from copy to check, plus the live
+            region below, carries the confirmation on its own.
+          */
+          <Check className={cn('size-3.5', accent ? '' : 'text-signal-ok')} />
+        ) : (
+          <Copy className="size-3.5" />
+        )}
       </button>
       <span aria-live="polite" className="sr-only">
         {copied ? 'Command copied to clipboard' : ''}

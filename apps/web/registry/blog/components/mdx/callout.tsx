@@ -22,7 +22,7 @@
  * the token set and inventing one would make the blog stop looking like the
  * product it is bolted onto.
  *
- * @See https://docs.agentblog.dev/guides/match-your-design#only-semantic-tokens-never-a-palette-utility
+ * @see https://docs.agentblog.dev/guides/match-your-design#only-semantic-tokens-never-a-palette-utility
  */
 import type { ReactNode } from 'react'
 

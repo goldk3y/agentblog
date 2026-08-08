@@ -18,9 +18,12 @@
  * A reader who sees a docs link and a blog link in the same feed should see one
  * product. The two files are deliberately separate copies rather than a shared
  * package, because the blog card lives in the registry and the registry is
- * forbidden from importing anything out of this workspace. Four colours and four
- * numbers are the entire duplication; keep them equal to
- * `apps/web/registry/blog/lib/og-card.tsx` by hand.
+ * forbidden from importing anything out of this workspace.
+ *
+ * The duplication is the palette, the geometry, the type scale, and the element
+ * tree they produce. Keep every one of them equal to
+ * `apps/web/registry/blog/lib/og-card.tsx` by hand. Nothing enforces it, so a
+ * change to either card is a change to both.
  *
  * ---------------------------------------------------------------------------
  * ONE WEIGHT
@@ -74,8 +77,8 @@ function titleFontSize(title: string): number {
 }
 
 /**
- * THERE IS NO DESCRIPTION ON THIS CARD, AND THAT IS A MEASUREMENT RATHER THAN A
- * PREFERENCE.
+ * There is no description on this card, and that is a measurement rather than a
+ * preference.
  *
  * The Fumadocs default puts one there, so the first version of this file did
  * too, and it does not fit. The arithmetic, against the real content:

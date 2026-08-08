@@ -2,8 +2,7 @@
  * The write path. Every byte this CLI changes in a user's repository goes
  * through here.
  *
- * Three properties, all required by the AgentBlog docs, and all of
- * them cheaper to build than to explain away later:
+ * Three properties, each of them cheaper to build than to explain away later:
  *
  * 1. **Nothing is written before it is shown.** Callers build the complete set
  *    of edits, print the unified diff, and only then apply. `--dry-run` is the

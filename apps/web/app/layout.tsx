@@ -10,9 +10,9 @@
  *
  * If you change a `CLI-PATCHED` block, change
  * `packages/cli/src/patchers/root-layout.ts` in the same commit. The patcher's
- * merge semantics are stated in the AgentBlog docs: it only writes
- * `metadataBase` and `title.template` when they are absent, and it reports
- * rather than overwriting a value the user already set.
+ * merge semantics are the ones stated in `commands/init-patches.ts`: it only
+ * writes `metadataBase` and `title.template` when they are absent, and it
+ * reports rather than overwriting a value the user already set.
  *
  * ---------------------------------------------------------------------------
  * WHY EACH PATCHED PIECE MATTERS

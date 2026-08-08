@@ -37,7 +37,7 @@ import {
   SECTION_GAP,
   TITLE_CLUSTER,
 } from '@/components/blog/type-scale'
-import { absoluteUrl, categoryUrl } from '@/lib/config'
+import { blogPath, categoryUrl } from '@/lib/config'
 import { buildListMetadata } from '@/lib/metadata'
 import { getAllCategories, getCategory, getPostsByCategory } from '@/lib/posts'
 import { buildBreadcrumb } from '@/lib/schema'
@@ -131,8 +131,8 @@ export default async function CategoryPage(props: PageProps<'/blog/category/[slu
   // No Home crumb, here or anywhere else in the block. Google does not require
   // one ("It is not required to include a breadcrumb ListItem for the top level
   // path"), and the SERP prefixes the domain regardless. See `breadcrumbs.tsx`.
-  const trail: { name: string; url?: string }[] = [
-    { name: 'Blog', url: absoluteUrl('/blog') },
+  const trail: { name: string; path?: string }[] = [
+    { name: 'Blog', path: blogPath() },
     { name: category.name },
   ]
 
@@ -140,13 +140,10 @@ export default async function CategoryPage(props: PageProps<'/blog/category/[slu
     <>
       <div className={cn('mx-auto w-full max-w-(--agentblog-rail) px-6', SECTION_GAP)}>
         <header className={PAGE_HEADER}>
-          {/* Breadcrumb hrefs come from the config URL helpers, so the visible trail
-              and the BreadcrumbList built from the same array below cannot drift. */}
-          <Breadcrumbs
-            trail={trail.map((crumb) =>
-              crumb.url ? { name: crumb.name, href: crumb.url } : { name: crumb.name },
-            )}
-          />
+          {/* Breadcrumb paths come from the config path helpers, so the visible
+              trail and the BreadcrumbList built from the same array below cannot
+              drift. */}
+          <Breadcrumbs trail={trail} />
 
           <div className={TITLE_CLUSTER}>
             {/* Exactly one <h1> on this page. */}

@@ -1,8 +1,8 @@
 /**
  * The per-post pre-publish gate.
  *
- * This implements the checklist in `the GEO playbook` section 6.3, in
- * the order a writer would work through it. Each check reports what to change,
+ * This implements the pre-publish checklist in the order a writer would work
+ * through it. Each check reports what to change,
  * not merely that something is wrong, because the audience is somebody about to
  * publish and the alternative is a list of complaints.
  *

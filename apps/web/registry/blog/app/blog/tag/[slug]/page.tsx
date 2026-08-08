@@ -39,7 +39,7 @@ import {
   SECTION_GAP,
   TITLE_CLUSTER,
 } from '@/components/blog/type-scale'
-import { absoluteUrl, config, tagUrl } from '@/lib/config'
+import { blogPath, config, tagUrl } from '@/lib/config'
 import { buildListMetadata, googleBotDefaults } from '@/lib/metadata'
 import { getAllTags, getPostsByTag } from '@/lib/posts'
 import { buildBreadcrumb } from '@/lib/schema'
@@ -175,8 +175,8 @@ export default async function TagPage(props: PageProps<'/blog/tag/[slug]'>) {
 
   // No Home crumb. See `breadcrumbs.tsx` for why the trail starts at the first
   // level that tells a reader something they cannot get from the address bar.
-  const trail: { name: string; url?: string }[] = [
-    { name: 'Blog', url: absoluteUrl('/blog') },
+  const trail: { name: string; path?: string }[] = [
+    { name: 'Blog', path: blogPath() },
     { name: label },
   ]
 
@@ -184,11 +184,7 @@ export default async function TagPage(props: PageProps<'/blog/tag/[slug]'>) {
     <>
       <div className={cn('mx-auto w-full max-w-(--agentblog-rail) px-6', SECTION_GAP)}>
         <header className={PAGE_HEADER}>
-          <Breadcrumbs
-            trail={trail.map((crumb) =>
-              crumb.url ? { name: crumb.name, href: crumb.url } : { name: crumb.name },
-            )}
-          />
+          <Breadcrumbs trail={trail} />
 
           <div className={TITLE_CLUSTER}>
             {/* Exactly one <h1> on this page. */}

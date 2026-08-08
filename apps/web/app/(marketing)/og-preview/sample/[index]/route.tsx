@@ -7,10 +7,10 @@
  * furniture and is not part of any registry item, so a consumer never installs
  * it.
  *
- * The index is validated against a closed list rather than parsed as a number
- * that indexes an array. `OG_SAMPLES[Number(index)]` with `index = '1e3'` is
- * `undefined` rather than an error, and the honest response to a URL that names
- * no sample is a 404.
+ * `dynamicParams = false` means only the indexes `generateStaticParams` returns
+ * are routable, so an unknown one 404s before this handler runs. The lookup
+ * below still checks, because a route that depends on a config flag for its
+ * bounds check is one flag away from reading off the end of the array.
  */
 import { ImageResponse } from 'next/og'
 

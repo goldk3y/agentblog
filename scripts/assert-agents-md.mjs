@@ -29,7 +29,7 @@
  *   node scripts/assert-agents-md.mjs [project dir]
  *
  * @see https://docs.agentblog.dev/guides/write-with-your-agent
- * @see BUILD-SPEC section 1, agentRules
+ * @see packages/cli/src/patchers/agents-md.ts
  */
 import { existsSync, readFileSync } from 'node:fs'
 import { dirname, join, relative, resolve } from 'node:path'

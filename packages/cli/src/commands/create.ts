@@ -22,9 +22,9 @@
  * which is why both are passed explicitly rather than relying on the process
  * working directory.
  *
- * The version is pinned for the same reason BUILD-SPEC section 12 pins it: the
- * flags this command depends on are facts about a version, and `@latest` makes
- * them facts about a date.
+ * The version is pinned for the same reason `util/exec.ts` pins it: the flags
+ * this command depends on are facts about a version, and `@latest` makes them
+ * facts about a date.
  *
  * What it does not yet do, stated plainly rather than implied: it does not apply
  * `@agentblog/theme`, and it does not add the standalone site items
@@ -36,7 +36,7 @@
  * which is the right place for that question, and the reason `init` refuses to
  * run `shadcn init` itself in an existing project.
  *
- * @see https://docs.agentblog.dev/installation, BUILD-SPEC section 12
+ * @see https://docs.agentblog.dev/installation
  */
 import { resolve } from 'node:path'
 

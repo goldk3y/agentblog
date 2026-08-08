@@ -139,9 +139,10 @@ export interface AgentBlogConfigBase {
  * The full config type.
  *
  * `deployHook` is required when the content source cannot publish without a
- * rebuild, and rejected when it can. That is the section 5.3 failure (publishing
+ * rebuild, and rejected when it can. That moves the cold-slug failure (publishing
  * a post that was never prerendered, then pinging a crawler to come look at it)
- * moved from a runtime surprise to a compile error.
+ * from a runtime surprise to a compile error. `scripts/assert-cold-slug.mjs` is
+ * the end-to-end proof of the same thing.
  *
  * Swap `mdxSource` for `supabaseSource` in your config and the file stops type
  * checking until you supply a deploy hook. That is the single highest value

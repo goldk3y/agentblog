@@ -160,8 +160,8 @@ export default async function BlogIndexPage(props: PageProps<'/blog'>) {
   if (requested > 1 && requested > totalPages) notFound()
 
   /*
-   * PAGE ONE HAS NO BREADCRUMB, AND THAT IS THE CORRECT OUTPUT RATHER THAN A
-   * MISSING FEATURE.
+   * Page one has no breadcrumb, and that is the correct output rather than a
+   * missing feature.
    *
    * With no Home crumb (see `breadcrumbs.tsx`) this route is the top of its own
    * trail, so page one's trail is the single word "Blog" sitting above an H1
@@ -173,13 +173,17 @@ export default async function BlogIndexPage(props: PageProps<'/blog'>) {
    *
    * Page two and beyond do have somewhere to go back to, so they get one.
    *
-   * Typed explicitly rather than inferred, so that `crumb.url` below is a legal
+   * Paths rather than absolute URLs. `buildBreadcrumb` absolutizes for the
+   * JSON-LD; the rendered `href` has to stay relative so `next/link` keeps
+   * routing inside the origin serving the page. See `BreadcrumbTrailItem.path`.
+   *
+   * Typed explicitly rather than inferred, so that `crumb.path` below is a legal
    * property access on every element and so the shape matches `buildBreadcrumb`
    * exactly. Note the `?:` rather than `| undefined`: this repo compiles with
-   * `exactOptionalPropertyTypes`, so an absent crumb URL is an absent key.
+   * `exactOptionalPropertyTypes`, so an absent crumb path is an absent key.
    */
-  const trail: { name: string; url?: string }[] =
-    page > 1 ? [{ name: 'Blog', url: absoluteUrl('/blog') }, { name: `Page ${page}` }] : []
+  const trail: { name: string; path?: string }[] =
+    page > 1 ? [{ name: 'Blog', path: blogPath() }, { name: `Page ${page}` }] : []
 
   return (
     <>
@@ -211,14 +215,11 @@ export default async function BlogIndexPage(props: PageProps<'/blog'>) {
        */}
       <div className={cn('mx-auto w-full max-w-(--agentblog-rail) px-6', SECTION_GAP)}>
         <header className={PAGE_HEADER}>
-          {/* Breadcrumb hrefs come from the config URL helpers, same as every
-              canonical, so the visible trail and the BreadcrumbList JSON-LD built
-              from the same array below can never disagree about a URL. */}
-          <Breadcrumbs
-            trail={trail.map((crumb) =>
-              crumb.url ? { name: crumb.name, href: crumb.url } : { name: crumb.name },
-            )}
-          />
+          {/* Breadcrumb paths come from the config path helpers, the same
+              helpers every canonical is absolutized from, so the visible trail
+              and the BreadcrumbList JSON-LD built from the same array below can
+              never disagree about a destination. */}
+          <Breadcrumbs trail={trail} />
 
           <div className={TITLE_CLUSTER}>
             {/* Exactly one <h1>, and it does not change on page 2. Paginated pages

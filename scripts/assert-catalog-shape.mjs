@@ -36,7 +36,7 @@
  *   node scripts/assert-catalog-shape.mjs [path/to/public/r]
  *
  * @see https://docs.agentblog.dev/installation
- * @see BUILD-SPEC section 12
+ * @see CONTRIBUTING.md, "The shadcn registry directory"
  */
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'

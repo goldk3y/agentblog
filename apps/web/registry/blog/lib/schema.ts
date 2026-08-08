@@ -348,15 +348,22 @@ export function buildPersonGraph(author: Author): Person {
 /**
  * The breadcrumb trail as a `BreadcrumbList`.
  *
- * An entry with no `url` emits no `item`, which is Google's documented shape for
- * the current page rather than an omission: "If `item` isn't included for the
- * last item, Google uses the URL of the containing page." It is also legitimate
- * for every entry to have a `url`, which is what a post's trail looks like now
- * that it ends at the category hub rather than at the post itself. Google does
- * not require the trail to reach the current page, and it does not require it to
- * start at the site root either: "It is not required to include a breadcrumb
- * ListItem for the top level path (your site's domain or host name)."
+ * An entry with no `path` emits no `item`, which is Google's documented shape
+ * for the current page rather than an omission: "If `item` isn't included for
+ * the last item, Google uses the URL of the containing page." It is also
+ * legitimate for every entry to have one, which is what a post's trail looks
+ * like now that it ends at the category hub rather than at the post itself.
+ * Google does not require the trail to reach the current page, and it does not
+ * require it to start at the site root either: "It is not required to include a
+ * breadcrumb ListItem for the top level path (your site's domain or host name)."
  * @see https://developers.google.com/search/docs/appearance/structured-data/breadcrumb
+ *
+ * Crumbs carry root-relative paths and this function absolutizes them, which is
+ * the one place that conversion happens. `item` has to be an absolute URL to
+ * identify a page; a breadcrumb `href` has to be a path so `next/link` keeps
+ * routing inside whatever origin the page is being served from. Storing the
+ * absolute form in the trail satisfies the first and breaks the second, on every
+ * preview deployment. See `BreadcrumbTrailItem.path` in `components/blog/breadcrumbs.tsx`.
  *
  * The trail here must match the trail the page renders through `<Breadcrumbs>`,
  * which is why every caller builds one array and passes it to both. Marked-up
@@ -364,18 +371,20 @@ export function buildPersonGraph(author: Author): Person {
  * invisible FAQ.
  */
 export function buildBreadcrumb(
-  trail: readonly { name: string; url?: string }[],
-  path: string,
+  trail: readonly { name: string; path?: string }[],
+  // The path of the page carrying the trail, which is what the node's `@id` is
+  // keyed by. Named apart from `crumb.path` because they are different things.
+  pagePath: string,
 ): BreadcrumbList {
   return {
     '@type': 'BreadcrumbList',
-    '@id': ids.breadcrumb(path),
+    '@id': ids.breadcrumb(pagePath),
     itemListElement: trail.map((crumb, index): ListItem => {
       return {
         '@type': 'ListItem',
         position: index + 1,
         name: crumb.name,
-        ...(crumb.url === undefined ? {} : { item: crumb.url }),
+        ...(crumb.path === undefined ? {} : { item: absoluteUrl(crumb.path) }),
       }
     }),
   }
@@ -464,7 +473,7 @@ export function buildFaq(post: Post): FAQPage | null {
  */
 export function buildArticleGraph(
   post: Post,
-  trail: readonly { name: string; url?: string }[],
+  trail: readonly { name: string; path?: string }[],
 ): GraphNode[] {
   const path = routes.post(post.slug)
   const canonical = postUrl(post.slug)

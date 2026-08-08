@@ -9,7 +9,7 @@
  * the next thing the user sees is a 404 they will blame on Next.js. Looking for
  * the files on disk is the only thing that catches it.
  *
- * @see BUILD-SPEC section 12, the AgentBlog docs
+ * @see https://docs.agentblog.dev/troubleshooting
  */
 import { blankCommentsAndStrings } from '@agentblog/checks'
 

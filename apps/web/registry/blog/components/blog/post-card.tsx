@@ -9,7 +9,6 @@ import type { PublishedPost } from '@/lib/types'
 import { cn } from '@/lib/utils'
 
 import { formatPostDateShort } from './byline'
-import { ClockIcon } from './icons'
 
 /**
  * One post, as a card, in a list.
@@ -24,7 +23,7 @@ import { ClockIcon } from './icons'
  * overwrite a component the user has already customized, so a project that
  * restyled its `Card` gets that restyled card here for free. That inheritance is
  * the entire reason the block declares `card` and `badge` as bare-name registry
- * dependencies. @See https://docs.agentblog.dev/guides/match-your-design#primitives-are-requested-by-bare-name.
+ * dependencies.
  *
  * ⚠️ ADDING `'use client'` TO THIS FILE REMOVES EVERY POST LIST FROM THE RAW
  * HTML THAT AI CRAWLERS READ.
@@ -43,7 +42,6 @@ import { ClockIcon } from './icons'
  * every card in a grid makes the browser fetch twelve images at highest priority
  * and reliably makes LCP worse than doing nothing. `post-list.tsx` exposes
  * `priorityFirst` for the single legitimate case.
- * @see https://docs.agentblog.dev/reference/files
  *
  * THE WHOLE CARD IS THE CLICK TARGET, AND IT IS STILL ONE LINK
  * The title's `<Link>` carries `after:absolute after:inset-0`, which stretches a
@@ -69,6 +67,9 @@ import { ClockIcon } from './icons'
  * - Removing `relative` from the `Card` un-anchors the stretched link, which
  *   then covers the nearest positioned ancestor instead. In a grid that is the
  *   whole page.
+ *
+ * @see https://docs.agentblog.dev/guides/match-your-design#primitives-are-requested-by-bare-name
+ * @see https://docs.agentblog.dev/reference/files
  */
 export interface PostCardProps {
   readonly post: PublishedPost
@@ -172,10 +173,10 @@ export function PostCard({ post, priority, headingLevel, className }: PostCardPr
           <span aria-hidden="true">{' · '}</span>
           <time dateTime={post.datePublished}>{formatPostDateShort(post.datePublished)}</time>
         </span>
-        <span className="inline-flex shrink-0 items-center gap-1.5">
-          <ClockIcon className="size-3.5" aria-hidden="true" />
-          {`${minutes} min`}
-        </span>
+        {/* No clock icon, and the words carry the meaning instead. A glyph beside
+            "min read" draws the noun the phrase already contains, and at this
+            size it draws it badly. Same reasoning, same wording, as `<Byline>`. */}
+        <span className="shrink-0">{`${minutes} min read`}</span>
       </CardFooter>
     </Card>
   )

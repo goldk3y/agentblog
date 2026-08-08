@@ -30,7 +30,7 @@
  *   node scripts/assert-copy-style.mjs --strict  warnings fail too
  *
  * @see https://docs.agentblog.dev/guides/write-with-your-agent
- * @see BUILD-SPEC section 0
+ * @see CONTRIBUTING.md, "Never use an em dash"
  */
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
 import { dirname, join, relative, resolve, sep } from 'node:path'
@@ -49,13 +49,17 @@ const TEXT_EXTENSIONS = ['.ts', '.tsx', '.js', '.mjs', '.md', '.mdx', '.json', '
 const TARGETS = [
   { path: 'apps/web/registry', extensions: ['.ts', '.tsx', '.md', '.mdx', '.json', '.css'] },
   { path: 'apps/web/content', extensions: TEXT_EXTENSIONS },
+  // agentblog.dev itself. The landing page is the first prose anybody reads, so
+  // exempting it while holding the docs site to the rule had it backwards.
+  { path: 'apps/web/app', extensions: ['.ts', '.tsx', '.css'] },
+  { path: 'apps/web/components', extensions: ['.ts', '.tsx'] },
+  { path: 'apps/web/lib', extensions: ['.ts', '.tsx'] },
   // docs.agentblog.dev. Its prose is the product's voice, so it is held to the
   // same rules as the seed posts.
   { path: 'apps/docs/content', extensions: TEXT_EXTENSIONS },
   { path: 'apps/docs/app', extensions: ['.ts', '.tsx', '.css'] },
   { path: 'apps/docs/lib', extensions: ['.ts', '.tsx'] },
   { path: 'apps/docs/components', extensions: ['.ts', '.tsx'] },
-  { path: 'docs', extensions: TEXT_EXTENSIONS },
   { path: 'README.md', extensions: TEXT_EXTENSIONS },
   { path: 'CONTRIBUTING.md', extensions: TEXT_EXTENSIONS },
   // One sentence, in a directory of several hundred registries, next to every
@@ -120,6 +124,13 @@ const EXEMPT = [
     rules: '*',
   },
   {
+    // Vendored from the AI Elements registry by `shadcn add @ai-elements/*`.
+    // Editing the prose in it would be overwritten by the next install, and
+    // none of it is copy a reader of this site ever sees.
+    path: 'apps/web/components/ai-elements/',
+    rules: '*',
+  },
+  {
     // The CLI-side twin of this script: `agentblog audit` applies the same rules
     // to a user's posts, so its rule table holds the characters as data.
     path: 'packages/cli/src/audit/copy-style.ts',
@@ -129,14 +140,6 @@ const EXEMPT = [
     // Documentation pages that state the rule have to quote it.
     path: 'apps/docs/content/docs/guides/write-with-your-agent.mdx',
     rules: ['fast-paced-world', 'not-just-x-its-y', 'word'],
-  },
-  {
-    path: 'docs/copy-style.md',
-    rules: '*',
-  },
-  {
-    path: 'docs/contributing/copy-style.md',
-    rules: '*',
   },
 ]
 
@@ -342,7 +345,7 @@ function main() {
       console.error(`      ${f.excerpt}`)
     }
     console.error('')
-    console.error('  House rule, from the AgentBlog docs: no em dashes, anywhere.')
+    console.error('  House rule, stated in CONTRIBUTING.md: no em dashes, anywhere.')
     console.error('  Do not fix these with a find and replace. Substituting commas blindly')
     console.error('  produces comma splices, which read worse than the dash did. Reread the')
     console.error('  sentence and repunctuate it.')

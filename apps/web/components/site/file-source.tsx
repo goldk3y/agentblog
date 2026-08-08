@@ -4,8 +4,9 @@
  * This is a separate module so that it can be a separate chunk. `CodeBlock`
  * imports Shiki, which is 245 KB of grammars and regex engine, and a static
  * import would put all of it in the landing page's first load for a panel most
- * readers scroll past. `file-browser.tsx` pulls this in with `next/dynamic`
- * instead, so the highlighter arrives after hydration and only once.
+ * readers scroll past. `file-browser.tsx` reaches it through `React.lazy` behind
+ * a mount gate instead, so the highlighter arrives after hydration and only
+ * once.
  *
  * Everything Shiki touches has to live here. Re-exporting `CodeBlockHeader` from
  * this file would not help: one static import of the module is enough to pull

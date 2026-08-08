@@ -52,9 +52,11 @@ export function InstallSwitch() {
               setActive(option.id)
             }}
             className={cn(
-              'text-label-13 rounded-md px-2.5 py-1 transition-colors',
+              /* `font-semibold` after `text-label-13` on purpose: the scale step
+                 carries weight 500, and this lifts both tabs one step to 600. */
+              'text-label-13 rounded-full px-3.5 py-1.5 font-semibold transition-colors',
               option.id === active
-                ? 'text-foreground bg-accent'
+                ? 'bg-brand-blue/10 text-brand-blue'
                 : 'text-muted-foreground hover:text-foreground',
             )}
           >
@@ -72,7 +74,7 @@ export function InstallSwitch() {
           hidden={option.id !== active}
           className="w-full max-w-md"
         >
-          <CopyCommand command={option.command} size="lg" className="mt-4" />
+          <CopyCommand command={option.command} size="lg" accent className="mt-4" />
           <p className="text-muted-foreground text-copy-13 mt-3 text-center">{option.note}</p>
         </div>
       ))}

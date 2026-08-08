@@ -206,11 +206,11 @@ export function buildPostMetadata(post: Post): Metadata {
  * registry item as the surfaces that point at it, `@agentblog/blog-routes`, so
  * the image and its callers cannot be installed apart.
  *
- * THIS IS A BLOG PATH, NOT A SITE PATH, AND THAT IS THE POINT. Until AgentBlog
- * 0.4 the card was `app/opengraph-image.tsx` at the app root, which meant
- * installing a blog silently claimed the social card for the host site's whole
- * domain. Your own `app/opengraph-image.*` now wins for everything outside
- * `/blog`, and nothing this block ships will overwrite it.
+ * This is a blog path rather than a site path, and that is the point. Until
+ * AgentBlog 0.4 the card was `app/opengraph-image.tsx` at the app root, which
+ * meant installing a blog silently claimed the social card for the host site's
+ * whole domain. Your own `app/opengraph-image.*` now wins for everything
+ * outside `/blog`, and nothing this block ships will overwrite it.
  */
 const BLOG_OG_IMAGE = '/blog/opengraph-image'
 

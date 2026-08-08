@@ -9,7 +9,7 @@
  * thing that catches it, which makes a four line existence check one of the
  * highest value checks in the product.
  *
- * @see BUILD-SPEC section 12, the AgentBlog docs
+ * @see https://docs.agentblog.dev/troubleshooting
  */
 import { join } from 'node:path'
 

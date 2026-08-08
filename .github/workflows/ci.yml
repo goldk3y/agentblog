@@ -1,6 +1,6 @@
 name: CI
 
-# The pipeline from the AgentBlog docs, ordered so the cheap checks
+# The pipeline described in CONTRIBUTING.md, ordered so the cheap checks
 # fail first. `quality` and `unit` run in parallel on every push and take about a
 # minute between them. `registry` builds and validates the published JSON.
 # `e2e-install` is the expensive one and the only one that proves the product
@@ -221,9 +221,8 @@ jobs:
           pnpm --filter fixture-next16 build 2>&1 | tee /tmp/fixture-build-1.log
 
       # Inline rather than a script because it is a grep over a build log, and a
-      # 40 line module to wrap `grep -q` would be worse. the AgentBlog docs section
-      # 11 calls this assert-preflight-warns.mjs. Promote it to a script if it
-      # ever needs to assert more than one thing.
+      # 40 line module to wrap `grep -q` would be worse. Promote it to a script if
+      # it ever needs to assert more than one thing.
       - name: Assert the preflight warning fired
         run: |
           if ! grep -qi 'htmlLimitedBots' /tmp/fixture-build-1.log; then
@@ -476,7 +475,6 @@ jobs:
   #  * assert-theme-inheritance.mjs  Build the fixture under two themes and assert
   #                                  the snapshots differ. Needs a second fixture
   #                                  with a custom baseColor, radius, and font.
-  #                                  the AgentBlog docs
   #  * lighthouse-ci                 LCP under 2.5s, INP under 200ms, CLS under
   #                                  0.1 against the built fixture.
   #  * claude plugin validate        Once .claude-plugin/marketplace.json and the

@@ -41,7 +41,7 @@
  *   node scripts/assert-theme-conformance.mjs [registry/blog dir]
  *
  * @see https://docs.agentblog.dev/guides/match-your-design, rules 2 and 5
- * @see BUILD-SPEC section 0, rule 3
+ * @see CONTRIBUTING.md, "The shipped block styles with semantic tokens only"
  */
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { basename, dirname, join, relative, resolve, sep } from 'node:path'

@@ -15,6 +15,7 @@ export {
   ChevronRight,
   Copy,
   ExternalLink,
+  Eye,
   FileCode,
   FileText,
   Github,
