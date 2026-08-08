@@ -388,7 +388,7 @@ export default async function LandingPage() {
             </Button>
           </div>
           <div className="mt-10 max-w-md">
-            <CopyCommand command="npx agentblog@latest init" accent />
+            <CopyCommand command="npx agentblog@latest init" surface="closing-cta" accent />
           </div>
         </Container>
       </section>

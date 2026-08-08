@@ -35,7 +35,7 @@ export default function RegistryPage() {
       </p>
 
       <div className="mt-10 max-w-xl space-y-3">
-        <CopyCommand command="npx shadcn@latest add @agentblog/blog" />
+        <CopyCommand command="npx shadcn@latest add @agentblog/blog" surface="registry-index" />
         <p className="text-muted-foreground text-sm">
           Add the namespace to <code className="font-mono">components.json</code> first:{' '}
           <code className="font-mono">
@@ -91,6 +91,7 @@ export default function RegistryPage() {
 
               <CopyCommand
                 command={`npx shadcn@latest add @agentblog/${item.name}`}
+                surface="registry-item"
                 className="mt-4 max-w-xl"
               />
             </li>

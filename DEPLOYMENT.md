@@ -133,6 +133,42 @@ The first proves the docs are serving. The second proves the redirects in
 home. Every page that ever existed under `agentblog.dev/docs` is mapped
 individually, so a blanket redirect appearing in that header is a regression.
 
+### Web Analytics
+
+Both root layouts mount `<Analytics />` from `@vercel/analytics/next`, and both
+record nothing until Web Analytics is switched on in the dashboard. It is a per
+project setting, so it has to be done twice: Analytics in the sidebar, then
+**Enable**. Enabling is what creates the `/_vercel/insights/*` routes the
+component asks for, and it takes effect on the next deploy rather than
+immediately.
+
+The failure mode is the quiet one this repository is full of. A project that was
+never enabled serves a 404 for the script, the component gives up without
+throwing, the page renders correctly, and the dashboard stays at zero visitors
+for as long as nobody looks. One request tells you which state you are in:
+
+```bash
+curl -sfI https://agentblog.dev/_vercel/insights/script.js | head -1
+curl -sfI https://docs.agentblog.dev/_vercel/insights/script.js | head -1
+```
+
+Neither script appears in server-rendered HTML. The component injects it after
+hydration, so `curl` of a page shows nothing either way, and a crawler reading
+the prerendered HTML never downloads it.
+
+agentblog.dev also sends one custom event, `install_command_copied`, from
+`apps/web/components/site/copy-command.tsx`. It carries the `command` that was
+copied and the `surface` it was copied from, which together answer whether
+readers install the CLI or the plugin and whether they convert in the hero or
+only after reading to the bottom. Custom events need a Pro plan or above. On a
+Hobby plan the page views still arrive and the events are dropped, so the site
+does not break, it just stops answering that question.
+
+docs.agentblog.dev sends no custom events. Its Markdown variants, `/llms.txt`,
+and `/llms-full.txt` are prerendered route handlers that return text, so they run
+no client script and never appear in Web Analytics at all. Agent traffic to those
+paths is a question for runtime logs, not for this dashboard.
+
 ## npm
 
 `agentblog` and the `@agentblog` scope were both unclaimed as of 2026-08-06.

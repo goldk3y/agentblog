@@ -74,7 +74,7 @@ export function InstallSwitch() {
           hidden={option.id !== active}
           className="w-full max-w-md"
         >
-          <CopyCommand command={option.command} size="lg" accent className="mt-4" />
+          <CopyCommand command={option.command} surface="hero" size="lg" accent className="mt-4" />
           <p className="text-muted-foreground text-copy-13 mt-3 text-center">{option.note}</p>
         </div>
       ))}

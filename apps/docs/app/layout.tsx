@@ -14,6 +14,7 @@
 import type { Metadata, Viewport } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 
+import { Analytics } from '@vercel/analytics/next'
 import { RootProvider } from 'fumadocs-ui/provider/next'
 
 import { SITE_NAME, siteOrigin } from '@/lib/site'
@@ -84,6 +85,19 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <RootProvider theme={{ defaultTheme: 'dark', enableSystem: false }}>
           {children}
         </RootProvider>
+
+        {/*
+         * Vercel Web Analytics. This is a second Vercel project with its own
+         * Root Directory, so it reports to its own dashboard and needs the
+         * component mounted here as well as on the product site.
+         *
+         * It measures the HTML pages and nothing else. The Markdown variants,
+         * `/llms.txt`, and `/llms-full.txt` are prerendered route handlers that
+         * return text, so they carry no client script and never appear here. Any
+         * question about agent traffic to those paths is a log or Observability
+         * question, not a Web Analytics one.
+         */}
+        <Analytics />
       </body>
     </html>
   )

@@ -40,6 +40,8 @@
 import type { Metadata, Viewport } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 
+import { Analytics } from '@vercel/analytics/next'
+
 import { SiteFooter } from '@/components/site/footer'
 import { SiteHeader } from '@/components/site/header'
 import { ThemeProvider } from '@/components/site/theme-provider'
@@ -189,6 +191,22 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </main>
           <SiteFooter />
         </ThemeProvider>
+
+        {/*
+         * Vercel Web Analytics, for agentblog.dev only.
+         *
+         * NOT a `CLI-PATCHED` block and deliberately not in the registry. The
+         * registry ships source into someone else's repository, so a
+         * `@vercel/analytics` import there would be an undeclared dependency on
+         * a hosting provider for a block whose whole claim is that it is just
+         * Next.js. Anyone who wants it adds four lines to their own root layout.
+         *
+         * `mode` is left on its default of `auto`, which reads `NODE_ENV` and
+         * loads the debug script locally rather than reporting `next dev` page
+         * views as production traffic. Rendered last in `<body>` so the script
+         * tag never sits between the header and the content a crawler reads.
+         */}
+        <Analytics />
       </body>
     </html>
   )

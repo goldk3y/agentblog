@@ -8,16 +8,34 @@
  * `navigator.clipboard` is unavailable on insecure origins and can be blocked by
  * permissions policy, so a failed write leaves the button in its resting state
  * rather than lying about success.
+ *
+ * It is also the only conversion event agentblog.dev has. Every install path the
+ * site offers goes through this one button, so the `track` call below lives here
+ * rather than at the four call sites, and `surface` is required so that no call
+ * site can add an unlabelled one.
  */
 'use client'
 
 import { useCallback, useRef, useState } from 'react'
 
+import { track } from '@vercel/analytics'
+
 import { Check, Copy } from '@/components/site/icons'
 import { cn } from '@/lib/utils'
 
+/**
+ * Where on the site the copy happened.
+ *
+ * The `command` string already says which install path was taken, so this says
+ * which piece of copy sold it: the hero above the fold, the closing call to
+ * action a reader had to scroll the whole page to reach, or one of the two
+ * commands on /registry.
+ */
+type CopySurface = 'hero' | 'closing-cta' | 'registry-index' | 'registry-item'
+
 interface CopyCommandProps {
   readonly command: string
+  readonly surface: CopySurface
   /** Larger presentation for the hero. Everything else uses the default. */
   readonly size?: 'default' | 'lg'
   /** Brand-blue edge and copy glyph. The copied state stays green either way. */
@@ -27,6 +45,7 @@ interface CopyCommandProps {
 
 export function CopyCommand({
   command,
+  surface,
   size = 'default',
   accent = false,
   className,
@@ -43,11 +62,24 @@ export function CopyCommand({
         timer.current = setTimeout(() => {
           setCopied(false)
         }, 1800)
+
+        /*
+         * Reported inside the resolved branch, so the count is copies that
+         * reached the clipboard rather than clicks on the button.
+         *
+         * `command` is sent verbatim and is the interesting half. It separates
+         * the CLI from the plugin in the hero, which is the question of whether
+         * a reader is installing this for themselves or for their agent, and on
+         * /registry it names which of the fourteen items someone wanted on its
+         * own. Both are fixed strings this repository writes. Neither carries
+         * anything the visitor typed.
+         */
+        track('install_command_copied', { command, surface })
       })
       .catch(() => {
         // Clipboard denied. The text is selectable, so there is a manual path.
       })
-  }, [command])
+  }, [command, surface])
 
   return (
     <div
