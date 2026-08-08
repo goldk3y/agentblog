@@ -299,12 +299,12 @@ export default async function LandingPage() {
       {/*  `scripts/assert-file-count.mjs` parses the digits in this        */}
       {/*  section's lead and fails the build when they stop matching what  */}
       {/*  `@agentblog/blog` actually resolves to. Reword it freely, but    */}
-      {/*  keep the count in the form `76 files,`.                          */}
+      {/*  keep the count in the form `81 files,`.                          */}
       {/* ---------------------------------------------------------------- */}
       <Section
         id="what-you-get"
         title="One command installs the whole blog"
-        lead="76 files, and you own every one of them. No runtime package to depend on, and nothing of ours to upgrade around."
+        lead="81 files, and you own every one of them. No runtime package to depend on, and nothing of ours to upgrade around."
       >
         <FileBrowser files={installedFiles} initialPath="app/blog/[slug]/page.tsx" />
 
@@ -327,24 +327,32 @@ export default async function LandingPage() {
       <Section
         id="agent-layer"
         title="Your coding agent writes the posts"
-        lead="Posts are MDX files in your repository. Installing AgentBlog also adds six skills and a rule block your agent reads, so it knows the format before you ask."
+        lead="Posts are MDX files in your repository. Installing AgentBlog also adds seven skills and a rule block your agent reads, so it knows the format before you ask."
       >
         <Panel label=".claude/skills/" bodyClassName="grid grid-cols-1 sm:grid-cols-2">
-          {SKILLS.map((skill, index) => (
-            <div
-              key={skill.name}
-              className={cn(
-                'border-border p-6',
-                // Interior rules only, so the panel border is never doubled.
-                index % 2 === 0 && 'sm:border-r',
-                index >= 2 && 'border-t',
-                index === 1 && 'border-t sm:border-t-0',
-              )}
-            >
-              <h3 className="text-foreground text-mono-13 font-mono">{skill.name}</h3>
-              <p className="text-muted-foreground text-copy-14 mt-2.5">{skill.description}</p>
-            </div>
-          ))}
+          {SKILLS.map((skill, index) => {
+            // An odd count leaves the last card alone on its row. Spanning it
+            // makes that row deliberate rather than half-empty, and it must not
+            // draw a right rule, because there is nothing to its right.
+            const isLonelyLast = index === SKILLS.length - 1 && SKILLS.length % 2 === 1
+
+            return (
+              <div
+                key={skill.name}
+                className={cn(
+                  'border-border p-6',
+                  // Interior rules only, so the panel border is never doubled.
+                  index % 2 === 0 && !isLonelyLast && 'sm:border-r',
+                  index >= 2 && 'border-t',
+                  index === 1 && 'border-t sm:border-t-0',
+                  isLonelyLast && 'sm:col-span-2',
+                )}
+              >
+                <h3 className="text-foreground text-mono-13 font-mono">{skill.name}</h3>
+                <p className="text-muted-foreground text-copy-14 mt-2.5">{skill.description}</p>
+              </div>
+            )
+          })}
         </Panel>
       </Section>
 
@@ -405,6 +413,11 @@ const SKILLS = [
     name: 'agentblog-setup',
     description:
       'Finishes whatever the registry could not do on its own, then replaces the seed author, categories, and posts with yours, so the blog is about your subject and not ours.',
+  },
+  {
+    name: 'dataforseo-research',
+    description:
+      'Reads the research already on disk before it spends anything, then measures what you rank for, who holds the answers, and whether AI engines cite you. Every run is written back, so the next one compares instead of repeating.',
   },
   {
     name: 'plan-blog-content',

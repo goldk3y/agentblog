@@ -82,9 +82,18 @@ rather than inferring it and proceeding.
 
 ### 3. Mine real queries
 
-`WebSearch` the entity's obvious head terms. Collect phrasing from People Also Ask
-boxes, forum threads, and the questions competitors' posts actually answer in their
-H2s. If the project has Search Console access, that is better than all of it.
+**Check `content/research/` first.** If `dataforseo-research` has run, its
+`baseline.md` already holds measured clusters, the queries this site is close to
+ranking for, and the People Also Ask phrasing, all of it better evidence than
+anything this step can produce on its own. Use it, and use this step only for what
+it did not cover. If that directory does not exist and the project has a
+DataForSEO account, running that skill first is worth the delay: it is the
+difference between a plan built on measurement and a plan built on inference.
+
+Otherwise, `WebSearch` the entity's obvious head terms. Collect phrasing from
+People Also Ask boxes, forum threads, and the questions competitors' posts
+actually answer in their H2s. If the project has Search Console access, that is
+better than all of it.
 
 Two rules:
 

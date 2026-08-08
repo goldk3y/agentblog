@@ -2,7 +2,7 @@
  * The hero install command, with a switch between the two entry points.
  *
  * There genuinely are two, and they are for two different readers. A person runs
- * the CLI. A coding agent gets the plugin, which carries the same six skills
+ * the CLI. A coding agent gets the plugin, which carries the same seven skills
  * without touching the Next.js app at all. Presenting them as one command with a
  * footnote would hide the second from the audience it was built for.
  *
@@ -29,7 +29,7 @@ const OPTIONS = [
     id: 'agent',
     label: 'For your agent',
     command: '/plugin marketplace add goldk3y/agentblog',
-    note: 'Installs the six skills into Claude Code, with no app changes.',
+    note: 'Installs the seven skills into Claude Code, with no app changes.',
   },
 ] as const
 

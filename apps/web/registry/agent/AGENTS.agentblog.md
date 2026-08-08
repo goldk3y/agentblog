@@ -5,18 +5,19 @@
 Posts live in `content/blog/*.mdx`. Config: `agentblog.config.ts`. Authors:
 `content/authors.json`. Categories: `content/categories.json`.
 
-Six AgentBlog skills cover the lifecycle. Use them by name rather than working
+Seven AgentBlog skills cover the lifecycle. Use them by name rather than working
 from memory: they carry the schema contract, the citation rules, and the checks,
 and hand-doing any of these steps silently skips all three.
 
-| Task                                     | Skill               |
-| ---------------------------------------- | ------------------- |
-| Finish the install, make the blog ours   | `agentblog-setup`   |
-| Decide what to write and how it links up | `plan-blog-content` |
-| Write a post                             | `write-blog-post`   |
-| Update an existing post                  | `refresh-blog-post` |
-| Gate a post before it ships              | `agentblog-audit`   |
-| Ship it and confirm it landed            | `publish-blog-post` |
+| Task                                     | Skill                 |
+| ---------------------------------------- | --------------------- |
+| Finish the install, make the blog ours   | `agentblog-setup`     |
+| Find out what to write, with real data   | `dataforseo-research` |
+| Decide what to write and how it links up | `plan-blog-content`   |
+| Write a post                             | `write-blog-post`     |
+| Update an existing post                  | `refresh-blog-post`   |
+| Gate a post before it ships              | `agentblog-audit`     |
+| Ship it and confirm it landed            | `publish-blog-post`   |
 
 - Never fabricate a statistic, a quotation, or a source. If a number cannot be
   verified at a real source that was actually fetched, state the claim

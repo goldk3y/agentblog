@@ -7,13 +7,38 @@
       "name": "agent-kit",
       "type": "registry:block",
       "title": "AgentBlog agent kit",
-      "description": "Six skills that take a blog from install to published: finish the setup for your site, plan the topic clusters, write posts to the GEO playbook, refresh them without falsifying dateModified, audit before publish, and publish with the IndexNow response code actually read. Installs into your project's .claude/skills directory, so any agent working in this repository picks them up. Also available as a Claude Code plugin and through npx skills add.",
+      "description": "Seven skills that take a blog from install to published: finish the setup for your site, research what to write with real search and AI citation data, plan the topic clusters, write posts to the GEO playbook, refresh them without falsifying dateModified, audit before publish, and publish with the IndexNow response code actually read. Installs into your project's .claude/skills directory, so any agent working in this repository picks them up. Also available as a Claude Code plugin and through npx skills add.",
       "categories": ["blog", "agents", "claude-code"],
       "files": [
         {
           "path": "skills/agentblog-setup/SKILL.md",
           "type": "registry:file",
           "target": "~/.claude/skills/agentblog-setup/SKILL.md"
+        },
+        {
+          "path": "skills/dataforseo-research/SKILL.md",
+          "type": "registry:file",
+          "target": "~/.claude/skills/dataforseo-research/SKILL.md"
+        },
+        {
+          "path": "skills/dataforseo-research/references/setup.md",
+          "type": "registry:file",
+          "target": "~/.claude/skills/dataforseo-research/references/setup.md"
+        },
+        {
+          "path": "skills/dataforseo-research/references/endpoints.md",
+          "type": "registry:file",
+          "target": "~/.claude/skills/dataforseo-research/references/endpoints.md"
+        },
+        {
+          "path": "skills/dataforseo-research/references/playbook.md",
+          "type": "registry:file",
+          "target": "~/.claude/skills/dataforseo-research/references/playbook.md"
+        },
+        {
+          "path": "skills/dataforseo-research/references/catalog.md",
+          "type": "registry:file",
+          "target": "~/.claude/skills/dataforseo-research/references/catalog.md"
         },
         {
           "path": "skills/plan-blog-content/SKILL.md",

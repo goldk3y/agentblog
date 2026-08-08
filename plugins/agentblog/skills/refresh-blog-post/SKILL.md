@@ -77,6 +77,11 @@ These apply to everything you add during a refresh:
 - List every `citations[]` entry, and every number, date, version, price, and
   proper-noun claim in the body. That list is your work queue, and you will report
   against it.
+- Check `content/research/` for this post's URL. If `dataforseo-research` has run,
+  it may already say what position this post holds, whether it fell without the
+  post changing, and which competitor page took the slot. A refresh aimed at a
+  measured decline is a different edit from a refresh aimed at stale citations,
+  and knowing which one this is before starting saves rewriting the wrong half.
 
 ### 2. Re-fetch every cited source
 

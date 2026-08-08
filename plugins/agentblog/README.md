@@ -16,16 +16,17 @@ npx skills add goldk3y/agentblog
 
 ## What ships
 
-Six skills covering the lifecycle, in the order a blog goes through them.
+Seven skills covering the lifecycle, in the order a blog goes through them.
 
-| Skill               | Invocation | What it owns                                                                                    |
-| ------------------- | ---------- | ----------------------------------------------------------------------------------------------- |
-| `agentblog-setup`   | either     | Config wiring, then the seed identity, authors, categories, and posts the install cannot supply |
-| `plan-blog-content` | either     | The entity, the taxonomy, the query clusters, and the link graph, written to an editorial plan  |
-| `write-blog-post`   | either     | The post itself, plus the voice pass and the frontmatter contract                               |
-| `refresh-blog-post` | either     | Re-verifying sources, and the rule that `dateModified` moves only on a real change              |
-| `agentblog-audit`   | user only  | The pre-publish gate: what a crawler receives, the JSON-LD graph, whether the citations hold    |
-| `publish-blog-post` | user only  | Revalidation, IndexNow, and reading the response code instead of the absence of an error        |
+| Skill                 | Invocation | What it owns                                                                                           |
+| --------------------- | ---------- | ------------------------------------------------------------------------------------------------------ |
+| `agentblog-setup`     | either     | Config wiring, then the seed identity, authors, categories, and posts the install cannot supply        |
+| `dataforseo-research` | either     | Search, competitor, SERP, and AI citation evidence, catalogued in `content/research/` so runs compound |
+| `plan-blog-content`   | either     | The entity, the taxonomy, the query clusters, and the link graph, written to an editorial plan         |
+| `write-blog-post`     | either     | The post itself, plus the voice pass and the frontmatter contract                                      |
+| `refresh-blog-post`   | either     | Re-verifying sources, and the rule that `dateModified` moves only on a real change                     |
+| `agentblog-audit`     | user only  | The pre-publish gate: what a crawler receives, the JSON-LD graph, whether the citations hold           |
+| `publish-blog-post`   | user only  | Revalidation, IndexNow, and reading the response code instead of the absence of an error               |
 
 Two of them set `disable-model-invocation: true`. Both have side effects that
 should stay on a human's decision: an audit that runs opportunistically is an audit

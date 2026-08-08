@@ -1,27 +1,28 @@
 ---
 title: Write posts with your coding agent
-description: The six skills AgentBlog installs, what to ask for, what the agent will refuse to do, and where the skills deliberately stop.
+description: The seven skills AgentBlog installs, what to ask for, what the agent will refuse to do, and where the skills deliberately stop.
 icon: Bot
 ---
 
 Posts are MDX files in your repository, so writing one is editing a file, which
-is the thing coding agents are already good at. AgentBlog installs six skills
+is the thing coding agents are already good at. AgentBlog installs seven skills
 that tell your agent what a good post looks like here, so you do not have to
 describe the format every time.
 
-## The six skills
+## The seven skills
 
 They land in `.claude/skills/` during the install, in the order a blog goes
 through them.
 
-| Skill               | What it does                                                                                 |
-| ------------------- | -------------------------------------------------------------------------------------------- |
-| `agentblog-setup`   | Finishes install wiring, then replaces the seed author, categories, and posts with yours     |
-| `plan-blog-content` | Works out what the site should be known for and writes a backlog with the link graph settled |
-| `write-blog-post`   | Writes a new post in the format AI search engines can quote                                  |
-| `refresh-blog-post` | Re-checks an existing post's sources and updates only what actually changed                  |
-| `agentblog-audit`   | Runs the pre-publish gate, including a raw crawler fetch                                     |
-| `publish-blog-post` | Revalidates, submits to IndexNow, and reads the response code rather than assuming           |
+| Skill                 | What it does                                                                                    |
+| --------------------- | ----------------------------------------------------------------------------------------------- |
+| `agentblog-setup`     | Finishes install wiring, then replaces the seed author, categories, and posts with yours        |
+| `dataforseo-research` | Measures what you rank for, who competes, and whether AI engines cite you, and keeps the result |
+| `plan-blog-content`   | Works out what the site should be known for and writes a backlog with the link graph settled    |
+| `write-blog-post`     | Writes a new post in the format AI search engines can quote                                     |
+| `refresh-blog-post`   | Re-checks an existing post's sources and updates only what actually changed                     |
+| `agentblog-audit`     | Runs the pre-publish gate, including a raw crawler fetch                                        |
+| `publish-blog-post`   | Revalidates, submits to IndexNow, and reads the response code rather than assuming              |
 
 Claude Code loads a skill when what you asked for matches its description, so
 most of the time you write a normal sentence and the right skill appears. You
@@ -98,6 +99,43 @@ it might not open, because these are the ones where skipping is expensive.
 - No em dashes, and no stock phrasing. See [why the copy style
   matters](#the-copy-style-rules).
 
+## Research, and the one skill that needs an account
+
+`dataforseo-research` is the only skill here that talks to a paid third-party
+API. It needs a [DataForSEO](https://dataforseo.com) account, and without one it
+will tell you how to get credentials rather than guessing at numbers. Every other
+skill works with nothing but your repository.
+
+It is worth the account for one reason: it is the only thing in the set that can
+measure. The others apply a format. This one tells you what you already rank for,
+which of your posts is one edit away from page one, who actually holds the
+queries you want, and whether AI engines cite you at all.
+
+**It cannot spend your money without asking.** The skill is instructed to read
+what is already on disk, check your balance, print a costed plan, and wait for a
+yes before any billable call. Reading the balance and reading the existing
+research are both free, so it can tell you what a run would cost before it costs
+anything.
+
+The part that compounds is where the answers go. Each run writes to
+`content/research/`: an append-only `ledger.md` of every run with what it cost, a
+`baseline.md` of the current standing answers, and dated raw responses under
+`snapshots/`. That directory is committed, so the next run, in a different
+session or on a different machine, reads it first and re-measures only what can
+have changed. The second run is a diff, which is both cheaper and the only thing
+that can show whether the writing is working.
+
+```text
+What should we write next? Check content/research/ first.
+```
+
+```text
+Did anything move in our rankings or AI citations since the last run?
+```
+
+Nothing in `content/research/` is published. The blog only reads
+`content/blog/`.
+
 ## Refreshing a post is not rewriting it
 
 `refresh-blog-post` exists because a refresh that reflows correct prose produces
@@ -140,7 +178,7 @@ point at them.
 
 ## Installing the skills without installing the blog
 
-The same six skills are also a Claude Code plugin, which is useful if you want
+The same seven skills are also a Claude Code plugin, which is useful if you want
 them in a repository that is not your Next.js app.
 
 ```text

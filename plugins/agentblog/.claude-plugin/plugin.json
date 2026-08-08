@@ -10,5 +10,14 @@
   "homepage": "https://agentblog.dev",
   "repository": "https://github.com/goldk3y/agentblog",
   "license": "MIT",
-  "keywords": ["blog", "seo", "geo", "nextjs", "schema.org", "json-ld", "content"]
+  "keywords": [
+    "blog",
+    "seo",
+    "geo",
+    "nextjs",
+    "schema.org",
+    "json-ld",
+    "content",
+    "keyword-research"
+  ]
 }

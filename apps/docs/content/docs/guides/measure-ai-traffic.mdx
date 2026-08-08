@@ -117,3 +117,22 @@ That parses a server or CDN access log and reports crawler hits per bot per
 week, verifying each hit against the operators' published IP ranges. User agent
 strings are trivially spoofed, so any count that trusts the string alone is
 reporting noise.
+
+## This page measures clicks, not citations
+
+Worth separating, because the two get conflated and they answer different
+questions. Everything above counts people who arrived from an assistant. It
+cannot see the far more common outcome, where an assistant reads your page,
+answers the question in its own interface, and sends nobody.
+
+That outcome is the one AgentBlog is built for, and measuring it needs a source
+outside your own logs. The `dataforseo-research` skill covers it: it queries
+which pages and domains get cited for a set of prompts, takes a baseline, and
+re-measures the same prompt set later. Two cautions it carries and you should
+too. Count what the model cited rather than what it retrieved, since the second
+number is much larger and flattering. And treat any single reading as a sample,
+because these models are non-deterministic and the same prompt asked twice
+returns different citations.
+
+A rise in citations with no rise in referrals is a normal result, not a broken
+integration.

@@ -99,7 +99,7 @@ components/mdx/*                      callouts, stats, tables, FAQ, code blocks
 agentblog.config.ts                   one file to configure all of it
 ```
 
-Resolving `@agentblog/blog` through its dependency graph writes 76 files. All of
+Resolving `@agentblog/blog` through its dependency graph writes 81 files. All of
 them yours after install, none of them a dependency you have to keep upgrading.
 
 ## What makes it correct
@@ -209,17 +209,18 @@ npx shadcn@latest add @agentblog/agent-kit
 /plugin install agentblog@agentblog
 ```
 
-Six skills, and the plugin id is qualified by its marketplace, which is the
+Seven skills, and the plugin id is qualified by its marketplace, which is the
 form Claude Code resolves.
 
-| Skill               | What it does                                                                                                                       |
-| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| `agentblog-setup`   | Finishes the install wiring, then replaces the seed identity, authors, categories, and posts with yours                            |
-| `plan-blog-content` | Builds the entity, the taxonomy, the query clusters, and the link graph, and writes them to an editorial plan                      |
-| `write-blog-post`   | Writes to the GEO playbook: answer capsules, question headings, real tables, cited statistics, internal links that prevent orphans |
-| `refresh-blog-post` | Re-researches an existing post and updates `dateModified` only when the content actually changed                                   |
-| `agentblog-audit`   | Runs the pre-publish gate, including a raw `curl -A GPTBot` assertion                                                              |
-| `publish-blog-post` | Revalidates the post, index, sitemap, and feed, submits to IndexNow, and reads the response code                                   |
+| Skill                 | What it does                                                                                                                                      |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `agentblog-setup`     | Finishes the install wiring, then replaces the seed identity, authors, categories, and posts with yours                                           |
+| `dataforseo-research` | Researches queries, competitors, SERPs, and AI citations through DataForSEO, and keeps every run in `content/research/` so the next one is a diff |
+| `plan-blog-content`   | Builds the entity, the taxonomy, the query clusters, and the link graph, and writes them to an editorial plan                                     |
+| `write-blog-post`     | Writes to the GEO playbook: answer capsules, question headings, real tables, cited statistics, internal links that prevent orphans                |
+| `refresh-blog-post`   | Re-researches an existing post and updates `dateModified` only when the content actually changed                                                  |
+| `agentblog-audit`     | Runs the pre-publish gate, including a raw `curl -A GPTBot` assertion                                                                             |
+| `publish-blog-post`   | Revalidates the post, index, sitemap, and feed, submits to IndexNow, and reads the response code                                                  |
 
 `agentblog-audit` and `publish-blog-post` set `disable-model-invocation: true`,
 so an agent cannot decide on its own to run a gate or submit a URL to an external
