@@ -89,7 +89,19 @@ import { cn } from '@/lib/utils'
  */
 export const revalidate = 3600
 
-const INDEX_TITLE = `${config.brand.name} blog`
+/*
+ * The bare word, not `${config.brand.name} blog`.
+ *
+ * The root layout's `title.template` is `%s | ${config.brand.name}`, so the
+ * document title of this route is already "Blog | Your Brand". Putting the
+ * brand in the page title as well produces "Your Brand blog | Your Brand" in the
+ * tab, in a search result, and in an AI citation, and the H1 below reads "Your
+ * Brand blog" on a page that is already on that brand's domain, under that
+ * brand's header. The brand belongs to the site, so it is stated once, by the
+ * template. If your root layout has no template, add one there rather than
+ * putting the brand back here.
+ */
+const INDEX_TITLE = 'Blog'
 const INDEX_DESCRIPTION = `Articles, guides, and reference material from ${config.brand.name}.`
 
 /**

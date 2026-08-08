@@ -23,9 +23,16 @@
  * because that merge only fires for a segment that has an image file of its own
  * and only `app/blog/[slug]/` does. See the comment on `BLOG_OG_IMAGE`.
  *
- * The card carries no title. It stands for a dozen different URLs, so a headline
- * would have to be either wrong on most of them or generic enough to say
- * nothing. The publication name is the honest thing a single image can claim.
+ * The card says "Blog" and nothing more, and it carries no eyebrow. It stands
+ * for a dozen different URLs, so a headline would have to be either wrong on
+ * most of them or generic enough to say nothing.
+ *
+ * The brand is deliberately not in that word. `ogCard` already renders the mark
+ * from `config.brand.logo` in the top left, falling back to the brand name as a
+ * wordmark when there is no readable logo, so `${config.brand.name} Blog` set it
+ * a second time in the headline and produced "Your Brand" above "Your Brand
+ * Blog" on one 1200x630 image. `alt` below still names the brand, because alt
+ * text is read without the picture and has nothing else to identify it by.
  *
  * @see https://docs.agentblog.dev/reference/files
  */
@@ -39,5 +46,5 @@ export const size = OG_SIZE
 export const contentType = OG_CONTENT_TYPE
 
 export default function Image() {
-  return new ImageResponse(ogCard({ title: `${config.brand.name} Blog` }), { ...size })
+  return new ImageResponse(ogCard({ title: 'Blog' }), { ...size })
 }

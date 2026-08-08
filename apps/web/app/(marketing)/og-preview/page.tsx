@@ -128,7 +128,7 @@ export default async function OgPreviewPage() {
         cards={[
           {
             label: 'Blog and every list surface',
-            note: 'No title, because one image stands for a dozen URLs.',
+            note: 'The mark and the word Blog, because one image stands for a dozen URLs.',
             src: blogPath() + '/opengraph-image',
           },
         ]}
