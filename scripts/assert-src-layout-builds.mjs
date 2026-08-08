@@ -32,8 +32,34 @@
  * every config to keep in step with the first, and the day they drift is the day
  * this stops testing what it claims to.
  *
- * `node_modules` is symlinked rather than installed, so this costs a file copy
- * rather than a second dependency resolution.
+ * ---------------------------------------------------------------------------
+ * WHY THE PROJECT INSTALLS ITS OWN node_modules
+ * ---------------------------------------------------------------------------
+ * This used to symlink `node_modules` at the fixture's, to save a dependency
+ * resolution. Turbopack resolves nothing outside its filesystem root, and it
+ * infers that root by walking up from the project until it finds a lockfile.
+ * There is no lockfile above `os.tmpdir()`, so the root collapsed to the project
+ * directory, the symlink pointed out of it, and `next build` died before
+ * reaching a single assertion below:
+ *
+ *     Error [TurbopackInternalError]: Symlink [project]/node_modules is
+ *     invalid, it points out of the filesystem root
+ *
+ * Two repairs look cheaper than this one and are both worse. Setting
+ * `turbopack.root` in the generated `next.config.ts` asserts nothing, because
+ * the thing under test is what a consumer's project does and no consumer has
+ * that line. Moving the project inside the repository so the walk finds our
+ * `pnpm-lock.yaml` puts it under our workspace root, where `shadcn add` shells
+ * out to pnpm, which then writes the scratch directory into that lockfile under
+ * a fresh mkdtemp name every run. Isolating it from the workspace with its own
+ * `pnpm-workspace.yaml` is worse still: pnpm takes ownership of the symlink and
+ * repoints the fixture's virtual store at a directory this script is about to
+ * delete, which corrupts `apps/fixture-next16/node_modules` for every later job.
+ *
+ * A real install in a real temporary directory is what a consumer has: their own
+ * `node_modules`, their own lockfile, and a Turbopack root that is their project.
+ * It costs one install and it is the only arrangement here that is not a lie.
+ * @see https://nextjs.org/docs/app/api-reference/config/next-config-js/turbopack
  *
  * Usage:
  *   node scripts/assert-src-layout-builds.mjs --registry 'http://127.0.0.1:4477/r/{name}.json'
@@ -53,7 +79,6 @@ import {
   readFileSync,
   renameSync,
   rmSync,
-  symlinkSync,
   writeFileSync,
 } from 'node:fs'
 import { tmpdir } from 'node:os'
@@ -77,6 +102,9 @@ const registry = args.get('registry') ?? 'http://127.0.0.1:4477/r/{name}.json'
 console.log('assert-src-layout-builds')
 console.log(`  registry: ${registry}`)
 
+// Outside the repository on purpose. Nothing here may touch our workspace: the
+// project installs its own dependencies, so pnpm never walks up into our
+// `pnpm-lock.yaml` and never takes ownership of the fixture's `node_modules`.
 const work = mkdtempSync(join(tmpdir(), 'agentblog-src-'))
 const project = join(work, 'app-src')
 
@@ -132,10 +160,6 @@ try {
     recursive: true,
     filter: (source) => !/(node_modules|\.next|\.turbo|\.agentblog)$/.test(source),
   })
-
-  // Symlinked, so this costs a copy rather than an install. The fixture's
-  // dependencies are exactly the ones a consumer has.
-  symlinkSync(join(FIXTURE, 'node_modules'), join(project, 'node_modules'), 'dir')
 
   mkdirSync(join(project, 'src'), { recursive: true })
   renameSync(join(project, 'app'), join(project, 'src/app'))
@@ -194,6 +218,16 @@ try {
   )
 
   console.log(`  project:  ${project}`)
+
+  /*
+   * npm rather than pnpm, and deliberately: it writes a self-contained
+   * `node_modules` and a `package-lock.json`, which is the lockfile Turbopack
+   * then picks as this project's filesystem root. pnpm here would look for a
+   * workspace and link against a store outside the project, which is the whole
+   * failure this script's header describes. `shadcn add` shells out to whichever
+   * package manager the lockfile implies, so doing this first also decides that.
+   */
+  run('npm', ['install', '--no-audit', '--no-fund', '--loglevel=error'])
 
   /* ---------------------------------------------------------------------- */
   /*  The documented path: shadcn add, then doctor --fix                     */
