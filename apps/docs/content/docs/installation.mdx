@@ -9,13 +9,6 @@ config. `shadcn add @agentblog/blog` copies the files and leaves the config to
 you. They converge on the same project: `init` calls `shadcn add` internally, so
 the registry is not an alternative to the CLI, it is how the CLI delivers files.
 
-<Callout type="warn" title="Pre-release">
-  `https://agentblog.dev/r/{name}.json` is not serving yet, so every `@agentblog/*` command on this
-  page describes the shape of the install rather than a host you can fetch from today. Until then,
-  use [install from a local checkout](#install-from-a-local-checkout). This notice comes down when
-  the registry is live.
-</Callout>
-
 ## Which path
 
 |                                                | `agentblog init`                      | `shadcn add @agentblog/blog`           |
@@ -208,9 +201,10 @@ font size with no visible heading hierarchy, this is why.
 
 ## Install from a local checkout
 
-This is how to evaluate AgentBlog while the registry is not being served. You
-are pointing your project at a registry running on your own machine, which is
-fine for a scratch app and not for anything you deploy.
+`agentblog.dev` serves the registry, so you do not need this to install. It is
+for working against a fork or a change that has not shipped yet: you point your
+project at a registry running on your own machine, which is fine for a scratch
+app and not for anything you deploy.
 
 The `registries` map takes a URL and only a URL. A relative path is joined onto
 the default registry origin and 404s, and a `file://` URL is rejected. So the

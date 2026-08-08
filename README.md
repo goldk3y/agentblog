@@ -28,12 +28,6 @@ why every claim on this page has an assertion script behind it in `scripts/`.
 
 ## Install
 
-> **Pre-release. Delete this paragraph when the host goes live.** `agentblog.dev`
-> is not serving the registry yet, so `@agentblog/blog` resolves to nothing and
-> every `agentblog.dev` link on this page is a 404 today. To evaluate AgentBlog
-> now, build the registry from a checkout and serve it yourself:
-> [Installing from a local checkout](./apps/docs/content/docs/installation.mdx#install-from-a-local-checkout).
-
 **Two commands, then four edits.** The commands are ours. Every edit is a
 decision only you can make, which is why none of them is automated.
 

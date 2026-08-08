@@ -82,11 +82,11 @@ That variable exists for hosts that are not Vercel.
 
 ### Domain
 
-`agentblog.dev` is currently parked and resolves to 216.150.1.1, so it is not
-pointing at Vercel yet. Add it under Project Settings, Domains, and follow the
-DNS records Vercel gives you at your registrar.
+`agentblog.dev` points at Vercel and serves the registry. If you are standing
+the domain up again, add it under Project Settings, Domains, and follow the DNS
+records Vercel gives you at your registrar.
 
-Nothing installs from the documented URLs until this is done, because
+Nothing installs from the documented URLs until that is done, because
 `https://agentblog.dev/r/{name}.json` is the host every `@agentblog/*` namespace
 resolves against.
 
@@ -104,13 +104,6 @@ resolves against.
    ```bash
    npx shadcn@4.16.1 add @agentblog/blog
    ```
-
-3. Delete the "not serving yet" banner at the top of
-   `apps/docs/content/docs/installation.mdx`, and the same notice in
-   `apps/docs/content/docs/quickstart.mdx`, and the paragraph in the same page
-   that explains the GitHub shorthand cannot resolve namespaced dependencies.
-   All of them are true today and all of them become wrong the moment the host
-   answers.
 
 ### The docs.agentblog.dev project
 
