@@ -3,13 +3,25 @@
 ## Blog (AgentBlog)
 
 Posts live in `content/blog/*.mdx`. Config: `agentblog.config.ts`. Authors:
-`content/authors.json`.
+`content/authors.json`. Categories: `content/categories.json`.
 
-- To write a post, use the AgentBlog `write-blog-post` skill. To update one, use
-  `refresh-blog-post`. Do not hand-write posts: the skills carry the schema contract
-  and the citation rules, and a hand-written post silently skips both.
+Six AgentBlog skills cover the lifecycle. Use them by name rather than working
+from memory: they carry the schema contract, the citation rules, and the checks,
+and hand-doing any of these steps silently skips all three.
+
+| Task                                     | Skill               |
+| ---------------------------------------- | ------------------- |
+| Finish the install, make the blog ours   | `agentblog-setup`   |
+| Decide what to write and how it links up | `plan-blog-content` |
+| Write a post                             | `write-blog-post`   |
+| Update an existing post                  | `refresh-blog-post` |
+| Gate a post before it ships              | `agentblog-audit`   |
+| Ship it and confirm it landed            | `publish-blog-post` |
+
 - Never fabricate a statistic, a quotation, or a source. If a number cannot be
-  verified at a real source, state the claim qualitatively instead.
+  verified at a real source that was actually fetched, state the claim
+  qualitatively instead. Never invent an anecdote, a first-person story, or an
+  opinion to make prose read as human.
 - Never use an em dash, in a post or anywhere else in this repository. Use a comma,
   a colon, parentheses, or a full stop. `agentblog audit` fails on the em dash
   character `U+2014` and on a double hyphen used as a dash.
@@ -30,6 +42,7 @@ Posts live in `content/blog/*.mdx`. Config: `agentblog.config.ts`. Authors:
 - JSON-LD is built only in `lib/schema.ts` and serialized only by `renderJsonLd`.
   Do not add a second `<script type="application/ld+json">`.
 - Run `npx agentblog audit` before committing a post, and `npx agentblog doctor`
-  after changing config.
+  after changing config. Both exit non-zero on an error finding, so read the exit
+  code rather than the absence of a stack trace.
 
 <!-- agentblog:end -->

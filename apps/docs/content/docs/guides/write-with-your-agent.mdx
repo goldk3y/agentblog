@@ -1,28 +1,36 @@
 ---
 title: Write posts with your coding agent
-description: The four skills AgentBlog installs, what to ask for, what the agent will refuse to do, and where the skills deliberately stop.
+description: The six skills AgentBlog installs, what to ask for, what the agent will refuse to do, and where the skills deliberately stop.
 icon: Bot
 ---
 
 Posts are MDX files in your repository, so writing one is editing a file, which
-is the thing coding agents are already good at. AgentBlog installs four skills
+is the thing coding agents are already good at. AgentBlog installs six skills
 that tell your agent what a good post looks like here, so you do not have to
 describe the format every time.
 
-## The four skills
+## The six skills
 
-They land in `.claude/skills/` during the install.
+They land in `.claude/skills/` during the install, in the order a blog goes
+through them.
 
-| Skill               | What it does                                                                      |
-| ------------------- | --------------------------------------------------------------------------------- |
-| `write-blog-post`   | Writes a new post in the format AI search engines can quote                       |
-| `refresh-blog-post` | Re-checks an existing post's sources and updates only what actually changed       |
-| `agentblog-setup`   | Finishes install wiring, if you took the registry path and skipped `doctor --fix` |
-| `agentblog-audit`   | Runs the pre-publish gate, including a raw crawler fetch                          |
+| Skill               | What it does                                                                                 |
+| ------------------- | -------------------------------------------------------------------------------------------- |
+| `agentblog-setup`   | Finishes install wiring, then replaces the seed author, categories, and posts with yours     |
+| `plan-blog-content` | Works out what the site should be known for and writes a backlog with the link graph settled |
+| `write-blog-post`   | Writes a new post in the format AI search engines can quote                                  |
+| `refresh-blog-post` | Re-checks an existing post's sources and updates only what actually changed                  |
+| `agentblog-audit`   | Runs the pre-publish gate, including a raw crawler fetch                                     |
+| `publish-blog-post` | Revalidates, submits to IndexNow, and reads the response code rather than assuming           |
 
 Claude Code loads a skill when what you asked for matches its description, so
 most of the time you write a normal sentence and the right skill appears. You
 can also call one directly with `/write-blog-post`.
+
+Two of them never fire on their own. `agentblog-audit` and `publish-blog-post`
+set `disable-model-invocation: true`, so you invoke them by name. An audit that
+runs opportunistically is an audit nobody reads, and publishing submits a URL to
+an external service, which is not a decision to hand to a model.
 
 ## What to actually say
 
@@ -60,18 +68,31 @@ That is what the skill is.
 7. Puts comparison data in a real table rather than in prose.
 8. Adds five to fifteen internal links, and at least one link from an existing
    post to the new one, so it is not an orphan.
-9. Fills in the frontmatter completely.
-10. Runs the [pre-publish checklist](/guides/pre-publish-checklist) and reports
-    each item pass or fail.
+9. Revises the draft against a voice reference, which is a separate pass on
+   purpose: writing while scanning a list of forbidden patterns produces prose
+   that avoids them and says nothing.
+10. Fills in the frontmatter completely.
+11. Runs `agentblog audit`, then the [pre-publish
+    checklist](/guides/pre-publish-checklist) for the things a script cannot
+    check, and reports each item pass or fail with the observed value.
+
+That last step is a deliberate split. The audit command checks capsule lengths,
+heading format, date offsets, link counts, orphan status, and copy style
+deterministically, so the skill is told not to re-check any of it by reading. A
+second, softer answer to a question a script already answered is how a failing
+check gets reported as a pass.
 
 ## What it will not do
 
-Four rules sit in the skill's always-loaded text rather than in a reference file
+Five rules sit in the skill's always-loaded text rather than in a reference file
 it might not open, because these are the ones where skipping is expensive.
 
 - **Never invent a statistic, a quotation, or a source.** This is the rule that
   keeps the whole idea from being a liability. If a number cannot be verified at
   a source the agent actually fetched, the claim goes qualitative instead.
+- **Never invent experience.** No anecdote, no first-person story, no opinion the
+  sources do not support. Prose that sounds human by inventing a human is
+  fabrication that also reads as fabrication.
 - No keyword stuffing. It measures worse than writing normally, not neutral.
 - No padding to reach a word count.
 - No em dashes, and no stock phrasing. See [why the copy style
@@ -119,7 +140,7 @@ point at them.
 
 ## Installing the skills without installing the blog
 
-The same four skills are also a Claude Code plugin, which is useful if you want
+The same six skills are also a Claude Code plugin, which is useful if you want
 them in a repository that is not your Next.js app.
 
 ```text
@@ -135,6 +156,20 @@ Or through the registry, into `.claude/skills/`:
 ```bash
 npx shadcn@latest add @agentblog/agent-kit
 ```
+
+Or through the skills CLI, which installs into whichever agent it detects rather
+than into Claude Code specifically:
+
+```bash
+npx skills add goldk3y/agentblog
+```
+
+That path exists because the skills follow the [Agent
+Skills](https://agentskills.io) specification rather than only the Claude Code
+superset of it. Frontmatter is restricted to the six fields the specification
+defines plus two Claude Code extensions, and `assert-skill-contract.mjs` fails
+the build on anything else, so the same files load in Cursor, Codex, Copilot,
+Gemini CLI, and the rest.
 
 ## AGENTS.md
 

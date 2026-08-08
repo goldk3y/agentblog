@@ -5,7 +5,7 @@ icon: Compass
 ---
 
 AgentBlog is a blog you install into a Next.js app you already have. One command
-writes 73 files into your repository: the routes, the structured data, the
+writes 76 files into your repository: the routes, the structured data, the
 sitemap, the feed, the social images, and a set of skills your coding agent uses
 to write the posts. The files are yours after that, the same way shadcn/ui
 components are yours.
@@ -69,7 +69,7 @@ CDN is turning away.
 ### You do not want to write the posts
 
 Posts are MDX files in your repository, which makes them something a coding
-agent can genuinely maintain. Installing AgentBlog also writes four skills into
+agent can genuinely maintain. Installing AgentBlog also writes six skills into
 `.claude/skills/`, so your agent already knows the format: the direct answer
 under each heading that an AI assistant can lift, the question-shaped headings,
 the tables, the citations, and the internal links that keep a new post from
@@ -105,7 +105,7 @@ upgrade around, nothing that breaks when we ship a change you did not ask for.
 | Sitemap, feed, pings | Search engines find new posts on the day you publish rather than the week after               |
 | Social images        | A generated card per post, so a shared link is not a bare URL                                 |
 | Your design system   | The blog uses your colours, your fonts, and your components. It ships no theme of its own     |
-| Agent skills         | Four skills that write posts, refresh them, finish the setup, and audit before you publish    |
+| Agent skills         | Six skills covering setup, planning, writing, refreshing, auditing, and publishing            |
 | `agentblog doctor`   | One command that tells you whether any of the above is actually working                       |
 
 ## What it is not

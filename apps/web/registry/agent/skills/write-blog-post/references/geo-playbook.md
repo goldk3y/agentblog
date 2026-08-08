@@ -13,6 +13,16 @@ deserves a real answer rather than an assertion.
 > we wrote about Next.js APIs would drift and would lose to the bundled copy. Read
 > the bundled docs for framework questions. Read this file for writing questions.
 
+## Contents
+
+1. How the effect sizes in this file were verified
+2. GEO paper results, quoted with the metric named
+3. Everything else, with its evidence grade, plus the figures removed and why
+4. The writing rules, in priority order
+5. Extraction killers
+6. Things not to build
+7. Off-site, which is most of it
+
 ---
 
 ## 1. How the effect sizes in this file were verified

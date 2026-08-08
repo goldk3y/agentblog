@@ -6,7 +6,7 @@ Next.js blog which AI answer engines can actually read.
 The characteristic failure mode of everything in this repository is **silence**.
 A broken install compiles, lints, renders perfectly in a browser, and is invisible
 to the crawlers the whole product exists for. That is why `scripts/` holds
-thirteen assertion gates and why most rules below are absolute rather than
+eighteen assertion gates and why most rules below are absolute rather than
 stylistic. When you are unsure whether something works, reach for `curl` and a
 script, not a screenshot.
 
@@ -147,20 +147,42 @@ The file count in `README.md`, the landing page, and the docs is asserted agains
 the registry. Adding one file to a registry item moves that number in three
 Markdown files.
 
+### 9. Skill frontmatter stays inside the Agent Skills spec
+
+`apps/web/registry/agent/skills/**` ships to Claude Code, to the plugin, and to
+seventy-odd other agents through `npx skills add`. Claude Code accepts a wide
+superset of frontmatter keys; the spec at https://agentskills.io accepts six, and
+Anthropic's packaging path hard errors on the rest rather than ignoring them. So
+a key outside the six is a key that works here and nowhere else.
+
+The only vendor extensions allowed are `argument-hint` and
+`disable-model-invocation`. `when_to_use` is banned: Claude Code concatenates it
+onto `description` under a shared 1,536-character cap, and the skills CLI lists a
+skill by `description` alone, so a trigger phrase written there is invisible in
+the directory listing that sells the skill. Put triggers in `description`.
+
+`pnpm check:skills` enforces that, plus `name` matching the directory, the
+500-line body budget, reference links resolving one level deep, and the rule that
+every `agentblog <command> --flag` a skill tells an agent to run exists in
+`packages/cli/src/index.ts`. That last one exists because a skill shipped a
+command with four invented flags and nothing noticed.
+
 ## Verify the change
 
 Match the check to what you touched. Every script's header comment has its exact
 invocation.
 
-| Changed                                            | Run                                                                            |
-| -------------------------------------------------- | ------------------------------------------------------------------------------ |
-| `packages/schema` or `packages/checks`             | `pnpm codegen && pnpm typecheck && pnpm test`                                  |
-| `apps/web/registry/**`                             | `pnpm check:static`, then `registry:build && pnpm check:registry`              |
-| `apps/docs/content/**`                             | `pnpm check:copy-style && pnpm check:docs-links`                               |
-| `packages/cli/src/patchers/**`                     | `pnpm check:patcher` and `pnpm check:init-refuses`                             |
-| the `next.config` patcher or the bot list          | `node scripts/assert-htmlbots-superset.mjs <path/to/next.config.ts>`           |
-| `shadcn-directory-entry.json` or the deploy domain | `node scripts/assert-directory-entry.mjs --live`                               |
-| anything affecting rendered HTML                   | `assert-crawler-visible.mjs`, `assert-og-defaults.mjs`, `assert-cold-slug.mjs` |
+| Changed                                            | Run                                                                                |
+| -------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| `packages/schema` or `packages/checks`             | `pnpm codegen && pnpm typecheck && pnpm test`                                      |
+| `apps/web/registry/**`                             | `pnpm check:static`, then `registry:build && pnpm check:registry`                  |
+| `apps/docs/content/**`                             | `pnpm check:copy-style && pnpm check:docs-links`                                   |
+| `apps/web/registry/agent/skills/**`                | `pnpm check:skills`, then `pnpm codegen`                                           |
+| `packages/cli/src/index.ts` command surface        | `pnpm check:skills`, which reads it to validate what the skills tell agents to run |
+| `packages/cli/src/patchers/**`                     | `pnpm check:patcher` and `pnpm check:init-refuses`                                 |
+| the `next.config` patcher or the bot list          | `node scripts/assert-htmlbots-superset.mjs <path/to/next.config.ts>`               |
+| `shadcn-directory-entry.json` or the deploy domain | `node scripts/assert-directory-entry.mjs --live`                                   |
+| anything affecting rendered HTML                   | `assert-crawler-visible.mjs`, `assert-og-defaults.mjs`, `assert-cold-slug.mjs`     |
 
 IMPORTANT: `htmlLimitedBots` in `next.config.ts` **overrides** the Next.js
 default bot list rather than extending it. A patch that writes only the AI

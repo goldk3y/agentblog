@@ -14,6 +14,16 @@ to schema.org properties, and the markup errors that actually happen.
 > questions, read the bundled docs. This file covers the vocabulary layer, which is
 > ours.
 
+## Contents
+
+1. Where the JSON-LD comes from
+2. The connected `@graph` for a post
+3. The other graph shapes: blog index, `FAQPage`, author page
+4. Frontmatter to schema.org mapping, for posts, authors, and config
+5. Property weight
+6. Markup errors that actually happen
+7. Validating
+
 ---
 
 ## 1. Where the JSON-LD comes from

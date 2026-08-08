@@ -8,6 +8,36 @@ install, different delivery: this one does not touch the consumer's Next.js app.
 /plugin install agentblog@agentblog
 ```
 
+Or, for any of the other agents that read the Agent Skills format:
+
+```
+npx skills add goldk3y/agentblog
+```
+
+## What ships
+
+Six skills covering the lifecycle, in the order a blog goes through them.
+
+| Skill               | Invocation | What it owns                                                                                    |
+| ------------------- | ---------- | ----------------------------------------------------------------------------------------------- |
+| `agentblog-setup`   | either     | Config wiring, then the seed identity, authors, categories, and posts the install cannot supply |
+| `plan-blog-content` | either     | The entity, the taxonomy, the query clusters, and the link graph, written to an editorial plan  |
+| `write-blog-post`   | either     | The post itself, plus the voice pass and the frontmatter contract                               |
+| `refresh-blog-post` | either     | Re-verifying sources, and the rule that `dateModified` moves only on a real change              |
+| `agentblog-audit`   | user only  | The pre-publish gate: what a crawler receives, the JSON-LD graph, whether the citations hold    |
+| `publish-blog-post` | user only  | Revalidation, IndexNow, and reading the response code instead of the absence of an error        |
+
+Two of them set `disable-model-invocation: true`. Both have side effects that
+should stay on a human's decision: an audit that runs opportunistically is an audit
+nobody reads, and publishing submits a URL to an external service.
+
+Frontmatter stays inside the [Agent Skills specification](https://agentskills.io)
+plus a short, closed list of Claude Code extensions, so the same files work in the
+seventy-odd other agents the skills CLI installs into.
+`scripts/assert-skill-contract.mjs` enforces that, along with the body budget, the
+reference depth, and the rule that every `agentblog` command a skill tells an agent
+to run actually exists.
+
 ## `skills/` is generated. Do not edit it.
 
 The source of truth for every skill is `apps/web/registry/agent/skills/**` in the

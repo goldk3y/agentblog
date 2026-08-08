@@ -25,6 +25,7 @@ import {
   Eye,
   FileCode,
   FileText,
+  Github,
   Palette,
   Quote,
   Rss,
@@ -33,6 +34,7 @@ import {
 import { InstallSwitch } from '@/components/site/install-switch'
 import { Panel } from '@/components/site/panel'
 import { Button } from '@/components/ui/button'
+import { GITHUB_REPO_URL, formatStarCount, getStarCount } from '@/lib/github-stars'
 import { getInstalledFiles } from '@/lib/installed-files'
 import { cn } from '@/lib/utils'
 
@@ -157,8 +159,17 @@ const AGENTBLOG_RENDERED: readonly CodeLine[] = [
 /*  Page                                                                      */
 /* -------------------------------------------------------------------------- */
 
-export default function LandingPage() {
+/**
+ * The star count is fetched at render, so the page has to refresh on a clock
+ * rather than stay frozen at whatever the last deployment saw. This is the same
+ * hour the blog routes use, and it is also the window `getStarCount` caches its
+ * own fetch for.
+ */
+export const revalidate = 3600
+
+export default async function LandingPage() {
   const installedFiles = getInstalledFiles()
+  const stars = await getStarCount()
 
   return (
     <>
@@ -178,7 +189,8 @@ export default function LandingPage() {
               narrower widths where it has to wrap.
             */}
             <p className="text-muted-foreground sm:text-copy-18 text-copy-16 mt-6 max-w-2xl text-balance">
-              One command installs a complete, SEO optimized blog into your site. Open Source.
+              One command installs a complete, SEO optimized blog into your Next.js site. 100% Free
+              & Open Source.
             </p>
 
             <div className="mt-10 w-full">
@@ -190,7 +202,7 @@ export default function LandingPage() {
               container step, so these read as controls beside the install pills
               rather than as small cards.
             */}
-            <div className="text-copy-13 mt-10 flex items-center gap-3">
+            <div className="text-copy-13 mt-10 flex flex-wrap items-center justify-center gap-3">
               <Link
                 href="https://docs.agentblog.dev"
                 className="border-border text-muted-foreground hover:bg-accent hover:text-foreground inline-flex h-9 items-center gap-2 rounded-md border px-4 transition-colors"
@@ -205,6 +217,27 @@ export default function LandingPage() {
               >
                 <Eye aria-hidden="true" className="size-4" />
                 See it running
+              </Link>
+              {/*
+                The count sits behind a rule rather than in parentheses so the
+                button keeps one width when GitHub is unreachable and the count
+                is absent. `tabular-nums` stops it twitching as the number grows.
+              */}
+              <Link
+                href={GITHUB_REPO_URL}
+                className="border-border text-muted-foreground hover:bg-accent hover:text-foreground inline-flex h-9 items-center gap-2 rounded-md border px-4 transition-colors"
+              >
+                <Github aria-hidden="true" className="size-4" />
+                Star on GitHub
+                {stars !== null && (
+                  <>
+                    <span aria-hidden="true" className="bg-border h-4 w-px" />
+                    <span className="text-foreground tabular-nums">
+                      {formatStarCount(stars)}
+                      <span className="sr-only"> stars</span>
+                    </span>
+                  </>
+                )}
               </Link>
             </div>
           </div>
@@ -261,12 +294,12 @@ export default function LandingPage() {
       {/*  `scripts/assert-file-count.mjs` parses the digits in this        */}
       {/*  section's lead and fails the build when they stop matching what  */}
       {/*  `@agentblog/blog` actually resolves to. Reword it freely, but    */}
-      {/*  keep the count in the form `73 files,`.                          */}
+      {/*  keep the count in the form `76 files,`.                          */}
       {/* ---------------------------------------------------------------- */}
       <Section
         id="what-you-get"
         title="One command installs the whole blog"
-        lead="73 files, and you own every one of them. No runtime package to depend on, and nothing of ours to upgrade around."
+        lead="76 files, and you own every one of them. No runtime package to depend on, and nothing of ours to upgrade around."
       >
         <FileBrowser files={installedFiles} initialPath="app/blog/[slug]/page.tsx" />
 
@@ -289,7 +322,7 @@ export default function LandingPage() {
       <Section
         id="agent-layer"
         title="Your coding agent writes the posts"
-        lead="Posts are MDX files in your repository. Installing AgentBlog also adds four skills and a rule block your agent reads, so it knows the format before you ask."
+        lead="Posts are MDX files in your repository. Installing AgentBlog also adds six skills and a rule block your agent reads, so it knows the format before you ask."
       >
         <Panel label=".claude/skills/" bodyClassName="grid grid-cols-1 sm:grid-cols-2">
           {SKILLS.map((skill, index) => (
@@ -364,6 +397,16 @@ export default function LandingPage() {
 
 const SKILLS = [
   {
+    name: 'agentblog-setup',
+    description:
+      'Finishes whatever the registry could not do on its own, then replaces the seed author, categories, and posts with yours, so the blog is about your subject and not ours.',
+  },
+  {
+    name: 'plan-blog-content',
+    description:
+      'Decides what the site should be known for, mines the questions people actually search, and writes a backlog with the internal link direction already settled.',
+  },
+  {
     name: 'write-blog-post',
     description:
       'Writes to the format: answer capsule first, question headings, a cited statistic, comparison data in a table. It is instructed never to invent a figure or a quotation.',
@@ -374,14 +417,14 @@ const SKILLS = [
       'Re-fetches every source a post cites, checks it still says what the post says it says, and applies the smallest correct change. Nothing needed changing is a valid outcome.',
   },
   {
-    name: 'agentblog-setup',
-    description:
-      'Finishes whatever the registry could not do on its own, patches the config and the root layout, then verifies with doctor.',
-  },
-  {
     name: 'agentblog-audit',
     description:
       'Fetches your deployed URL as GPTBot, checks the title landed in head, and validates the graph before you publish.',
+  },
+  {
+    name: 'publish-blog-post',
+    description:
+      'Revalidates the post, the index, the sitemap, and the feed, submits to IndexNow, and reports the response code. A 403 and a 200 look identical until somebody reads the number.',
   },
 ] as const
 

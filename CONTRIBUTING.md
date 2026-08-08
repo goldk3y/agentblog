@@ -195,6 +195,38 @@ than silent bundle growth. Client components receive config values as props from
 server parents. `scripts/assert-no-server-only-in-client.mjs` catches
 regressions before the bundler does, so the message is comprehensible.
 
+### Skill frontmatter stays inside the Agent Skills spec
+
+`apps/web/registry/agent/skills/**` ships three ways: the shadcn registry, the
+Claude Code plugin, and `npx skills add`, which installs into around twenty
+agents at once. Claude Code accepts a wide superset of frontmatter keys. The
+specification at https://agentskills.io accepts six, and Anthropic's own
+packaging path fails with a hard error rather than ignoring the rest. So a key
+outside the six is a key that works on the machine it was written on and
+silently does nothing everywhere else.
+
+The only vendor extensions allowed are `argument-hint` and
+`disable-model-invocation`, both of which buy behaviour worth the portability
+cost. `when_to_use`, `paths`, and `model` are banned outright.
+
+`when_to_use` is the one that looks harmless. Claude Code concatenates it onto
+`description` under a shared 1,536 character cap, so writing it separately buys
+nothing even there, and the skills CLI lists a skill by `description` alone. A
+trigger phrase written in `when_to_use` is therefore invisible in the directory
+listing that is supposed to sell the skill. Put triggers in `description`.
+
+`pnpm check:skills` enforces the allowlist, `name` matching the parent
+directory, the 500 line body budget, a contents block on any reference file over
+a hundred lines, reference links resolving and staying one level deep, and the
+rule that every `agentblog <command> --flag` a skill tells an agent to run
+actually exists in `packages/cli/src/index.ts`.
+
+That last check exists because a skill shipped
+`agentblog audit --schema --links --dates --capsules`, and the audit command has
+none of those flags and deliberately refuses to grow them. The final step of the
+pre-publish gate exited with a parse error every time anybody reached it, and
+nothing in the toolchain noticed, because a skill is prose and prose compiles.
+
 ## Writing documentation
 
 The docs are their own Next.js app, `apps/docs`, deployed to
@@ -239,6 +271,7 @@ pnpm check:client-imports  # node scripts/assert-no-server-only-in-client.mjs
 pnpm check:html-bots       # assert-html-bots-current.mjs + the docs app's own config
 pnpm check:docs-links      # node scripts/assert-docs-links.mjs
 pnpm check:directory-entry # node scripts/assert-directory-entry.mjs
+pnpm check:skills          # node scripts/assert-skill-contract.mjs
 node scripts/assert-file-count.mjs
 ```
 

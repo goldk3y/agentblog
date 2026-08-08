@@ -47,9 +47,14 @@ Your coding agent picks up the `write-blog-post` skill that AgentBlog installed
 into `.claude/skills/`, reads your existing posts to match your voice and link
 into them, and drafts the body in the format described below.
 
-Two rules are in that skill's always-loaded context rather than in a file it
-might not read: never invent a statistic, a quotation, or a source, and never
-use an em dash. Both are checked again by `agentblog audit`.
+Three rules are in that skill's always-loaded context rather than in a file it
+might not read: never invent a statistic, a quotation, or a source, never invent
+an anecdote or a first-person story to make the prose sound human, and never use
+an em dash. The first and the third are checked again by `agentblog audit`.
+
+If you have not run `agentblog-setup` yet, do that first. A fresh install carries
+AgentBlog's own author record and categories, and a post written against them
+publishes under a placeholder byline.
 
 You are still the editor. Read the draft, fix what is wrong, and cut what is
 padding.

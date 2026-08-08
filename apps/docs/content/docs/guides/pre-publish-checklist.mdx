@@ -102,12 +102,16 @@ Then the version that also catches a CDN turning crawlers away:
 npx agentblog@latest doctor --url "$URL"
 ```
 
-And the publishing half:
+And the publishing half, which `npx agentblog@latest ping <slug>` performs and
+the `publish-blog-post` skill walks an agent through:
 
 - [ ] The publish step revalidated `sitemap.xml` and `feed.xml` as well as the post
 - [ ] IndexNow returned 200 or 202, not 403 or 422
 - [ ] The post appears in `sitemap.xml` and in `feed.xml`
 - [ ] The canonical URL on the page matches the sitemap entry exactly
+
+`403` and `422` are the two worth naming. From the caller's side they look
+exactly like a success, so the number has to be read rather than assumed.
 
 ## What no tool can check
 

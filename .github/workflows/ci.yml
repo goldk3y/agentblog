@@ -91,6 +91,13 @@ jobs:
       - name: Documentation links resolve
         run: node scripts/assert-docs-links.mjs
 
+      # A skill is prose, so it compiles no matter what it says. Nothing else in
+      # the pipeline notices when one tells an agent to run a command that does
+      # not exist, or uses a frontmatter key that every agent except Claude Code
+      # silently drops. Both have already happened.
+      - name: Skills satisfy the Agent Skills contract
+        run: node scripts/assert-skill-contract.mjs
+
   unit:
     name: Unit and contract tests
     runs-on: ubuntu-latest

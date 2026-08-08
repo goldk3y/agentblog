@@ -89,9 +89,10 @@ export default function RegistryPage() {
                 </p>
               )}
 
-              <p className="text-muted-foreground mt-4 font-mono text-xs">
-                npx shadcn@latest add @agentblog/{item.name}
-              </p>
+              <CopyCommand
+                command={`npx shadcn@latest add @agentblog/${item.name}`}
+                className="mt-4 max-w-xl"
+              />
             </li>
           ))}
         </ul>
