@@ -95,6 +95,34 @@ Googlebot, Bingbot, Applebot, Twitterbot, LinkedInBot, Slackbot, Discordbot, and
 Facebook's crawler from the same treatment, which trades an AI win for a live
 SEO and social preview regression.
 
+## Module not found: Can't resolve '@/agentblog.config'
+
+You have a `src/` layout. `agentblog.config.ts` belongs at the project root,
+next to `next.config.ts`, while `@/` points at `src/`, so the one import in
+`lib/config.ts` resolves to nothing and the build stops at module resolution.
+
+```bash
+npx agentblog@latest doctor --fix
+```
+
+That writes one entry in `tsconfig.json`. You can also add it by hand:
+
+```json title="tsconfig.json"
+{
+  "compilerOptions": {
+    "paths": {
+      "@/agentblog.config": ["./agentblog.config.ts"],
+      "@/*": ["./src/*"]
+    }
+  }
+}
+```
+
+Do not move `agentblog.config.ts` into `src/` instead. `agentblog doctor`, the
+`~/` target in the registry, and every other config file in a Next.js project all
+expect it at the root, so moving it trades one broken import for a file nothing
+else can find.
+
 ## Article prose has no typography at all
 
 Not slightly off. One font size, no visible heading hierarchy, no list markers,

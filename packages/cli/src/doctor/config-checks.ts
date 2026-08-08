@@ -25,7 +25,8 @@ import { usesDefineConfig } from '../patchers/agentblog-config.ts'
 import { appPathLabel } from '../detect/project.ts'
 import { blockFiles } from '../detect/routes.ts'
 import { readFile, toPosixRelative } from '../util/fs.ts'
-import { readJsonc } from '../detect/resolve.ts'
+import { readJsonc, resolveThroughPathMappings } from '../detect/resolve.ts'
+import { CONFIG_PATH_TARGET, CONFIG_SPECIFIER } from '../patchers/tsconfig-paths.ts'
 import { join } from 'node:path'
 import { NO_COMPONENTS_JSON_MESSAGE, PLACEHOLDER_AUTHOR } from '../constants.ts'
 import type { DoctorContext } from './context.ts'
@@ -219,6 +220,47 @@ function checkTsconfig(ctx: DoctorContext): void {
   if (missing.length === 0 && options['baseUrl'] === undefined) {
     reporter.pass('25 tsconfig is TypeScript 7 ready')
   }
+
+  checkConfigAlias(ctx)
+}
+
+/**
+ * Check 35. `@/agentblog.config` has to resolve, or nothing builds.
+ *
+ * This is the `src/` layout trap. `agentblog.config.ts` sits at the project
+ * root, `@/*` points at `src/`, and the one import in `lib/config.ts` therefore
+ * resolves to nothing. Turbopack stops at module resolution, so the runtime
+ * guard in `lib/preflight.ts` written for exactly this case never gets to print.
+ * A check is the only place left that can say what to do about it.
+ *
+ * Resolved through `resolveThroughPathMappings` rather than `resolveSpecifier`,
+ * because the latter falls back to guessing the project root and would report
+ * success on the one layout where the build fails.
+ */
+function checkConfigAlias(ctx: DoctorContext): void {
+  const { project, reporter } = ctx
+
+  if (!project.agentblogConfigPath) {
+    reporter.skip('35 @/agentblog.config resolves', 'agentblog.config.ts is not installed yet')
+    return
+  }
+
+  if (resolveThroughPathMappings(project, CONFIG_SPECIFIER)) {
+    reporter.pass('35 @/agentblog.config resolves')
+    return
+  }
+
+  reporter.fail('35 @/agentblog.config resolves', {
+    id: 'config-alias-unresolved',
+    severity: 'error',
+    message: `${CONFIG_SPECIFIER} does not resolve through tsconfig.json paths, so the build fails at module resolution with "Module not found: Can't resolve ${CONFIG_SPECIFIER}". ${
+      project.usesSrcDir
+        ? 'This project uses a src/ layout, where @/* points at src/ while agentblog.config.ts belongs at the project root.'
+        : 'No paths entry maps it to the config file at the project root.'
+    }`,
+    remedy: `npx agentblog@latest doctor --fix, or add "${CONFIG_SPECIFIER}": ["${CONFIG_PATH_TARGET}"] to compilerOptions.paths in tsconfig.json.`,
+    fixable: true,
+  })
 }
 
 function checkAgentblogConfig(ctx: DoctorContext): void {

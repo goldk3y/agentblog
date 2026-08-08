@@ -7,11 +7,38 @@ icon: FileText
 `agentblog.config.ts` sits at your project root, next to `package.json` and
 `next.config.ts`, including in a `src/` layout.
 
-Exactly one module reads it: `lib/config.ts`. That is enforced by `agentblog
-doctor`, because `@/` maps to the root in a flat layout and to `src/` in a
-`src/` layout, so one import specifier cannot be right in both. With a single
-importer, fixing a `src/` project is a one-line change rather than a search
-across forty files.
+Exactly one module reads it: `lib/config.ts`, through `@/agentblog.config`. That
+is enforced by `agentblog doctor`, because `@/` maps to the root in a flat layout
+and to `src/` in a `src/` layout, so one import specifier cannot be right in
+both. With a single importer, fixing a `src/` project is a one-line change rather
+than a search across forty files.
+
+## In a `src/` layout
+
+`@/*` points at `src/` while this file stays at the project root, so the import
+resolves to nothing and the build stops before any of your code runs:
+
+```text
+Module not found: Can't resolve '@/agentblog.config'
+```
+
+`agentblog init` and `agentblog doctor --fix` write the line that fixes it. If
+you would rather add it yourself, it is one entry in `tsconfig.json`:
+
+```json title="tsconfig.json"
+{
+  "compilerOptions": {
+    "paths": {
+      "@/agentblog.config": ["./agentblog.config.ts"],
+      "@/*": ["./src/*"]
+    }
+  }
+}
+```
+
+TypeScript picks the mapping with the longest prefix before its `*`, so the entry
+without a wildcard wins over `@/*` whichever order the two appear in. A flat
+layout needs none of this, and the tooling writes nothing there.
 
 ## The shape
 

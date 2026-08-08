@@ -390,6 +390,15 @@ jobs:
       - name: Agent instructions sit outside the Next.js managed region
         run: node scripts/assert-agents-md.mjs apps/fixture-next16
 
+      # `apps/fixture-next16` is a flat layout, and every assertion above it was
+      # therefore blind to the other half of what `create-next-app` offers. A
+      # `src/` install used to fail at module resolution, because the config file
+      # belongs at the project root while `@/` points at `src/`. Everything this
+      # needs is already built and served by the steps above, so it costs one
+      # file copy and one build.
+      - name: A src/ layout installs, repairs, and builds
+        run: node scripts/assert-src-layout-builds.mjs --registry 'http://127.0.0.1:4477/r/{name}.json'
+
       # Reversibility is a promise the CLI makes when it asks to edit a file it
       # did not create. Proving it means reverting and building again, not
       # checking that a backup file exists.

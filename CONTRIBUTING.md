@@ -273,6 +273,7 @@ the exact invocation.
 | `assert-cold-slug.mjs`         | A post published without a rebuild reaches the sitemap and the feed |
 | `assert-htmlbots-superset.mjs` | A patched `next.config.*` keeps every bot it is supposed to keep    |
 | `assert-agents-md.mjs`         | Our `AGENTS.md` block sits outside the region Next.js manages       |
+| `assert-src-layout-builds.mjs` | A `src/` layout project installs, repairs, and builds               |
 
 ### Three that deserve particular attention
 

@@ -26,6 +26,12 @@ import { placeBlock, resolveAgentsBlock } from '../patchers/agents-md.ts'
 import { patchNextConfig } from '../patchers/next-config.ts'
 import { patchRobots } from '../patchers/robots.ts'
 import { patchRootLayout } from '../patchers/root-layout.ts'
+import {
+  CONFIG_PATH_TARGET,
+  CONFIG_SPECIFIER,
+  patchTsconfigPaths,
+} from '../patchers/tsconfig-paths.ts'
+import { resolveThroughPathMappings } from '../detect/resolve.ts'
 import { envValue, removeEnvKeys, upsertEnv } from '../patchers/env.ts'
 import { addAgentBlogIgnore, isAgentBlogIgnored } from '../patchers/gitignore.ts'
 import { PatchSet } from '../patchers/patch-set.ts'
@@ -51,6 +57,7 @@ export function buildFixes(project: ProjectContext): FixResult {
   const declined: string[] = []
 
   fixNextConfig(project, patches, changes, declined)
+  fixConfigAlias(project, patches, changes, declined)
   fixRootLayout(project, patches, changes, declined)
   fixRobots(project, patches, changes, declined)
   fixAgentsMd(project, patches, changes, declined)
@@ -84,6 +91,48 @@ function fixGitignore(project: ProjectContext, patches: PatchSet, changes: strin
     before: source,
     after: result.source,
     reason: 'keep .agentblog/ out of git, because its backups contain .env.local',
+  })
+}
+
+/**
+ * Check 35. Map `@/agentblog.config` when the alias does not already reach the
+ * config file, which in practice means a `src/` layout.
+ *
+ * Gated on resolution rather than on `usesSrcDir`, so a flat project gets no
+ * diff at all and nobody acquires a redundant tsconfig entry. The gate also has
+ * to model the compiler rather than guess, which is why it does not go through
+ * `resolveSpecifier`.
+ */
+function fixConfigAlias(
+  project: ProjectContext,
+  patches: PatchSet,
+  changes: string[],
+  declined: string[],
+): void {
+  if (!project.agentblogConfigPath) return
+  if (resolveThroughPathMappings(project, CONFIG_SPECIFIER)) return
+
+  const path = join(project.root, 'tsconfig.json')
+  const source = readFile(path)
+  if (source === null) {
+    declined.push(
+      `${CONFIG_SPECIFIER} does not resolve and there is no tsconfig.json to map it in. Add compilerOptions.paths with "${CONFIG_SPECIFIER}": ["${CONFIG_PATH_TARGET}"].`,
+    )
+    return
+  }
+
+  const result = patchTsconfigPaths(source, 'tsconfig.json', {
+    specifier: CONFIG_SPECIFIER,
+    target: CONFIG_PATH_TARGET,
+  })
+  changes.push(...result.changes)
+  declined.push(...result.declined)
+  patches.add({
+    path,
+    label: 'tsconfig.json',
+    before: source,
+    after: result.source,
+    reason: `map ${CONFIG_SPECIFIER} to the project root, so lib/config.ts resolves in a src/ layout`,
   })
 }
 

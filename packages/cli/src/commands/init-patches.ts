@@ -31,6 +31,12 @@ import { envValue, hasNonEmptyEnvValue, upsertEnv } from '../patchers/env.ts'
 import { addAgentBlogIgnore, isAgentBlogIgnored } from '../patchers/gitignore.ts'
 import { patchNextConfig } from '../patchers/next-config.ts'
 import { patchRootLayout } from '../patchers/root-layout.ts'
+import {
+  CONFIG_PATH_TARGET,
+  CONFIG_SPECIFIER,
+  patchTsconfigPaths,
+} from '../patchers/tsconfig-paths.ts'
+import { resolveThroughPathMappings } from '../detect/resolve.ts'
 import { type PatchSet } from '../patchers/patch-set.ts'
 import { exists, join, readFile, toPosixRelative, walk } from '../util/fs.ts'
 import { generateIndexNowKey, isIndexNowKeyFile } from '../util/indexnow.ts'
@@ -142,6 +148,36 @@ export function patchConfigFiles(
         before: source,
         after: result.source,
         reason: 'htmlLimitedBots union, image qualities',
+      })
+    }
+  }
+
+  /*
+   * `@/agentblog.config` has to resolve or nothing compiles, and in a `src/`
+   * layout it does not: the config belongs at the project root while `@/` points
+   * at `src/`. Gated on whether the specifier actually resolves, so a flat
+   * project sees no diff here at all.
+   */
+  if (project.agentblogConfigPath && !resolveThroughPathMappings(project, CONFIG_SPECIFIER)) {
+    const tsconfigPath = join(project.root, 'tsconfig.json')
+    const source = readFile(tsconfigPath)
+    if (source === null) {
+      declined.push(
+        `${CONFIG_SPECIFIER} does not resolve and there is no tsconfig.json to map it in. Add compilerOptions.paths with "${CONFIG_SPECIFIER}": ["${CONFIG_PATH_TARGET}"].`,
+      )
+    } else {
+      const result = patchTsconfigPaths(source, 'tsconfig.json', {
+        specifier: CONFIG_SPECIFIER,
+        target: CONFIG_PATH_TARGET,
+      })
+      changes.push(...result.changes)
+      declined.push(...result.declined)
+      patches.add({
+        path: tsconfigPath,
+        label: 'tsconfig.json',
+        before: source,
+        after: result.source,
+        reason: `map ${CONFIG_SPECIFIER} to the project root, so lib/config.ts resolves in a src/ layout`,
       })
     }
   }

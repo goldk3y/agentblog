@@ -69,6 +69,68 @@ export function readPathMappings(project: ProjectContext): Record<string, string
 }
 
 /**
+ * Resolve a specifier the way TypeScript and Turbopack do, through
+ * `compilerOptions.paths` and nothing else.
+ *
+ * ---------------------------------------------------------------------------
+ * WHY THIS EXISTS ALONGSIDE `resolveSpecifier`
+ * ---------------------------------------------------------------------------
+ * `resolveSpecifier` is deliberately forgiving. When no mapping produces a file
+ * it falls back to guessing that `@/` means the project root or `src/`, which is
+ * the right behaviour for finding a module in a project we are only reading.
+ *
+ * It is the wrong behaviour for deciding whether a build will succeed. A `src/`
+ * layout maps `@/*` to `./src/*`, `src/agentblog.config.ts` does not exist, and
+ * the fallback then finds the file at the project root and reports success for
+ * an import that Turbopack fails on. Anything asking "will this resolve at build
+ * time" has to model the compiler rather than approximate it.
+ *
+ * TypeScript picks the single pattern with the longest prefix before its `*`,
+ * substitutes, and stops. It does not try the next best pattern when that one
+ * misses, so neither does this.
+ *
+ * @see https://www.typescriptlang.org/docs/handbook/modules/reference.html
+ */
+export function resolveThroughPathMappings(
+  project: ProjectContext,
+  specifier: string,
+): string | null {
+  const mappings = readPathMappings(project)
+
+  let best: { prefix: string; suffix: string; targets: string[] } | null = null
+
+  for (const [pattern, targets] of Object.entries(mappings)) {
+    const star = pattern.indexOf('*')
+    const prefix = star === -1 ? pattern : pattern.slice(0, star)
+    const suffix = star === -1 ? '' : pattern.slice(star + 1)
+
+    if (star === -1) {
+      if (pattern !== specifier) continue
+    } else if (
+      !specifier.startsWith(prefix) ||
+      !specifier.endsWith(suffix) ||
+      specifier.length < prefix.length + suffix.length
+    ) {
+      continue
+    }
+
+    if (!best || prefix.length > best.prefix.length) best = { prefix, suffix, targets }
+  }
+
+  if (!best) return null
+
+  // What the `*` captured. An exact pattern captures nothing and its targets
+  // hold no `*`, so the substitution below is a no-op for those.
+  const rest = specifier.slice(best.prefix.length, specifier.length - best.suffix.length)
+  for (const target of best.targets) {
+    const found = firstResolved(join(project.root, target.replace('*', rest)))
+    if (found) return found
+  }
+
+  return null
+}
+
+/**
  * Turn an import specifier into an absolute file path, or `null`.
  *
  * Exact mappings are tried before wildcard ones, which is how TypeScript itself
